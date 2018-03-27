@@ -16,6 +16,11 @@ type WorkStore interface {
 	Lock(ctx context.Context, key string) (string, error)
 	Unlock(ctx context.Context, key string) error
 	Pop(context.Context) (string, error)
+
+	// As far as writing information, the locking interface requires
+	// that the write op for a game tick have a CAS type operation to
+	// make sure that a worker hasn't lost a lock in between the time
+	// it last checked and the write occuring.
 }
 
 func InMemStore(games ...string) WorkStore {
@@ -50,7 +55,7 @@ func (in *inmem) Lock(ctx context.Context, key string) (string, error) {
 		if l.expires.Before(time.Now()) {
 			delete(in.locks, key)
 		} else {
-			return "", fmt.Errorf("token expires at %v", l.expires)
+			return "", fmt.Errorf("token expires at %v", l.expires.Unix())
 		}
 	}
 	l = &lock{
