@@ -2,13 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"math/rand"
 	"sync"
 	"time"
 
-	"github.com/battlesnakeio/engine/pkg/controller"
 	"github.com/battlesnakeio/engine/pkg/controller/pb"
 	"github.com/battlesnakeio/engine/pkg/worker"
 	"golang.org/x/net/context"
@@ -18,23 +16,16 @@ func init() { rand.Seed(time.Now().Unix()) }
 
 func main() {
 	var (
-		listen  string
-		workers int
+		controllerAddr string
+		workers        int
 	)
-	flag.StringVar(&listen, "listen", ":3004", "Listen address.")
+	flag.StringVar(&controllerAddr, "controller-addr", "127.0.0.1:3004", "Address to dial the controller.")
 	flag.IntVar(&workers, "workers", 10, "Worker count.")
 	flag.Parse()
 
-	controller := controller.New(controller.InMemStore())
-	go func() {
-		if err := controller.Serve(listen); err != nil {
-			log.Fatalf("controller failed to serve on (%s): %v", listen, err)
-		}
-	}()
-
-	client, err := pb.Dial(listen)
+	client, err := pb.Dial(controllerAddr)
 	if err != nil {
-		log.Fatalf("controller failed to dial (%s): %v", listen, err)
+		log.Fatalf("controller failed to dial (%s): %v", controllerAddr, err)
 	}
 
 	w := &worker.Worker{
@@ -44,12 +35,6 @@ func main() {
 	}
 
 	ctx := context.Background()
-
-	for i := 0; i < 5; i++ {
-		client.Start(ctx, &pb.StartRequest{
-			Game: &pb.Game{ID: fmt.Sprint(i)},
-		})
-	}
 
 	wg := &sync.WaitGroup{}
 	wg.Add(workers)

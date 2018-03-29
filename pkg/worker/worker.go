@@ -1,3 +1,6 @@
+// Package worker provides the actual running of games. It is the core of the
+// engine and game logic. It interacts primarily with the controller API writing
+// and reading game state.
 package worker
 
 import (
