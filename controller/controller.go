@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/battlesnakeio/engine/pkg/controller/pb"
+	"github.com/battlesnakeio/engine/controller/pb"
 	"google.golang.org/grpc"
 )
 

@@ -1,12 +1,12 @@
 package controller
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"github.com/battlesnakeio/engine/pkg/controller/pb"
+	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/net/context"
 )
 
 func testStoreLock(t *testing.T, s Store) {

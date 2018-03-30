@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/battlesnakeio/engine/pkg/controller/pb"
+	"github.com/battlesnakeio/engine/controller/pb"
 )
 
 var (

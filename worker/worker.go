@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/battlesnakeio/engine/pkg/controller/pb"
+	"github.com/battlesnakeio/engine/controller/pb"
 )
 
 // Worker is the worker interface. It wraps a main Perform functions which is

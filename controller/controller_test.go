@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"context"
 	"testing"
 
-	"github.com/battlesnakeio/engine/pkg/controller/pb"
+	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/net/context"
 )
 
 var client pb.ControllerClient
