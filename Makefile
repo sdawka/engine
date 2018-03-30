@@ -5,7 +5,7 @@ run: install
 	engine
 
 test:
-	go test ./...
+	go test -v ./...
 
 proto:
 	docker run -it --rm -v \
