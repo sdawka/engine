@@ -62,7 +62,7 @@ func TestController_Games(t *testing.T) {
 	require.Equal(t, "test", g.ID)
 
 	// Should get above game.
-	_, err = ctrl.Get(ctx, &pb.GetRequest{
+	_, err = ctrl.Status(ctx, &pb.StatusRequest{
 		ID: g.ID,
 	})
 	require.Nil(t, err)

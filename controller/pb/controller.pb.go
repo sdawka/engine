@@ -15,10 +15,13 @@ It has these top-level messages:
 	PopRequest
 	PopResponse
 	Game
-	GetRequest
-	GetResponse
+	StatusRequest
+	StatusResponse
 	StartRequest
 	StartResponse
+	CreateRequest
+	CreateResponse
+	SnakeOptions
 */
 package pb
 
@@ -136,32 +139,32 @@ func (m *Game) GetID() string {
 	return ""
 }
 
-type GetRequest struct {
+type StatusRequest struct {
 	ID string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 }
 
-func (m *GetRequest) Reset()                    { *m = GetRequest{} }
-func (m *GetRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetRequest) ProtoMessage()               {}
-func (*GetRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
+func (m *StatusRequest) Reset()                    { *m = StatusRequest{} }
+func (m *StatusRequest) String() string            { return proto.CompactTextString(m) }
+func (*StatusRequest) ProtoMessage()               {}
+func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
 
-func (m *GetRequest) GetID() string {
+func (m *StatusRequest) GetID() string {
 	if m != nil {
 		return m.ID
 	}
 	return ""
 }
 
-type GetResponse struct {
+type StatusResponse struct {
 	Game *Game `protobuf:"bytes,1,opt,name=Game" json:"Game,omitempty"`
 }
 
-func (m *GetResponse) Reset()                    { *m = GetResponse{} }
-func (m *GetResponse) String() string            { return proto.CompactTextString(m) }
-func (*GetResponse) ProtoMessage()               {}
-func (*GetResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
+func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
+func (m *StatusResponse) String() string            { return proto.CompactTextString(m) }
+func (*StatusResponse) ProtoMessage()               {}
+func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
 
-func (m *GetResponse) GetGame() *Game {
+func (m *StatusResponse) GetGame() *Game {
 	if m != nil {
 		return m.Game
 	}
@@ -192,6 +195,78 @@ func (m *StartResponse) String() string            { return proto.CompactTextStr
 func (*StartResponse) ProtoMessage()               {}
 func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
 
+type CreateRequest struct {
+	Width  int64                    `protobuf:"varint,1,opt,name=Width,proto3" json:"Width,omitempty"`
+	Height int64                    `protobuf:"varint,2,opt,name=Height,proto3" json:"Height,omitempty"`
+	Food   int64                    `protobuf:"varint,3,opt,name=Food,proto3" json:"Food,omitempty"`
+	Snakes map[string]*SnakeOptions `protobuf:"bytes,4,rep,name=Snakes" json:"Snakes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value"`
+}
+
+func (m *CreateRequest) Reset()                    { *m = CreateRequest{} }
+func (m *CreateRequest) String() string            { return proto.CompactTextString(m) }
+func (*CreateRequest) ProtoMessage()               {}
+func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
+
+func (m *CreateRequest) GetWidth() int64 {
+	if m != nil {
+		return m.Width
+	}
+	return 0
+}
+
+func (m *CreateRequest) GetHeight() int64 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+func (m *CreateRequest) GetFood() int64 {
+	if m != nil {
+		return m.Food
+	}
+	return 0
+}
+
+func (m *CreateRequest) GetSnakes() map[string]*SnakeOptions {
+	if m != nil {
+		return m.Snakes
+	}
+	return nil
+}
+
+type CreateResponse struct {
+}
+
+func (m *CreateResponse) Reset()                    { *m = CreateResponse{} }
+func (m *CreateResponse) String() string            { return proto.CompactTextString(m) }
+func (*CreateResponse) ProtoMessage()               {}
+func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
+
+type SnakeOptions struct {
+	Name string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	URL  string `protobuf:"bytes,2,opt,name=URL,proto3" json:"URL,omitempty"`
+}
+
+func (m *SnakeOptions) Reset()                    { *m = SnakeOptions{} }
+func (m *SnakeOptions) String() string            { return proto.CompactTextString(m) }
+func (*SnakeOptions) ProtoMessage()               {}
+func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
+
+func (m *SnakeOptions) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *SnakeOptions) GetURL() string {
+	if m != nil {
+		return m.URL
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*LockRequest)(nil), "pb.LockRequest")
 	proto.RegisterType((*LockResponse)(nil), "pb.LockResponse")
@@ -200,10 +275,13 @@ func init() {
 	proto.RegisterType((*PopRequest)(nil), "pb.PopRequest")
 	proto.RegisterType((*PopResponse)(nil), "pb.PopResponse")
 	proto.RegisterType((*Game)(nil), "pb.Game")
-	proto.RegisterType((*GetRequest)(nil), "pb.GetRequest")
-	proto.RegisterType((*GetResponse)(nil), "pb.GetResponse")
+	proto.RegisterType((*StatusRequest)(nil), "pb.StatusRequest")
+	proto.RegisterType((*StatusResponse)(nil), "pb.StatusResponse")
 	proto.RegisterType((*StartRequest)(nil), "pb.StartRequest")
 	proto.RegisterType((*StartResponse)(nil), "pb.StartResponse")
+	proto.RegisterType((*CreateRequest)(nil), "pb.CreateRequest")
+	proto.RegisterType((*CreateResponse)(nil), "pb.CreateResponse")
+	proto.RegisterType((*SnakeOptions)(nil), "pb.SnakeOptions")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -217,20 +295,23 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Controller service
 
 type ControllerClient interface {
-	// Lock should lock a specific game using the passed in ID. No more reads
-	// should happen as long as the lock is valid.
+	// Lock should lock a specific game using the passed in ID. No writes to the
+	// game should happen as long as the lock is valid. The game being locked does
+	// not need to exist.
 	Lock(ctx context.Context, in *LockRequest, opts ...grpc.CallOption) (*LockResponse, error)
 	// Unlock should unlock a game, if already unlocked a valid lock token must be
 	// present.
 	Unlock(ctx context.Context, in *UnlockRequest, opts ...grpc.CallOption) (*UnlockResponse, error)
-	// Pop should pop a game that is unlocked and unfished from the queue. It can
+	// Pop should pop a game that is unlocked and unfinished from the queue. It can
 	// be subject to race conditions where it is locked immediately after, this is
 	// expected.
 	Pop(ctx context.Context, in *PopRequest, opts ...grpc.CallOption) (*PopResponse, error)
-	// Get should fetch the game state.
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
-	// Start inserts a new game to be picked up by a worker.
+	// Status retrieves the game state.
+	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
+	// Start starts the game running, and will make it ready to be picked up by a worker.
 	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (*StartResponse, error)
+	// Create creates a new game, but doesn't start running frames
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 }
 
 type controllerClient struct {
@@ -268,9 +349,9 @@ func (c *controllerClient) Pop(ctx context.Context, in *PopRequest, opts ...grpc
 	return out, nil
 }
 
-func (c *controllerClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
-	out := new(GetResponse)
-	err := grpc.Invoke(ctx, "/pb.Controller/Get", in, out, c.cc, opts...)
+func (c *controllerClient) Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
+	out := new(StatusResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/Status", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -286,23 +367,35 @@ func (c *controllerClient) Start(ctx context.Context, in *StartRequest, opts ...
 	return out, nil
 }
 
+func (c *controllerClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
+	out := new(CreateResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/Create", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Controller service
 
 type ControllerServer interface {
-	// Lock should lock a specific game using the passed in ID. No more reads
-	// should happen as long as the lock is valid.
+	// Lock should lock a specific game using the passed in ID. No writes to the
+	// game should happen as long as the lock is valid. The game being locked does
+	// not need to exist.
 	Lock(context.Context, *LockRequest) (*LockResponse, error)
 	// Unlock should unlock a game, if already unlocked a valid lock token must be
 	// present.
 	Unlock(context.Context, *UnlockRequest) (*UnlockResponse, error)
-	// Pop should pop a game that is unlocked and unfished from the queue. It can
+	// Pop should pop a game that is unlocked and unfinished from the queue. It can
 	// be subject to race conditions where it is locked immediately after, this is
 	// expected.
 	Pop(context.Context, *PopRequest) (*PopResponse, error)
-	// Get should fetch the game state.
-	Get(context.Context, *GetRequest) (*GetResponse, error)
-	// Start inserts a new game to be picked up by a worker.
+	// Status retrieves the game state.
+	Status(context.Context, *StatusRequest) (*StatusResponse, error)
+	// Start starts the game running, and will make it ready to be picked up by a worker.
 	Start(context.Context, *StartRequest) (*StartResponse, error)
+	// Create creates a new game, but doesn't start running frames
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 }
 
 func RegisterControllerServer(s *grpc.Server, srv ControllerServer) {
@@ -363,20 +456,20 @@ func _Controller_Pop_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Controller_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
+func _Controller_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StatusRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ControllerServer).Get(ctx, in)
+		return srv.(ControllerServer).Status(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.Controller/Get",
+		FullMethod: "/pb.Controller/Status",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ControllerServer).Get(ctx, req.(*GetRequest))
+		return srv.(ControllerServer).Status(ctx, req.(*StatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -399,6 +492,24 @@ func _Controller_Start_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Controller_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ControllerServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Controller/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ControllerServer).Create(ctx, req.(*CreateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Controller_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Controller",
 	HandlerType: (*ControllerServer)(nil),
@@ -416,12 +527,16 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Controller_Pop_Handler,
 		},
 		{
-			MethodName: "Get",
-			Handler:    _Controller_Get_Handler,
+			MethodName: "Status",
+			Handler:    _Controller_Status_Handler,
 		},
 		{
 			MethodName: "Start",
 			Handler:    _Controller_Start_Handler,
+		},
+		{
+			MethodName: "Create",
+			Handler:    _Controller_Create_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -431,23 +546,33 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("controller.proto", fileDescriptorController) }
 
 var fileDescriptorController = []byte{
-	// 282 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x92, 0xd1, 0x4a, 0xc3, 0x30,
-	0x14, 0x86, 0xd9, 0xdc, 0x86, 0xfe, 0xed, 0xda, 0x2e, 0x88, 0x48, 0x99, 0x28, 0x41, 0x44, 0x71,
-	0x54, 0x98, 0x8f, 0xa0, 0x30, 0x04, 0x2f, 0xa4, 0xea, 0x03, 0xac, 0x23, 0x57, 0xab, 0x4d, 0x6c,
-	0xe3, 0x2b, 0xfb, 0x1c, 0x36, 0x39, 0xb1, 0x8d, 0x8a, 0xbb, 0xeb, 0x39, 0xe7, 0xcb, 0x9f, 0x93,
-	0x8f, 0x22, 0xd9, 0xc8, 0x4a, 0xd7, 0xb2, 0x2c, 0x45, 0x9d, 0xa9, 0x5a, 0x6a, 0xc9, 0x86, 0xaa,
-	0xe0, 0x27, 0x08, 0x1e, 0xe5, 0x66, 0x9b, 0x8b, 0xf7, 0x0f, 0xd1, 0x68, 0x16, 0x61, 0xf8, 0x70,
-	0x7f, 0x3c, 0x38, 0x1b, 0x5c, 0x1e, 0xe4, 0xed, 0x17, 0x3f, 0x47, 0x48, 0xe3, 0x46, 0xc9, 0xaa,
-	0x11, 0xec, 0x10, 0xe3, 0x17, 0xb9, 0x15, 0x95, 0x43, 0xa8, 0xe0, 0xa7, 0x98, 0xbe, 0x56, 0xe5,
-	0x8e, 0x98, 0x04, 0xd1, 0x37, 0x40, 0x41, 0x3c, 0x04, 0x9e, 0xa4, 0x72, 0xbc, 0xd9, 0xc2, 0x56,
-	0xee, 0x96, 0xdf, 0xc7, 0x8f, 0x30, 0x5a, 0xad, 0xdf, 0xfe, 0xf6, 0xe7, 0xc0, 0x4a, 0xe8, 0xff,
-	0x2e, 0xbd, 0x46, 0x60, 0xa7, 0x2e, 0x74, 0x4e, 0x21, 0x16, 0x08, 0x96, 0xfb, 0x99, 0x2a, 0x32,
-	0x53, 0xe7, 0xb6, 0xcb, 0x17, 0x08, 0x9f, 0xf5, 0xba, 0xee, 0xc2, 0x76, 0xd3, 0x31, 0xa6, 0x8e,
-	0xa6, 0xf0, 0xe5, 0xe7, 0x00, 0xb8, 0xeb, 0xfc, 0xb2, 0x2b, 0x8c, 0x8c, 0x36, 0x16, 0x9b, 0x73,
-	0x9e, 0xdf, 0x34, 0xe9, 0x1b, 0x6e, 0xad, 0x1b, 0x4c, 0x48, 0x0d, 0x9b, 0x99, 0xd9, 0x0f, 0x8f,
-	0x29, 0xf3, 0x5b, 0xee, 0xc0, 0x05, 0xf6, 0x5a, 0x57, 0x2c, 0x32, 0xa3, 0x5e, 0x61, 0x1a, 0x77,
-	0x75, 0xcf, 0xb5, 0xcf, 0x27, 0xae, 0xb7, 0x44, 0x9c, 0xef, 0x65, 0x81, 0xb1, 0x7d, 0x0b, 0xb3,
-	0xbb, 0xf9, 0x12, 0xd2, 0x99, 0xd7, 0x21, 0xba, 0x98, 0xd8, 0x5f, 0xe7, 0xf6, 0x2b, 0x00, 0x00,
-	0xff, 0xff, 0xbb, 0x62, 0xe3, 0x8b, 0x4e, 0x02, 0x00, 0x00,
+	// 444 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x53, 0xeb, 0xca, 0xd3, 0x40,
+	0x10, 0x25, 0x97, 0x06, 0xbf, 0x49, 0x9b, 0xa6, 0x8b, 0x94, 0x10, 0x2c, 0x96, 0x20, 0x45, 0xa1,
+	0x44, 0xa8, 0x0a, 0xe2, 0xdf, 0x7a, 0xc5, 0xa2, 0xb2, 0xb5, 0xf8, 0x3b, 0x6d, 0x17, 0x5b, 0x12,
+	0xb3, 0x31, 0xd9, 0x0a, 0x7d, 0x1b, 0x5f, 0xca, 0xf7, 0x71, 0x6f, 0x69, 0x92, 0x8a, 0xfd, 0x37,
+	0x97, 0x93, 0x73, 0x66, 0x67, 0x4e, 0xc0, 0xdf, 0xd1, 0x9c, 0x95, 0x34, 0xcb, 0x48, 0x19, 0x17,
+	0x25, 0x65, 0x14, 0x99, 0xc5, 0x36, 0x9a, 0x80, 0xbb, 0xa2, 0xbb, 0x14, 0x93, 0x9f, 0x27, 0x52,
+	0x31, 0xe4, 0x81, 0xf9, 0xe1, 0x75, 0x60, 0x4c, 0x8d, 0xc7, 0x77, 0x98, 0x47, 0xd1, 0x23, 0xe8,
+	0xab, 0x76, 0x55, 0xd0, 0xbc, 0x22, 0xe8, 0x3e, 0xf4, 0xbe, 0xd2, 0x94, 0xe4, 0x1a, 0xa2, 0x92,
+	0xe8, 0x21, 0x0c, 0x36, 0x79, 0x76, 0x83, 0xc6, 0x07, 0xaf, 0x06, 0x28, 0xa2, 0xa8, 0x0f, 0xf0,
+	0x85, 0x16, 0x1a, 0x2f, 0xa6, 0x90, 0x99, 0x56, 0xb9, 0xfe, 0x7c, 0x0c, 0xf6, 0xbb, 0xe4, 0xc7,
+	0xbf, 0x75, 0xae, 0xbb, 0x66, 0x09, 0x3b, 0x55, 0xff, 0xd3, 0x8d, 0xc1, 0xab, 0x01, 0x9a, 0xfa,
+	0x81, 0xa2, 0x92, 0x18, 0x77, 0x71, 0x2f, 0x2e, 0xb6, 0xb1, 0xc8, 0xb1, 0xac, 0x46, 0x73, 0xe8,
+	0x73, 0x7c, 0xc9, 0x6a, 0xbe, 0xdb, 0xe8, 0xa1, 0x94, 0x17, 0x68, 0xfd, 0xa8, 0x3f, 0x06, 0x0c,
+	0x96, 0x25, 0x49, 0x18, 0xa9, 0x09, 0xf8, 0xbe, 0xbe, 0x1d, 0xf7, 0xec, 0x20, 0x19, 0x2c, 0xac,
+	0x12, 0x34, 0x06, 0xe7, 0x3d, 0x39, 0x7e, 0x3f, 0xb0, 0xc0, 0x94, 0x65, 0x9d, 0x21, 0x04, 0xf6,
+	0x5b, 0x4a, 0xf7, 0x81, 0x25, 0xab, 0x32, 0x46, 0x2f, 0xc0, 0x59, 0xe7, 0x49, 0x4a, 0xaa, 0xc0,
+	0x9e, 0x5a, 0x7c, 0x88, 0x89, 0x18, 0xa2, 0x23, 0x12, 0xab, 0xfe, 0x1b, 0x7e, 0xdd, 0x33, 0xd6,
+	0xe0, 0xf0, 0x23, 0xb8, 0xad, 0x32, 0xf2, 0xc1, 0x4a, 0xc9, 0x59, 0x6f, 0x46, 0x84, 0x68, 0x06,
+	0xbd, 0x5f, 0x49, 0x76, 0x22, 0x72, 0x04, 0x77, 0xe1, 0x0b, 0x5a, 0xf9, 0xc5, 0xe7, 0x82, 0x1d,
+	0xf9, 0x6b, 0xb0, 0x6a, 0xbf, 0x32, 0x5f, 0x1a, 0xe2, 0x7c, 0xb5, 0xa2, 0x7e, 0xe9, 0x73, 0xbe,
+	0xa8, 0x16, 0x58, 0x4c, 0xfe, 0xa9, 0x5e, 0xd4, 0x1d, 0x96, 0xb1, 0xd0, 0xdc, 0xe0, 0x95, 0xe4,
+	0xe7, 0x9a, 0x3c, 0x5c, 0xfc, 0x36, 0x01, 0x96, 0x17, 0x17, 0xa2, 0x27, 0x60, 0x0b, 0x73, 0xa1,
+	0xa1, 0xd0, 0x6e, 0xb9, 0x30, 0xf4, 0x9b, 0x82, 0x3e, 0xdb, 0x53, 0x70, 0x94, 0x81, 0xd0, 0x48,
+	0xf4, 0x3a, 0x6e, 0x0b, 0x51, 0xbb, 0xa4, 0x3f, 0x98, 0x81, 0xc5, 0x1d, 0x85, 0x3c, 0xd1, 0x6a,
+	0x8c, 0x16, 0x0e, 0x2f, 0x79, 0x43, 0xac, 0x1c, 0xa2, 0x88, 0x3b, 0x76, 0x52, 0xc4, 0x57, 0x06,
+	0x9a, 0x43, 0x4f, 0x1e, 0x1d, 0xf9, 0xba, 0x79, 0x71, 0x4b, 0x38, 0x6a, 0x55, 0x1a, 0x7a, 0xb5,
+	0x39, 0x45, 0xdf, 0xb9, 0x9b, 0xa2, 0xef, 0x2e, 0x76, 0xeb, 0xc8, 0x5f, 0xf3, 0xd9, 0xdf, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x9a, 0x85, 0x31, 0x4e, 0xae, 0x03, 0x00, 0x00,
 }

@@ -62,12 +62,12 @@ func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, er
 }
 
 // Get should fetch the game state.
-func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
+func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusResponse, error) {
 	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetResponse{Game: game}, nil
+	return &pb.StatusResponse{Game: game}, nil
 }
 
 // Start inserts a new game to be picked up by a worker.
@@ -77,6 +77,16 @@ func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResp
 		return nil, err
 	}
 	return &pb.StartResponse{}, nil
+}
+
+func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
+	err := s.Store.PutGame(ctx, &pb.Game{
+		ID: "xxx", // TODO: Generate Game IDs
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateResponse{}, nil
 }
 
 // Serve will intantiate a grpc server.
