@@ -1,0 +1,12 @@
+
+# Editors
+.vscode
+.idea/
+
+# Builds
+build
+*.out
+
+# General
+*.tgz
+.DS_Store
