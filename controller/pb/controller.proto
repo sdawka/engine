@@ -1,0 +1,51 @@
+syntax = "proto3";
+package pb;
+
+service Controller {
+  // Lock should lock a specific game using the passed in ID. No writes to the
+  // game should happen as long as the lock is valid. The game being locked does
+  // not need to exist.
+  rpc Lock(LockRequest) returns (LockResponse);
+  // Unlock should unlock a game, if already unlocked a valid lock token must be
+  // present.
+  rpc Unlock(UnlockRequest) returns (UnlockResponse);
+  // Pop should pop a game that is unlocked and unfinished from the queue. It can
+  // be subject to race conditions where it is locked immediately after, this is
+  // expected.
+  rpc Pop(PopRequest) returns (PopResponse);
+  // Status retrieves the game state.
+  rpc Status(StatusRequest) returns (StatusResponse);
+  // Start starts the game running, and will make it ready to be picked up by a worker.
+  rpc Start(StartRequest) returns (StartResponse);
+  // Create creates a new game, but doesn't start running frames
+  rpc Create(CreateRequest) returns (CreateResponse);
+}
+
+message LockRequest  { string ID = 1; }
+message LockResponse { string Token = 1; }
+
+message UnlockRequest  { string ID = 1; }
+message UnlockResponse {}
+
+message PopRequest  {}
+message PopResponse { string ID = 1; }
+
+message Game { string ID = 1; };
+message StatusRequest  { string ID = 1; }
+message StatusResponse { Game Game = 1; }
+
+message StartRequest  { Game Game = 1; }
+message StartResponse {}
+
+message CreateRequest  { 
+  int64 Width = 1;
+  int64 Height = 2;
+  int64 Food = 3;
+  map<string, SnakeOptions> Snakes = 4;
+}
+message CreateResponse {}
+
+message SnakeOptions {
+  string Name = 1;
+  string URL = 2;
+}
