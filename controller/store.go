@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 )
@@ -124,8 +122,6 @@ func (in *inmem) GetGame(ctx context.Context, id string) (*pb.Game, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 
-	spew.Dump(id)
-	spew.Dump(in.games)
 	if g, ok := in.games[id]; ok {
 		return g, nil
 	}

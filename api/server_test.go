@@ -33,11 +33,18 @@ func (mc *MockController) Status(ctx context.Context, req *pb.StatusRequest, opt
 	return mc.StatusResponse, mc.Error
 }
 
-func TestCreate(t *testing.T) {
-	client := &MockController{
+func createAPIServer() (*Server, *MockController) {
+	var client = &MockController{
 		CreateResponse: &pb.CreateResponse{},
+		StartResponse:  &pb.StartResponse{},
+		StatusResponse: &pb.StatusResponse{},
 	}
 	s := New(":1234", client)
+	return s, client
+}
+
+func TestCreate(t *testing.T) {
+	s, _ := createAPIServer()
 
 	buf := &bytes.Buffer{}
 	buf.WriteString("{}")
@@ -49,10 +56,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
-	client := &MockController{
-		StartResponse: &pb.StartResponse{},
-	}
-	s := New(":1234", client)
+	s, _ := createAPIServer()
 
 	req, _ := http.NewRequest("POST", "/game/start/abc_123", nil)
 	rr := httptest.NewRecorder()
@@ -62,10 +66,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	client := &MockController{
-		StatusResponse: &pb.StatusResponse{},
-	}
-	s := New(":1234", client)
+	s, _ := createAPIServer()
 
 	req, _ := http.NewRequest("GET", "/game/status/abc_123", nil)
 	rr := httptest.NewRecorder()
