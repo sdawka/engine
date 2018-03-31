@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -16,13 +15,9 @@ type Server struct {
 	hs *http.Server
 }
 
-func readRequestBody(b io.ReadCloser) interface{} {
-	return nil
-}
-
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
-	router.GET("/game/create", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	router.POST("/game/create", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.WithError(err).Error("Unable to read request body")
