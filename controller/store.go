@@ -8,7 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 )
 
 var (
@@ -101,8 +104,8 @@ func (in *inmem) PopGameID(ctx context.Context) (string, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 
-	for id := range in.games {
-		if !in.isLocked(id) {
+	for id, g := range in.games {
+		if !in.isLocked(id) && g.Status != rules.GameStatusStopped {
 			return id, nil
 		}
 	}
@@ -121,6 +124,8 @@ func (in *inmem) GetGame(ctx context.Context, id string) (*pb.Game, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 
+	spew.Dump(id)
+	spew.Dump(in.games)
 	if g, ok := in.games[id]; ok {
 		return g, nil
 	}

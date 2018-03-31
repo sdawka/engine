@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Worker is the worker interface. It wraps a main Perform functions which is
@@ -40,7 +42,10 @@ func (w *Worker) Run(ctx context.Context, workerID int) {
 	for {
 		// We are now holding the lock.
 		if err := w.run(ctx, workerID); err != nil {
-			log.Printf("[%d] run failed: %v", workerID, err)
+			s, ok := status.FromError(err)
+			if !ok || s.Code() != codes.NotFound {
+				log.Printf("[%d] run failed: %v", workerID, err)
+			}
 
 			select {
 			case <-time.After(w.PollInterval):
