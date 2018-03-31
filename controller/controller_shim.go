@@ -7,16 +7,21 @@ import (
 	"google.golang.org/grpc"
 )
 
+// ServerShim provides a shim between grpc client and server, so the server methods can be called in process as if just a client.
 type ServerShim struct {
 	server *Server
 }
 
+// NewInMemory creates a server shim client
 func NewInMemory(server *Server) pb.ControllerClient {
 	return &ServerShim{
 		server: server,
 	}
 }
 
+// Lock should lock a specific game using the passed in ID. No writes to the
+// game should happen as long as the lock is valid. The game being locked does
+// not need to exist.
 func (s *ServerShim) Lock(ctx context.Context, req *pb.LockRequest, opts ...grpc.CallOption) (*pb.LockResponse, error) {
 	return s.server.Lock(ctx, req)
 }
@@ -34,7 +39,7 @@ func (s *ServerShim) Pop(ctx context.Context, req *pb.PopRequest, opts ...grpc.C
 	return s.server.Pop(ctx, req)
 }
 
-// Get should fetch the game state.
+// Status retreives the status of a game
 func (s *ServerShim) Status(ctx context.Context, req *pb.StatusRequest, opts ...grpc.CallOption) (*pb.StatusResponse, error) {
 	return s.server.Status(ctx, req)
 }
@@ -44,6 +49,7 @@ func (s *ServerShim) Start(ctx context.Context, req *pb.StartRequest, opts ...gr
 	return s.server.Start(ctx, req)
 }
 
+// Create creates a new game
 func (s *ServerShim) Create(ctx context.Context, req *pb.CreateRequest, opts ...grpc.CallOption) (*pb.CreateResponse, error) {
 	return s.server.Create(ctx, req)
 }

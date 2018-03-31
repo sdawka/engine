@@ -67,7 +67,7 @@ func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, er
 	return &pb.PopResponse{ID: id}, nil
 }
 
-// Get should fetch the game state.
+// Status retreives the status of a game
 func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusResponse, error) {
 	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
@@ -90,6 +90,7 @@ func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResp
 	return &pb.StartResponse{}, nil
 }
 
+// Create creates a new game
 func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
 	id := uuid.NewV4().String()
 	err := s.Store.PutGame(ctx, &pb.Game{

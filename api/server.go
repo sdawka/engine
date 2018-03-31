@@ -11,10 +11,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Server this is the api server
 type Server struct {
 	hs *http.Server
 }
 
+// New creates a new api server
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
 	router.POST("/game/create", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -77,6 +79,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	}
 }
 
+// WaitForExit starts up the server and blocks until the server shuts down.
 func (s *Server) WaitForExit() {
 	log.Infof("Battlesnake engine api listening on %s", s.hs.Addr)
 	err := s.hs.ListenAndServe()
