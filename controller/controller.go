@@ -8,7 +8,11 @@ import (
 	"net"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
+	"github.com/satori/go.uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // New will initialize a new Server.
@@ -55,13 +59,15 @@ func (s *Server) Unlock(ctx context.Context, req *pb.UnlockRequest) (*pb.UnlockR
 // expected.
 func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, error) {
 	id, err := s.Store.PopGameID(ctx)
-	if err != nil {
+	if err == ErrNotFound {
+		return nil, status.Error(codes.NotFound, err.Error())
+	} else if err != nil {
 		return nil, err
 	}
 	return &pb.PopResponse{ID: id}, nil
 }
 
-// Get should fetch the game state.
+// Status retreives the status of a game
 func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusResponse, error) {
 	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
@@ -70,23 +76,33 @@ func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 	return &pb.StatusResponse{Game: game}, nil
 }
 
-// Start inserts a new game to be picked up by a worker.
+// Start starts an existing game, ready to be picked up by a worker.
 func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResponse, error) {
-	err := s.Store.PutGame(ctx, req.Game)
+	g, err := s.Store.GetGame(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	g.Status = rules.GameStatusRunning
+	err = s.Store.PutGame(ctx, g)
 	if err != nil {
 		return nil, err
 	}
 	return &pb.StartResponse{}, nil
 }
 
+// Create creates a new game
 func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
+	id := uuid.NewV4().String()
 	err := s.Store.PutGame(ctx, &pb.Game{
-		ID: "xxx", // TODO: Generate Game IDs
+		ID:     id,
+		Status: rules.GameStatusStopped,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.CreateResponse{}, nil
+	return &pb.CreateResponse{
+		ID: id,
+	}, nil
 }
 
 // Serve will intantiate a grpc server.

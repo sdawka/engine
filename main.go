@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -13,6 +11,7 @@ import (
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/worker"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() { rand.Seed(time.Now().Unix()) }
@@ -28,9 +27,10 @@ func main() {
 	flag.IntVar(&workers, "workers", 10, "Worker count.")
 	flag.Parse()
 
-	controller := controller.New(controller.InMemStore())
+	c := controller.New(controller.InMemStore())
 	go func() {
-		if err := controller.Serve(controllerAddr); err != nil {
+		log.Infof("controller listening on %s", controllerAddr)
+		if err := c.Serve(controllerAddr); err != nil {
 			log.Fatalf("controller failed to serve on (%s): %v", controllerAddr, err)
 		}
 	}()
@@ -39,6 +39,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("controller failed to dial (%s): %v", controllerAddr, err)
 	}
+
+	client = controller.NewInMemory(c)
 
 	go func() {
 		api := api.New(apiAddr, client)
@@ -52,13 +54,6 @@ func main() {
 	}
 
 	ctx := context.Background()
-
-	for i := 0; i < 5; i++ {
-		client.Start(ctx, &pb.StartRequest{
-			Game: &pb.Game{ID: fmt.Sprint(i)},
-		})
-	}
-
 	wg := &sync.WaitGroup{}
 	wg.Add(workers)
 

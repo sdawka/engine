@@ -1,5 +1,5 @@
 install:
-	go install
+	go install -v
 
 run: install
 	engine

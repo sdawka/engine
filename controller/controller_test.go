@@ -51,15 +51,16 @@ func TestController_Games(t *testing.T) {
 	ctrl := client
 
 	// Start test game.
-	_, err := ctrl.Start(ctx, &pb.StartRequest{
-		Game: &pb.Game{ID: "test"},
+	resp, _ := ctrl.Create(context.Background(), &pb.CreateRequest{})
+	_, err := ctrl.Start(context.Background(), &pb.StartRequest{
+		ID: resp.ID,
 	})
 	require.Nil(t, err)
 
 	// Should pop above game.
 	g, err := ctrl.Pop(ctx, &pb.PopRequest{})
 	require.Nil(t, err)
-	require.Equal(t, "test", g.ID)
+	require.Equal(t, resp.ID, g.ID)
 
 	// Should get above game.
 	_, err = ctrl.Status(ctx, &pb.StatusRequest{

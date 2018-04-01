@@ -48,8 +48,9 @@ func TestWorker_Run(t *testing.T) {
 		HeartbeatInterval: 1 * time.Millisecond,
 	}
 
+	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
 	client.Start(context.Background(), &pb.StartRequest{
-		Game: &pb.Game{ID: "test-0"},
+		ID: resp.ID,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
@@ -66,8 +67,9 @@ func TestWorker_RunLoop(t *testing.T) {
 		HeartbeatInterval: 1 * time.Millisecond,
 	}
 
+	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
 	client.Start(context.Background(), &pb.StartRequest{
-		Game: &pb.Game{ID: "test-1"},
+		ID: resp.ID,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)

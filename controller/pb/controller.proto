@@ -30,11 +30,14 @@ message UnlockResponse {}
 message PopRequest  {}
 message PopResponse { string ID = 1; }
 
-message Game { string ID = 1; };
+message Game { 
+  string ID = 1; 
+  string Status = 2;
+};
 message StatusRequest  { string ID = 1; }
 message StatusResponse { Game Game = 1; }
 
-message StartRequest  { Game Game = 1; }
+message StartRequest  { string ID = 1; }
 message StartResponse {}
 
 message CreateRequest  { 
@@ -43,7 +46,9 @@ message CreateRequest  {
   int64 Food = 3;
   map<string, SnakeOptions> Snakes = 4;
 }
-message CreateResponse {}
+message CreateResponse {
+  string ID = 1;
+}
 
 message SnakeOptions {
   string Name = 1;

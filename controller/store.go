@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 )
 
 var (
@@ -101,8 +102,8 @@ func (in *inmem) PopGameID(ctx context.Context) (string, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 
-	for id := range in.games {
-		if !in.isLocked(id) {
+	for id, g := range in.games {
+		if !in.isLocked(id) && g.Status != rules.GameStatusStopped {
 			return id, nil
 		}
 	}

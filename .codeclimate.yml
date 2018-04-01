@@ -1,3 +1,8 @@
 exclude_patterns:
   - "**/*.pb.go"
   - "**/vendor/"
+plugins:
+  gofmt:
+    enabled: true
+  golint:
+    enabled: true
