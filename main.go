@@ -27,6 +27,12 @@ func main() {
 	flag.IntVar(&workers, "workers", 10, "Worker count.")
 	flag.Parse()
 
+	// f, err := os.OpenFile("engine.log", os.O_WRONLY|os.O_CREATE, 0755)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// log.SetOutput(f)
+
 	c := controller.New(controller.InMemStore())
 	go func() {
 		log.Infof("controller listening on %s", controllerAddr)

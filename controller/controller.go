@@ -105,6 +105,15 @@ func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	}, nil
 }
 
+// Update updates the same state in the data store
+func (s *Server) Update(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	err := s.Store.PutGame(ctx, req.Game)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateResponse{}, nil
+}
+
 // Serve will intantiate a grpc server.
 func (s *Server) Serve(listen string) error {
 	lis, err := net.Listen("tcp", listen)

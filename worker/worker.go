@@ -6,10 +6,10 @@ package worker
 import (
 	"context"
 	"log"
-	"math/rand"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,16 +24,38 @@ type Worker struct {
 
 // perform does the actual work of running a game.
 func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
-	for i := 0; i < 2; i++ {
-		// Stubbed out work emulation.
-		log.Printf("[%d] performing work on %s", workerID, id)
-		select {
-		case <-ctx.Done():
-			log.Println("perform closed")
-			return ctx.Err()
-		case <-time.After(time.Duration(rand.Intn(10)) * time.Second):
-		}
+	resp, err := w.ControllerClient.Status(ctx, &pb.StatusRequest{ID: id})
+	if err != nil {
+		return err
 	}
+	moves := rules.GatherSnakeMoves(resp.Game)
+
+	// we have all the snake moves now
+	// 1. update snake coords
+	for update := range moves {
+		if update.Err != nil {
+			update.Snake.DefaultMove()
+		}
+		update.Snake.Move(update.Move)
+	}
+	// 2. check for death
+	// 	  a - starvation
+	//    b - wall collision
+	//    c - snake collision
+	rules.CheckForDeath(resp.Game)
+	// 3. game update
+	//    a - turn incr
+	//    b - reduce health points
+	//    c - grow snakes
+	//    d - remove eaten food
+	//    e - replace eaten food
+	rules.GameTick(resp.Game)
+
+	_, err = w.ControllerClient.Update(ctx, &pb.UpdateRequest{Game: resp.Game})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

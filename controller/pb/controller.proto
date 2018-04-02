@@ -19,6 +19,8 @@ service Controller {
   rpc Start(StartRequest) returns (StartResponse);
   // Create creates a new game, but doesn't start running frames
   rpc Create(CreateRequest) returns (CreateResponse);
+  // Update updates the same state in the data store
+  rpc Update(UpdateRequest) returns (UpdateResponse);
 }
 
 message LockRequest  { string ID = 1; }
@@ -30,10 +32,7 @@ message UnlockResponse {}
 message PopRequest  {}
 message PopResponse { string ID = 1; }
 
-message Game { 
-  string ID = 1; 
-  string Status = 2;
-};
+
 message StatusRequest  { string ID = 1; }
 message StatusResponse { Game Game = 1; }
 
@@ -50,7 +49,35 @@ message CreateResponse {
   string ID = 1;
 }
 
+message UpdateRequest { Game game = 1; }
+message UpdateResponse {}
+
 message SnakeOptions {
   string Name = 1;
   string URL = 2;
+  string ID = 3;
+}
+
+message Game { 
+  string ID = 1; 
+  string Status = 2;
+  int64 Turn = 3;
+  repeated Point Food = 4;
+  repeated Snake Snakes = 5;
+  int64 Timeout = 6;
+  int64 Width = 7;
+  int64 Height = 8;
+};
+
+message Point {
+  int64 X = 1;
+  int64 Y = 2;
+}
+
+message Snake {
+  string ID = 1;
+  string Name = 2;
+  string URL = 3;
+  repeated Point Body = 4;
+  int64 Health = 5;
 }

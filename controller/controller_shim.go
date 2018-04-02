@@ -53,3 +53,8 @@ func (s *ServerShim) Start(ctx context.Context, req *pb.StartRequest, opts ...gr
 func (s *ServerShim) Create(ctx context.Context, req *pb.CreateRequest, opts ...grpc.CallOption) (*pb.CreateResponse, error) {
 	return s.server.Create(ctx, req)
 }
+
+// Update updates the same state in the data store
+func (s *ServerShim) Update(ctx context.Context, req *pb.UpdateRequest, opts ...grpc.CallOption) (*pb.UpdateResponse, error) {
+	return s.server.Update(ctx, req)
+}
