@@ -67,6 +67,7 @@ message Game {
   int64 Timeout = 6;
   int64 Width = 7;
   int64 Height = 8;
+  int64 TurnTimeout = 9; // number of milliseconds for turn delay
 };
 
 message Point {

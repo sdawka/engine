@@ -28,32 +28,47 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 	if err != nil {
 		return err
 	}
-	moves := rules.GatherSnakeMoves(resp.Game)
-
-	// we have all the snake moves now
-	// 1. update snake coords
-	for update := range moves {
-		if update.Err != nil {
-			update.Snake.DefaultMove()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
-		update.Snake.Move(update.Move)
-	}
-	// 2. check for death
-	// 	  a - starvation
-	//    b - wall collision
-	//    c - snake collision
-	rules.CheckForDeath(resp.Game)
-	// 3. game update
-	//    a - turn incr
-	//    b - reduce health points
-	//    c - grow snakes
-	//    d - remove eaten food
-	//    e - replace eaten food
-	rules.GameTick(resp.Game)
 
-	_, err = w.ControllerClient.Update(ctx, &pb.UpdateRequest{Game: resp.Game})
-	if err != nil {
-		return err
+		start := time.Now()
+		moves := rules.GatherSnakeMoves(resp.Game)
+
+		// we have all the snake moves now
+		// 1. update snake coords
+		for update := range moves {
+			if update.Err != nil {
+				update.Snake.DefaultMove()
+			}
+			update.Snake.Move(update.Move)
+		}
+		// 2. check for death
+		// 	  a - starvation
+		//    b - wall collision
+		//    c - snake collision
+		rules.CheckForDeath(resp.Game)
+		// 3. game update
+		//    a - turn incr
+		//    b - reduce health points
+		//    c - grow snakes
+		//    d - remove eaten food
+		//    e - replace eaten food
+		rules.GameTick(resp.Game)
+
+		_, err = w.ControllerClient.Update(ctx, &pb.UpdateRequest{Game: resp.Game})
+		if err != nil {
+			return err
+		}
+
+		turnDelay := time.Duration(resp.Game.TurnTimeout) * time.Millisecond
+		remainingDelay := turnDelay - time.Since(start)
+		if remainingDelay > 0 {
+			time.Sleep(remainingDelay)
+		}
 	}
 
 	return nil
