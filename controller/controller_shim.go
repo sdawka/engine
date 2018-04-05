@@ -54,7 +54,7 @@ func (s *ServerShim) Create(ctx context.Context, req *pb.CreateRequest, opts ...
 	return s.server.Create(ctx, req)
 }
 
-// Update updates the same state in the data store
-func (s *ServerShim) Update(ctx context.Context, req *pb.UpdateRequest, opts ...grpc.CallOption) (*pb.UpdateResponse, error) {
-	return s.server.Update(ctx, req)
+// AddGameTick adds a new game tick to the game
+func (s *ServerShim) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest, opts ...grpc.CallOption) (*pb.AddGameTickResponse, error) {
+	return s.server.AddGameTick(ctx, req)
 }

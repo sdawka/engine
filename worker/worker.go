@@ -36,30 +36,10 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 		}
 
 		start := time.Now()
-		moves := rules.GatherSnakeMoves(resp.Game)
 
-		// we have all the snake moves now
-		// 1. update snake coords
-		for update := range moves {
-			if update.Err != nil {
-				update.Snake.DefaultMove()
-			}
-			update.Snake.Move(update.Move)
-		}
-		// 2. check for death
-		// 	  a - starvation
-		//    b - wall collision
-		//    c - snake collision
-		rules.CheckForDeath(resp.Game)
-		// 3. game update
-		//    a - turn incr
-		//    b - reduce health points
-		//    c - grow snakes
-		//    d - remove eaten food
-		//    e - replace eaten food
-		rules.GameTick(resp.Game)
+		gt := rules.GameTick(resp.Game)
 
-		_, err = w.ControllerClient.Update(ctx, &pb.UpdateRequest{Game: resp.Game})
+		_, err = w.ControllerClient.AddGameTick(ctx, &pb.AddGameTickRequest{ID: resp.Game.ID, GameTick: gt})
 		if err != nil {
 			return err
 		}

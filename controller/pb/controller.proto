@@ -19,8 +19,8 @@ service Controller {
   rpc Start(StartRequest) returns (StartResponse);
   // Create creates a new game, but doesn't start running frames
   rpc Create(CreateRequest) returns (CreateResponse);
-  // Update updates the same state in the data store
-  rpc Update(UpdateRequest) returns (UpdateResponse);
+  // AddGameTick adds a new game tick to the game
+  rpc AddGameTick(AddGameTickRequest) returns (AddGameTickResponse);
 }
 
 message LockRequest  { string ID = 1; }
@@ -49,8 +49,11 @@ message CreateResponse {
   string ID = 1;
 }
 
-message UpdateRequest { Game game = 1; }
-message UpdateResponse {}
+message AddGameTickRequest { 
+  string ID = 1;
+  GameTick GameTick = 2; 
+}
+message AddGameTickResponse { Game game = 1; }
 
 message SnakeOptions {
   string Name = 1;
@@ -61,14 +64,18 @@ message SnakeOptions {
 message Game { 
   string ID = 1; 
   string Status = 2;
-  int64 Turn = 3;
-  repeated Point Food = 4;
-  repeated Snake Snakes = 5;
-  int64 Timeout = 6;
-  int64 Width = 7;
-  int64 Height = 8;
-  int64 TurnTimeout = 9; // number of milliseconds for turn delay
+  int64 Width = 3;
+  int64 Height = 4;
+  repeated GameTick Ticks = 5;
+  int64 SnakeTimeout = 6;
+  int64 TurnTimeout = 7; // number of milliseconds for turn delay
 };
+
+message GameTick {
+  int64 Turn = 1;
+  repeated Point Food = 2;
+  repeated Snake Snakes = 3;
+}
 
 message Point {
   int64 X = 1;

@@ -11,6 +11,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var netClient httpClient = &wrappedHTTPClient{
+	Client: &http.Client{
+		Timeout: 2 * time.Millisecond,
+	},
+}
+
 // SnakeUpdate bundles together a snake with a move for processing
 type SnakeUpdate struct {
 	Snake *pb.Snake
@@ -19,14 +25,14 @@ type SnakeUpdate struct {
 }
 
 // GatherSnakeMoves goes and queries each snake for the snake move
-func GatherSnakeMoves(game *pb.Game) <-chan SnakeUpdate {
-	respChan := make(chan SnakeUpdate, len(game.Snakes))
+func GatherSnakeMoves(timeout time.Duration, gameTick *pb.GameTick) <-chan SnakeUpdate {
+	respChan := make(chan SnakeUpdate, len(gameTick.Snakes))
 	go func() {
 		wg := sync.WaitGroup{}
-		wg.Add(len(game.Snakes))
-		for _, s := range game.Snakes {
+		wg.Add(len(gameTick.Snakes))
+		for _, s := range gameTick.Snakes {
 			go func(snake *pb.Snake) {
-				getMove(snake, time.Duration(game.Timeout)*time.Millisecond, respChan)
+				getMove(snake, timeout, respChan)
 				wg.Done()
 			}(s)
 		}
@@ -38,9 +44,6 @@ func GatherSnakeMoves(game *pb.Game) <-chan SnakeUpdate {
 
 // GetMove queries the snake url and returns the resp on the channel
 func getMove(snake *pb.Snake, timeout time.Duration, resp chan<- SnakeUpdate) {
-	var netClient = &http.Client{
-		Timeout: timeout,
-	}
 
 	response, err := netClient.Get(snake.URL)
 	if err != nil {

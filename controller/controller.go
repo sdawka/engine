@@ -105,13 +105,20 @@ func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	}, nil
 }
 
-// Update updates the same state in the data store
-func (s *Server) Update(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
-	err := s.Store.PutGame(ctx, req.Game)
+// AddGameTick adds a new game tick to the game
+func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*pb.AddGameTickResponse, error) {
+	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.UpdateResponse{}, nil
+	game.Ticks = append(game.Ticks, req.GameTick)
+	err = s.Store.PutGame(ctx, game)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AddGameTickResponse{
+		Game: game,
+	}, nil
 }
 
 // Serve will intantiate a grpc server.
