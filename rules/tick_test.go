@@ -8,9 +8,7 @@ import (
 )
 
 func TestUpdateFood(t *testing.T) {
-	updated := updateFood(&pb.Game{
-		Width:  20,
-		Height: 20,
+	updated := updateFood(20, 20, &pb.GameTick{
 		Food: []*pb.Point{
 			{X: 1, Y: 1},
 			{X: 1, Y: 2},
@@ -31,12 +29,13 @@ func TestUpdateFood(t *testing.T) {
 
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
 	game := &pb.Game{
-		Width:  20,
-		Height: 20,
-		Turn:   5,
+		Ticks: []*pb.GameTick{
+			&pb.GameTick{Turn: 5},
+		},
 	}
-	GameTick(game)
-	require.Equal(t, int64(6), game.Turn)
+	gt, err := GameTick(game)
+	require.NoError(t, err)
+	require.Equal(t, int64(6), gt.Turn)
 }
 
 func TestGameTickUpdatesSnake(t *testing.T) {
@@ -51,16 +50,24 @@ func TestGameTickUpdatesSnake(t *testing.T) {
 	game := &pb.Game{
 		Width:  20,
 		Height: 20,
-		Turn:   5,
-		Snakes: []*pb.Snake{
-			snake,
+		Ticks: []*pb.GameTick{
+			&pb.GameTick{
+				Turn: 5,
+				Snakes: []*pb.Snake{
+					snake,
+				},
+			},
 		},
 	}
-	GameTick(game)
+	gt, err := GameTick(game)
+	require.NoError(t, err)
+	require.Len(t, gt.Snakes, 1)
+	snake = gt.Snakes[0]
 	require.Equal(t, int64(66), snake.Health)
-	require.Len(t, snake.Body, 2)
-	require.True(t, snake.Body[0].Equals(&pb.Point{X: 1, Y: 1}))
-	require.True(t, snake.Body[1].Equals(&pb.Point{X: 1, Y: 2}))
+	require.Len(t, snake.Body, 3)
+	require.Equal(t, &pb.Point{X: 1, Y: 0}, snake.Body[0])
+	require.Equal(t, &pb.Point{X: 1, Y: 1}, snake.Body[1])
+	require.Equal(t, &pb.Point{X: 1, Y: 2}, snake.Body[2])
 }
 
 func TestGameTickSnakeEats(t *testing.T) {
@@ -75,15 +82,22 @@ func TestGameTickSnakeEats(t *testing.T) {
 	game := &pb.Game{
 		Width:  20,
 		Height: 20,
-		Turn:   5,
-		Snakes: []*pb.Snake{
-			snake,
-		},
-		Food: []*pb.Point{
-			{X: 1, Y: 1},
+		Ticks: []*pb.GameTick{
+			&pb.GameTick{
+				Turn: 5,
+				Snakes: []*pb.Snake{
+					snake,
+				},
+				Food: []*pb.Point{
+					{X: 1, Y: 0},
+				},
+			},
 		},
 	}
-	GameTick(game)
+	gt, err := GameTick(game)
+	require.NoError(t, err)
+	require.Len(t, gt.Snakes, 1)
+	snake = gt.Snakes[0]
 	require.Equal(t, int64(100), snake.Health)
-	require.Len(t, snake.Body, 3)
+	require.Len(t, snake.Body, 4)
 }

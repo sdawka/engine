@@ -1,6 +1,13 @@
 syntax = "proto3";
 package pb;
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.testgen_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.equal_all) = true;
+option go_package = "pb";
+
 service Controller {
   // Lock should lock a specific game using the passed in ID. No writes to the
   // game should happen as long as the lock is valid. The game being locked does

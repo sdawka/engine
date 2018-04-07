@@ -1,7 +1,7 @@
 package rules
 
 import (
-	"fmt"
+	"bytes"
 	"net/http"
 	"testing"
 	"time"
@@ -23,12 +23,24 @@ func (c mockHTTPClient) Get(url string) (*http.Response, error) {
 	return c.resp, nil
 }
 
+type readCloser struct {
+	*bytes.Buffer
+}
+
+func (readCloser) Close() error {
+	return nil
+}
+
 func TestGatherSnakeMoves(t *testing.T) {
+	body := readCloser{Buffer: &bytes.Buffer{}}
+	body.WriteString("{\"move\":\"up\"}")
 	mock := mockHTTPClient{
-		resp: &http.Response{},
+		resp: &http.Response{
+			Body: body,
+		},
 	}
 	netClient = mock
-	updates := GatherSnakeMoves(&pb.Game{
+	updates := GatherSnakeMoves(1*time.Second, &pb.GameTick{
 		Snakes: []*pb.Snake{
 			&pb.Snake{
 				URL: "http://not.a.snake.com",
@@ -37,9 +49,25 @@ func TestGatherSnakeMoves(t *testing.T) {
 	})
 	select {
 	case update := <-updates:
-		// do something
-		fmt.Println(update)
+		require.Equal(t, "up", update.Move)
 	case <-time.After(250 * time.Millisecond):
 		require.Fail(t, "No update received over updates channel")
+	}
+}
+
+func TestIsValidURL(t *testing.T) {
+	tests := []struct {
+		URL      string
+		Expected bool
+	}{
+		{URL: "", Expected: false},
+		{URL: "aksdjflaskjd", Expected: false},
+		{URL: "http://127.0.0.1:8001", Expected: true},
+		{URL: "https://snake.battlesnake.io/something/something", Expected: true},
+	}
+
+	for _, test := range tests {
+		actual := isValidURL(test.URL)
+		require.Equal(t, test.Expected, actual, "URL: %s", test.URL)
 	}
 }

@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
@@ -8,19 +9,28 @@ import (
 )
 
 // GameTick runs the game one tick and updates the state
-func GameTick(game *pb.Game) *pb.GameTick {
+func GameTick(game *pb.Game) (*pb.GameTick, error) {
 
-	lastMove := game.Ticks[len(game.Ticks)-1]
-	nextMove := &pb.GameTick{}
-	moves := GatherSnakeMoves(time.Duration(game.SnakeTimeout)*time.Millisecond, lastMove)
+	if len(game.Ticks) == 0 {
+		return nil, errors.New("invalid game tick, current ticks is empty")
+	}
+
+	lastTick := game.Ticks[len(game.Ticks)-1]
+	nextTick := &pb.GameTick{
+		Turn:   lastTick.Turn + 1,
+		Snakes: lastTick.Snakes,
+		Food:   lastTick.Food,
+	}
+	moves := GatherSnakeMoves(time.Duration(game.SnakeTimeout)*time.Millisecond, lastTick)
 
 	// we have all the snake moves now
 	// 1. update snake coords
 	for update := range moves {
 		if update.Err != nil {
 			update.Snake.DefaultMove()
+		} else {
+			update.Snake.Move(update.Move)
 		}
-		update.Snake.Move(update.Move)
 	}
 	// 2. check for death
 	// 	  a - starvation
@@ -33,14 +43,14 @@ func GameTick(game *pb.Game) *pb.GameTick {
 	//    c - grow snakes
 	//    d - remove eaten food
 	//    e - replace eaten food
-	for _, s := range lastMove.Snakes {
+	for _, s := range nextTick.Snakes {
 		s.Health = s.Health - 1
 	}
 
 	foodToRemove := []*pb.Point{}
-	for _, snake := range lastMove.Snakes { // TODO: This should only be alive snakes
+	for _, snake := range nextTick.Snakes { // TODO: This should only be alive snakes
 		ate := false
-		for _, foodPos := range lastMove.Food {
+		for _, foodPos := range nextTick.Food {
 			if snake.Head().Equals(foodPos) {
 				snake.Health = 100
 				ate = true
@@ -52,8 +62,8 @@ func GameTick(game *pb.Game) *pb.GameTick {
 		}
 	}
 
-	lastMove.Food = updateFood(game.Width, game.Height, lastMove, foodToRemove)
-	return nextMove
+	nextTick.Food = updateFood(game.Width, game.Height, lastTick, foodToRemove)
+	return nextTick, nil
 }
 
 func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.Point) []*pb.Point {

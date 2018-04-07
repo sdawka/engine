@@ -37,7 +37,10 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 
 		start := time.Now()
 
-		gt := rules.GameTick(resp.Game)
+		gt, err := rules.GameTick(resp.Game)
+		if err != nil {
+			return err
+		}
 
 		_, err = w.ControllerClient.AddGameTick(ctx, &pb.AddGameTickRequest{ID: resp.Game.ID, GameTick: gt})
 		if err != nil {

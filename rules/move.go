@@ -2,8 +2,10 @@ package rules
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
+	nu "net/url"
 	"sync"
 	"time"
 
@@ -24,13 +26,37 @@ type SnakeUpdate struct {
 	Err   error
 }
 
+func isValidURL(url string) bool {
+	if len(url) == 0 {
+		return false
+	}
+
+	parsed, err := nu.Parse(url)
+	if err != nil {
+		return false
+	}
+
+	if len(parsed.Scheme) == 0 {
+		return false
+	}
+
+	return true
+}
+
 // GatherSnakeMoves goes and queries each snake for the snake move
 func GatherSnakeMoves(timeout time.Duration, gameTick *pb.GameTick) <-chan SnakeUpdate {
 	respChan := make(chan SnakeUpdate, len(gameTick.Snakes))
 	go func() {
 		wg := sync.WaitGroup{}
-		wg.Add(len(gameTick.Snakes))
 		for _, s := range gameTick.Snakes {
+			if !isValidURL(s.URL) {
+				respChan <- SnakeUpdate{
+					Snake: s,
+					Err:   errors.New("invalid snake url"),
+				}
+				continue
+			}
+			wg.Add(1)
 			go func(snake *pb.Snake) {
 				getMove(snake, timeout, respChan)
 				wg.Done()
@@ -44,7 +70,6 @@ func GatherSnakeMoves(timeout time.Duration, gameTick *pb.GameTick) <-chan Snake
 
 // GetMove queries the snake url and returns the resp on the channel
 func getMove(snake *pb.Snake, timeout time.Duration, resp chan<- SnakeUpdate) {
-
 	response, err := netClient.Get(snake.URL)
 	if err != nil {
 		log.WithError(err).Errorf("error while querying %s for move", snake.ID)
@@ -53,7 +78,6 @@ func getMove(snake *pb.Snake, timeout time.Duration, resp chan<- SnakeUpdate) {
 			Err:   err,
 		}
 	}
-
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.WithError(err).Errorf("error while decoding response body for %s", snake.ID)
