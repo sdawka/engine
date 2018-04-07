@@ -48,7 +48,7 @@ func GatherSnakeMoves(timeout time.Duration, gameTick *pb.GameTick) <-chan Snake
 	respChan := make(chan SnakeUpdate, len(gameTick.Snakes))
 	go func() {
 		wg := sync.WaitGroup{}
-		for _, s := range gameTick.Snakes {
+		for _, s := range gameTick.AliveSnakes() {
 			if !isValidURL(s.URL) {
 				respChan <- SnakeUpdate{
 					Snake: s,

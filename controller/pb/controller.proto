@@ -95,4 +95,10 @@ message Snake {
   string URL = 3;
   repeated Point Body = 4;
   int64 Health = 5;
+  Death Death = 6;
+}
+
+message Death {
+  string Cause = 1;
+  int64 Turn = 2;
 }

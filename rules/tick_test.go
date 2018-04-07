@@ -24,7 +24,7 @@ func TestUpdateFood(t *testing.T) {
 		{X: 1, Y: 2},
 	})
 	require.Len(t, updated, 2)
-	require.False(t, updated[1].Equals(&pb.Point{X: 1, Y: 2}))
+	require.False(t, updated[1].Equal(&pb.Point{X: 1, Y: 2}))
 }
 
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
@@ -100,4 +100,43 @@ func TestGameTickSnakeEats(t *testing.T) {
 	snake = gt.Snakes[0]
 	require.Equal(t, int64(100), snake.Health)
 	require.Len(t, snake.Body, 4)
+}
+
+func TestGameTickDeadSnakeDoNotUpdate(t *testing.T) {
+	snake := &pb.Snake{
+		Health: 87,
+		Body: []*pb.Point{
+			{X: 1, Y: 1},
+			{X: 1, Y: 2},
+			{X: 1, Y: 3},
+		},
+		Death: &pb.Death{
+			Turn:  4,
+			Cause: DeathCauseSnakeCollision,
+		},
+	}
+	game := &pb.Game{
+		Width:  20,
+		Height: 20,
+		Ticks: []*pb.GameTick{
+			&pb.GameTick{
+				Turn: 5,
+				Snakes: []*pb.Snake{
+					snake,
+				},
+				Food: []*pb.Point{
+					{X: 1, Y: 0},
+				},
+			},
+		},
+	}
+	gt, err := GameTick(game)
+	require.NoError(t, err)
+	require.Len(t, gt.Snakes, 1)
+	snake = gt.Snakes[0]
+	require.Equal(t, int64(87), snake.Health)
+	require.Len(t, snake.Body, 3)
+	require.Equal(t, &pb.Point{X: 1, Y: 1}, snake.Body[0])
+	require.Equal(t, &pb.Point{X: 1, Y: 2}, snake.Body[1])
+	require.Equal(t, &pb.Point{X: 1, Y: 3}, snake.Body[2])
 }

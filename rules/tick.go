@@ -36,22 +36,28 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 	// 	  a - starvation
 	//    b - wall collision
 	//    c - snake collision
-	CheckForDeath(game)
+	deathUpdates := checkForDeath(game.Width, game.Height, nextTick)
+	for _, du := range deathUpdates {
+		if du.Snake.Death == nil {
+			du.Snake.Death = du.Death
+		}
+	}
 	// 3. game update
-	//    a - turn incr
+	//    a - turn incr -- done above when the next tick is created
 	//    b - reduce health points
-	//    c - grow snakes
-	//    d - remove eaten food
-	//    e - replace eaten food
-	for _, s := range nextTick.Snakes {
+	//    c - grow snakes, and update snake health if they ate
+	//    d - shrink snakes that didn't et
+	//    e - remove eaten food
+	//    f - replace eaten food
+	for _, s := range nextTick.AliveSnakes() {
 		s.Health = s.Health - 1
 	}
 
 	foodToRemove := []*pb.Point{}
-	for _, snake := range nextTick.Snakes { // TODO: This should only be alive snakes
+	for _, snake := range nextTick.AliveSnakes() {
 		ate := false
 		for _, foodPos := range nextTick.Food {
-			if snake.Head().Equals(foodPos) {
+			if snake.Head().Equal(foodPos) {
 				snake.Health = 100
 				ate = true
 				foodToRemove = append(foodToRemove, foodPos)
@@ -71,7 +77,7 @@ func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.P
 	for _, foodPos := range gameTick.Food {
 		found := false
 		for _, r := range foodToRemove {
-			if foodPos.Equals(r) {
+			if foodPos.Equal(r) {
 				found = true
 				break
 			}
@@ -95,14 +101,14 @@ func getUnoccupiedPoint(width, height int64, gameTick *pb.GameTick) *pb.Point {
 		y := rand.Int63n(height)
 		p := &pb.Point{X: x, Y: y}
 		for _, f := range gameTick.Food {
-			if f.Equals(p) {
+			if f.Equal(p) {
 				continue
 			}
 		}
 
-		for _, s := range gameTick.Snakes { // TODO: this should only be alive snakes
+		for _, s := range gameTick.AliveSnakes() {
 			for _, b := range s.Body {
-				if b.Equals(p) {
+				if b.Equal(p) {
 					continue
 				}
 			}
