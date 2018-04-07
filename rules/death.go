@@ -51,17 +51,6 @@ func checkForDeath(width, height int64, tick *pb.GameTick) []deathUpdate {
 						})
 						break
 					}
-
-					if len(s.Body) >= len(other.Body) {
-						updates = append(updates, deathUpdate{
-							Snake: other,
-							Death: &pb.Death{
-								Turn:  tick.Turn,
-								Cause: DeathCauseHeadToHeadCollision,
-							},
-						})
-						break
-					}
 				}
 
 				if s.Head().Equal(b) {
