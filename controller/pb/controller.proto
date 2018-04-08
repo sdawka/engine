@@ -1,6 +1,13 @@
 syntax = "proto3";
 package pb;
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.testgen_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.equal_all) = true;
+option go_package = "pb";
+
 service Controller {
   // Lock should lock a specific game using the passed in ID. No writes to the
   // game should happen as long as the lock is valid. The game being locked does
@@ -19,6 +26,10 @@ service Controller {
   rpc Start(StartRequest) returns (StartResponse);
   // Create creates a new game, but doesn't start running frames
   rpc Create(CreateRequest) returns (CreateResponse);
+  // AddGameTick adds a new game tick to the game
+  rpc AddGameTick(AddGameTickRequest) returns (AddGameTickResponse);
+  // EndGame sets the game status to complete
+  rpc EndGame(EndGameRequest) returns (EndGameResponse);
 }
 
 message LockRequest  { string ID = 1; }
@@ -30,10 +41,7 @@ message UnlockResponse {}
 message PopRequest  {}
 message PopResponse { string ID = 1; }
 
-message Game { 
-  string ID = 1; 
-  string Status = 2;
-};
+
 message StatusRequest  { string ID = 1; }
 message StatusResponse { Game Game = 1; }
 
@@ -44,13 +52,59 @@ message CreateRequest  {
   int64 Width = 1;
   int64 Height = 2;
   int64 Food = 3;
-  map<string, SnakeOptions> Snakes = 4;
+  repeated SnakeOptions Snakes = 4;
 }
 message CreateResponse {
   string ID = 1;
 }
 
+message AddGameTickRequest { 
+  string ID = 1;
+  GameTick GameTick = 2; 
+}
+message AddGameTickResponse { Game game = 1; }
+
+message EndGameRequest  { string ID = 1; }
+message EndGameResponse {}
+
 message SnakeOptions {
   string Name = 1;
   string URL = 2;
+  string ID = 3;
+}
+
+message Game { 
+  string ID = 1; 
+  string Status = 2;
+  int64 Width = 3;
+  int64 Height = 4;
+  repeated GameTick Ticks = 5;
+  int64 SnakeTimeout = 6; // number of milliseconds for snake api calls
+  int64 TurnTimeout = 7; // number of milliseconds for turn delay
+  string Mode = 8;
+};
+
+message GameTick {
+  int64 Turn = 1;
+  repeated Point Food = 2;
+  repeated Snake Snakes = 3;
+}
+
+message Point {
+  int64 X = 1;
+  int64 Y = 2;
+}
+
+message Snake {
+  string ID = 1;
+  string Name = 2;
+  string URL = 3;
+  repeated Point Body = 4;
+  int64 Health = 5;
+  Death Death = 6;
+}
+
+message Death {
+  string Cause = 1;
+  int64 Turn = 2;
 }

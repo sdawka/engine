@@ -14,20 +14,29 @@ It has these top-level messages:
 	UnlockResponse
 	PopRequest
 	PopResponse
-	Game
 	StatusRequest
 	StatusResponse
 	StartRequest
 	StartResponse
 	CreateRequest
 	CreateResponse
+	AddGameTickRequest
+	AddGameTickResponse
+	EndGameRequest
+	EndGameResponse
 	SnakeOptions
+	Game
+	GameTick
+	Point
+	Snake
+	Death
 */
 package pb
 
 import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
+import _ "github.com/gogo/protobuf/gogoproto"
 
 import context "golang.org/x/net/context"
 import grpc "google.golang.org/grpc"
@@ -123,30 +132,6 @@ func (m *PopResponse) GetID() string {
 	return ""
 }
 
-type Game struct {
-	ID     string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	Status string `protobuf:"bytes,2,opt,name=Status,proto3" json:"Status,omitempty"`
-}
-
-func (m *Game) Reset()                    { *m = Game{} }
-func (m *Game) String() string            { return proto.CompactTextString(m) }
-func (*Game) ProtoMessage()               {}
-func (*Game) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{6} }
-
-func (m *Game) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-func (m *Game) GetStatus() string {
-	if m != nil {
-		return m.Status
-	}
-	return ""
-}
-
 type StatusRequest struct {
 	ID string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 }
@@ -154,7 +139,7 @@ type StatusRequest struct {
 func (m *StatusRequest) Reset()                    { *m = StatusRequest{} }
 func (m *StatusRequest) String() string            { return proto.CompactTextString(m) }
 func (*StatusRequest) ProtoMessage()               {}
-func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
+func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{6} }
 
 func (m *StatusRequest) GetID() string {
 	if m != nil {
@@ -170,7 +155,7 @@ type StatusResponse struct {
 func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
 func (m *StatusResponse) String() string            { return proto.CompactTextString(m) }
 func (*StatusResponse) ProtoMessage()               {}
-func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
+func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
 
 func (m *StatusResponse) GetGame() *Game {
 	if m != nil {
@@ -186,7 +171,7 @@ type StartRequest struct {
 func (m *StartRequest) Reset()                    { *m = StartRequest{} }
 func (m *StartRequest) String() string            { return proto.CompactTextString(m) }
 func (*StartRequest) ProtoMessage()               {}
-func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
+func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
 
 func (m *StartRequest) GetID() string {
 	if m != nil {
@@ -201,19 +186,19 @@ type StartResponse struct {
 func (m *StartResponse) Reset()                    { *m = StartResponse{} }
 func (m *StartResponse) String() string            { return proto.CompactTextString(m) }
 func (*StartResponse) ProtoMessage()               {}
-func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
+func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
 
 type CreateRequest struct {
-	Width  int64                    `protobuf:"varint,1,opt,name=Width,proto3" json:"Width,omitempty"`
-	Height int64                    `protobuf:"varint,2,opt,name=Height,proto3" json:"Height,omitempty"`
-	Food   int64                    `protobuf:"varint,3,opt,name=Food,proto3" json:"Food,omitempty"`
-	Snakes map[string]*SnakeOptions `protobuf:"bytes,4,rep,name=Snakes" json:"Snakes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value"`
+	Width  int64           `protobuf:"varint,1,opt,name=Width,proto3" json:"Width,omitempty"`
+	Height int64           `protobuf:"varint,2,opt,name=Height,proto3" json:"Height,omitempty"`
+	Food   int64           `protobuf:"varint,3,opt,name=Food,proto3" json:"Food,omitempty"`
+	Snakes []*SnakeOptions `protobuf:"bytes,4,rep,name=Snakes" json:"Snakes,omitempty"`
 }
 
 func (m *CreateRequest) Reset()                    { *m = CreateRequest{} }
 func (m *CreateRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()               {}
-func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
+func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
 
 func (m *CreateRequest) GetWidth() int64 {
 	if m != nil {
@@ -236,7 +221,7 @@ func (m *CreateRequest) GetFood() int64 {
 	return 0
 }
 
-func (m *CreateRequest) GetSnakes() map[string]*SnakeOptions {
+func (m *CreateRequest) GetSnakes() []*SnakeOptions {
 	if m != nil {
 		return m.Snakes
 	}
@@ -250,7 +235,7 @@ type CreateResponse struct {
 func (m *CreateResponse) Reset()                    { *m = CreateResponse{} }
 func (m *CreateResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateResponse) ProtoMessage()               {}
-func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
+func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
 
 func (m *CreateResponse) GetID() string {
 	if m != nil {
@@ -259,15 +244,80 @@ func (m *CreateResponse) GetID() string {
 	return ""
 }
 
+type AddGameTickRequest struct {
+	ID       string    `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	GameTick *GameTick `protobuf:"bytes,2,opt,name=GameTick" json:"GameTick,omitempty"`
+}
+
+func (m *AddGameTickRequest) Reset()                    { *m = AddGameTickRequest{} }
+func (m *AddGameTickRequest) String() string            { return proto.CompactTextString(m) }
+func (*AddGameTickRequest) ProtoMessage()               {}
+func (*AddGameTickRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
+
+func (m *AddGameTickRequest) GetID() string {
+	if m != nil {
+		return m.ID
+	}
+	return ""
+}
+
+func (m *AddGameTickRequest) GetGameTick() *GameTick {
+	if m != nil {
+		return m.GameTick
+	}
+	return nil
+}
+
+type AddGameTickResponse struct {
+	Game *Game `protobuf:"bytes,1,opt,name=game" json:"game,omitempty"`
+}
+
+func (m *AddGameTickResponse) Reset()                    { *m = AddGameTickResponse{} }
+func (m *AddGameTickResponse) String() string            { return proto.CompactTextString(m) }
+func (*AddGameTickResponse) ProtoMessage()               {}
+func (*AddGameTickResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
+
+func (m *AddGameTickResponse) GetGame() *Game {
+	if m != nil {
+		return m.Game
+	}
+	return nil
+}
+
+type EndGameRequest struct {
+	ID string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+}
+
+func (m *EndGameRequest) Reset()                    { *m = EndGameRequest{} }
+func (m *EndGameRequest) String() string            { return proto.CompactTextString(m) }
+func (*EndGameRequest) ProtoMessage()               {}
+func (*EndGameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{14} }
+
+func (m *EndGameRequest) GetID() string {
+	if m != nil {
+		return m.ID
+	}
+	return ""
+}
+
+type EndGameResponse struct {
+}
+
+func (m *EndGameResponse) Reset()                    { *m = EndGameResponse{} }
+func (m *EndGameResponse) String() string            { return proto.CompactTextString(m) }
+func (*EndGameResponse) ProtoMessage()               {}
+func (*EndGameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{15} }
+
 type SnakeOptions struct {
 	Name string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
 	URL  string `protobuf:"bytes,2,opt,name=URL,proto3" json:"URL,omitempty"`
+	ID   string `protobuf:"bytes,3,opt,name=ID,proto3" json:"ID,omitempty"`
 }
 
 func (m *SnakeOptions) Reset()                    { *m = SnakeOptions{} }
 func (m *SnakeOptions) String() string            { return proto.CompactTextString(m) }
 func (*SnakeOptions) ProtoMessage()               {}
-func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
+func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
 
 func (m *SnakeOptions) GetName() string {
 	if m != nil {
@@ -283,6 +333,221 @@ func (m *SnakeOptions) GetURL() string {
 	return ""
 }
 
+func (m *SnakeOptions) GetID() string {
+	if m != nil {
+		return m.ID
+	}
+	return ""
+}
+
+type Game struct {
+	ID           string      `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Status       string      `protobuf:"bytes,2,opt,name=Status,proto3" json:"Status,omitempty"`
+	Width        int64       `protobuf:"varint,3,opt,name=Width,proto3" json:"Width,omitempty"`
+	Height       int64       `protobuf:"varint,4,opt,name=Height,proto3" json:"Height,omitempty"`
+	Ticks        []*GameTick `protobuf:"bytes,5,rep,name=Ticks" json:"Ticks,omitempty"`
+	SnakeTimeout int64       `protobuf:"varint,6,opt,name=SnakeTimeout,proto3" json:"SnakeTimeout,omitempty"`
+	TurnTimeout  int64       `protobuf:"varint,7,opt,name=TurnTimeout,proto3" json:"TurnTimeout,omitempty"`
+	Mode         string      `protobuf:"bytes,8,opt,name=Mode,proto3" json:"Mode,omitempty"`
+}
+
+func (m *Game) Reset()                    { *m = Game{} }
+func (m *Game) String() string            { return proto.CompactTextString(m) }
+func (*Game) ProtoMessage()               {}
+func (*Game) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{17} }
+
+func (m *Game) GetID() string {
+	if m != nil {
+		return m.ID
+	}
+	return ""
+}
+
+func (m *Game) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *Game) GetWidth() int64 {
+	if m != nil {
+		return m.Width
+	}
+	return 0
+}
+
+func (m *Game) GetHeight() int64 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+func (m *Game) GetTicks() []*GameTick {
+	if m != nil {
+		return m.Ticks
+	}
+	return nil
+}
+
+func (m *Game) GetSnakeTimeout() int64 {
+	if m != nil {
+		return m.SnakeTimeout
+	}
+	return 0
+}
+
+func (m *Game) GetTurnTimeout() int64 {
+	if m != nil {
+		return m.TurnTimeout
+	}
+	return 0
+}
+
+func (m *Game) GetMode() string {
+	if m != nil {
+		return m.Mode
+	}
+	return ""
+}
+
+type GameTick struct {
+	Turn   int64    `protobuf:"varint,1,opt,name=Turn,proto3" json:"Turn,omitempty"`
+	Food   []*Point `protobuf:"bytes,2,rep,name=Food" json:"Food,omitempty"`
+	Snakes []*Snake `protobuf:"bytes,3,rep,name=Snakes" json:"Snakes,omitempty"`
+}
+
+func (m *GameTick) Reset()                    { *m = GameTick{} }
+func (m *GameTick) String() string            { return proto.CompactTextString(m) }
+func (*GameTick) ProtoMessage()               {}
+func (*GameTick) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{18} }
+
+func (m *GameTick) GetTurn() int64 {
+	if m != nil {
+		return m.Turn
+	}
+	return 0
+}
+
+func (m *GameTick) GetFood() []*Point {
+	if m != nil {
+		return m.Food
+	}
+	return nil
+}
+
+func (m *GameTick) GetSnakes() []*Snake {
+	if m != nil {
+		return m.Snakes
+	}
+	return nil
+}
+
+type Point struct {
+	X int64 `protobuf:"varint,1,opt,name=X,proto3" json:"X,omitempty"`
+	Y int64 `protobuf:"varint,2,opt,name=Y,proto3" json:"Y,omitempty"`
+}
+
+func (m *Point) Reset()                    { *m = Point{} }
+func (m *Point) String() string            { return proto.CompactTextString(m) }
+func (*Point) ProtoMessage()               {}
+func (*Point) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{19} }
+
+func (m *Point) GetX() int64 {
+	if m != nil {
+		return m.X
+	}
+	return 0
+}
+
+func (m *Point) GetY() int64 {
+	if m != nil {
+		return m.Y
+	}
+	return 0
+}
+
+type Snake struct {
+	ID     string   `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Name   string   `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
+	URL    string   `protobuf:"bytes,3,opt,name=URL,proto3" json:"URL,omitempty"`
+	Body   []*Point `protobuf:"bytes,4,rep,name=Body" json:"Body,omitempty"`
+	Health int64    `protobuf:"varint,5,opt,name=Health,proto3" json:"Health,omitempty"`
+	Death  *Death   `protobuf:"bytes,6,opt,name=Death" json:"Death,omitempty"`
+}
+
+func (m *Snake) Reset()                    { *m = Snake{} }
+func (m *Snake) String() string            { return proto.CompactTextString(m) }
+func (*Snake) ProtoMessage()               {}
+func (*Snake) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{20} }
+
+func (m *Snake) GetID() string {
+	if m != nil {
+		return m.ID
+	}
+	return ""
+}
+
+func (m *Snake) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Snake) GetURL() string {
+	if m != nil {
+		return m.URL
+	}
+	return ""
+}
+
+func (m *Snake) GetBody() []*Point {
+	if m != nil {
+		return m.Body
+	}
+	return nil
+}
+
+func (m *Snake) GetHealth() int64 {
+	if m != nil {
+		return m.Health
+	}
+	return 0
+}
+
+func (m *Snake) GetDeath() *Death {
+	if m != nil {
+		return m.Death
+	}
+	return nil
+}
+
+type Death struct {
+	Cause string `protobuf:"bytes,1,opt,name=Cause,proto3" json:"Cause,omitempty"`
+	Turn  int64  `protobuf:"varint,2,opt,name=Turn,proto3" json:"Turn,omitempty"`
+}
+
+func (m *Death) Reset()                    { *m = Death{} }
+func (m *Death) String() string            { return proto.CompactTextString(m) }
+func (*Death) ProtoMessage()               {}
+func (*Death) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{21} }
+
+func (m *Death) GetCause() string {
+	if m != nil {
+		return m.Cause
+	}
+	return ""
+}
+
+func (m *Death) GetTurn() int64 {
+	if m != nil {
+		return m.Turn
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*LockRequest)(nil), "pb.LockRequest")
 	proto.RegisterType((*LockResponse)(nil), "pb.LockResponse")
@@ -290,14 +555,629 @@ func init() {
 	proto.RegisterType((*UnlockResponse)(nil), "pb.UnlockResponse")
 	proto.RegisterType((*PopRequest)(nil), "pb.PopRequest")
 	proto.RegisterType((*PopResponse)(nil), "pb.PopResponse")
-	proto.RegisterType((*Game)(nil), "pb.Game")
 	proto.RegisterType((*StatusRequest)(nil), "pb.StatusRequest")
 	proto.RegisterType((*StatusResponse)(nil), "pb.StatusResponse")
 	proto.RegisterType((*StartRequest)(nil), "pb.StartRequest")
 	proto.RegisterType((*StartResponse)(nil), "pb.StartResponse")
 	proto.RegisterType((*CreateRequest)(nil), "pb.CreateRequest")
 	proto.RegisterType((*CreateResponse)(nil), "pb.CreateResponse")
+	proto.RegisterType((*AddGameTickRequest)(nil), "pb.AddGameTickRequest")
+	proto.RegisterType((*AddGameTickResponse)(nil), "pb.AddGameTickResponse")
+	proto.RegisterType((*EndGameRequest)(nil), "pb.EndGameRequest")
+	proto.RegisterType((*EndGameResponse)(nil), "pb.EndGameResponse")
 	proto.RegisterType((*SnakeOptions)(nil), "pb.SnakeOptions")
+	proto.RegisterType((*Game)(nil), "pb.Game")
+	proto.RegisterType((*GameTick)(nil), "pb.GameTick")
+	proto.RegisterType((*Point)(nil), "pb.Point")
+	proto.RegisterType((*Snake)(nil), "pb.Snake")
+	proto.RegisterType((*Death)(nil), "pb.Death")
+}
+func (this *LockRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*LockRequest)
+	if !ok {
+		that2, ok := that.(LockRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *LockResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*LockResponse)
+	if !ok {
+		that2, ok := that.(LockResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Token != that1.Token {
+		return false
+	}
+	return true
+}
+func (this *UnlockRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*UnlockRequest)
+	if !ok {
+		that2, ok := that.(UnlockRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *UnlockResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*UnlockResponse)
+	if !ok {
+		that2, ok := that.(UnlockResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
+func (this *PopRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PopRequest)
+	if !ok {
+		that2, ok := that.(PopRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
+func (this *PopResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PopResponse)
+	if !ok {
+		that2, ok := that.(PopResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *StatusRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StatusRequest)
+	if !ok {
+		that2, ok := that.(StatusRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *StatusResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StatusResponse)
+	if !ok {
+		that2, ok := that.(StatusResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Game.Equal(that1.Game) {
+		return false
+	}
+	return true
+}
+func (this *StartRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StartRequest)
+	if !ok {
+		that2, ok := that.(StartRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *StartResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StartResponse)
+	if !ok {
+		that2, ok := that.(StartResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
+func (this *CreateRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*CreateRequest)
+	if !ok {
+		that2, ok := that.(CreateRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Width != that1.Width {
+		return false
+	}
+	if this.Height != that1.Height {
+		return false
+	}
+	if this.Food != that1.Food {
+		return false
+	}
+	if len(this.Snakes) != len(that1.Snakes) {
+		return false
+	}
+	for i := range this.Snakes {
+		if !this.Snakes[i].Equal(that1.Snakes[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *CreateResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*CreateResponse)
+	if !ok {
+		that2, ok := that.(CreateResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *AddGameTickRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AddGameTickRequest)
+	if !ok {
+		that2, ok := that.(AddGameTickRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	if !this.GameTick.Equal(that1.GameTick) {
+		return false
+	}
+	return true
+}
+func (this *AddGameTickResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AddGameTickResponse)
+	if !ok {
+		that2, ok := that.(AddGameTickResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Game.Equal(that1.Game) {
+		return false
+	}
+	return true
+}
+func (this *EndGameRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*EndGameRequest)
+	if !ok {
+		that2, ok := that.(EndGameRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *EndGameResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*EndGameResponse)
+	if !ok {
+		that2, ok := that.(EndGameResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
+func (this *SnakeOptions) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SnakeOptions)
+	if !ok {
+		that2, ok := that.(SnakeOptions)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.URL != that1.URL {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	return true
+}
+func (this *Game) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Game)
+	if !ok {
+		that2, ok := that.(Game)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	if this.Status != that1.Status {
+		return false
+	}
+	if this.Width != that1.Width {
+		return false
+	}
+	if this.Height != that1.Height {
+		return false
+	}
+	if len(this.Ticks) != len(that1.Ticks) {
+		return false
+	}
+	for i := range this.Ticks {
+		if !this.Ticks[i].Equal(that1.Ticks[i]) {
+			return false
+		}
+	}
+	if this.SnakeTimeout != that1.SnakeTimeout {
+		return false
+	}
+	if this.TurnTimeout != that1.TurnTimeout {
+		return false
+	}
+	if this.Mode != that1.Mode {
+		return false
+	}
+	return true
+}
+func (this *GameTick) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*GameTick)
+	if !ok {
+		that2, ok := that.(GameTick)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Turn != that1.Turn {
+		return false
+	}
+	if len(this.Food) != len(that1.Food) {
+		return false
+	}
+	for i := range this.Food {
+		if !this.Food[i].Equal(that1.Food[i]) {
+			return false
+		}
+	}
+	if len(this.Snakes) != len(that1.Snakes) {
+		return false
+	}
+	for i := range this.Snakes {
+		if !this.Snakes[i].Equal(that1.Snakes[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *Point) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Point)
+	if !ok {
+		that2, ok := that.(Point)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.X != that1.X {
+		return false
+	}
+	if this.Y != that1.Y {
+		return false
+	}
+	return true
+}
+func (this *Snake) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Snake)
+	if !ok {
+		that2, ok := that.(Snake)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ID != that1.ID {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.URL != that1.URL {
+		return false
+	}
+	if len(this.Body) != len(that1.Body) {
+		return false
+	}
+	for i := range this.Body {
+		if !this.Body[i].Equal(that1.Body[i]) {
+			return false
+		}
+	}
+	if this.Health != that1.Health {
+		return false
+	}
+	if !this.Death.Equal(that1.Death) {
+		return false
+	}
+	return true
+}
+func (this *Death) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Death)
+	if !ok {
+		that2, ok := that.(Death)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Cause != that1.Cause {
+		return false
+	}
+	if this.Turn != that1.Turn {
+		return false
+	}
+	return true
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -328,6 +1208,10 @@ type ControllerClient interface {
 	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (*StartResponse, error)
 	// Create creates a new game, but doesn't start running frames
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	// AddGameTick adds a new game tick to the game
+	AddGameTick(ctx context.Context, in *AddGameTickRequest, opts ...grpc.CallOption) (*AddGameTickResponse, error)
+	// EndGame sets the game status to complete
+	EndGame(ctx context.Context, in *EndGameRequest, opts ...grpc.CallOption) (*EndGameResponse, error)
 }
 
 type controllerClient struct {
@@ -392,6 +1276,24 @@ func (c *controllerClient) Create(ctx context.Context, in *CreateRequest, opts .
 	return out, nil
 }
 
+func (c *controllerClient) AddGameTick(ctx context.Context, in *AddGameTickRequest, opts ...grpc.CallOption) (*AddGameTickResponse, error) {
+	out := new(AddGameTickResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/AddGameTick", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *controllerClient) EndGame(ctx context.Context, in *EndGameRequest, opts ...grpc.CallOption) (*EndGameResponse, error) {
+	out := new(EndGameResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/EndGame", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Controller service
 
 type ControllerServer interface {
@@ -412,6 +1314,10 @@ type ControllerServer interface {
 	Start(context.Context, *StartRequest) (*StartResponse, error)
 	// Create creates a new game, but doesn't start running frames
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	// AddGameTick adds a new game tick to the game
+	AddGameTick(context.Context, *AddGameTickRequest) (*AddGameTickResponse, error)
+	// EndGame sets the game status to complete
+	EndGame(context.Context, *EndGameRequest) (*EndGameResponse, error)
 }
 
 func RegisterControllerServer(s *grpc.Server, srv ControllerServer) {
@@ -526,6 +1432,42 @@ func _Controller_Create_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Controller_AddGameTick_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddGameTickRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ControllerServer).AddGameTick(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Controller/AddGameTick",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ControllerServer).AddGameTick(ctx, req.(*AddGameTickRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Controller_EndGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EndGameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ControllerServer).EndGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Controller/EndGame",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ControllerServer).EndGame(ctx, req.(*EndGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Controller_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Controller",
 	HandlerType: (*ControllerServer)(nil),
@@ -554,42 +1496,409 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Create",
 			Handler:    _Controller_Create_Handler,
 		},
+		{
+			MethodName: "AddGameTick",
+			Handler:    _Controller_AddGameTick_Handler,
+		},
+		{
+			MethodName: "EndGame",
+			Handler:    _Controller_EndGame_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "controller.proto",
 }
 
+func NewPopulatedLockRequest(r randyController, easy bool) *LockRequest {
+	this := &LockRequest{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedLockResponse(r randyController, easy bool) *LockResponse {
+	this := &LockResponse{}
+	this.Token = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedUnlockRequest(r randyController, easy bool) *UnlockRequest {
+	this := &UnlockRequest{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedUnlockResponse(r randyController, easy bool) *UnlockResponse {
+	this := &UnlockResponse{}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedPopRequest(r randyController, easy bool) *PopRequest {
+	this := &PopRequest{}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedPopResponse(r randyController, easy bool) *PopResponse {
+	this := &PopResponse{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedStatusRequest(r randyController, easy bool) *StatusRequest {
+	this := &StatusRequest{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedStatusResponse(r randyController, easy bool) *StatusResponse {
+	this := &StatusResponse{}
+	if r.Intn(10) != 0 {
+		this.Game = NewPopulatedGame(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedStartRequest(r randyController, easy bool) *StartRequest {
+	this := &StartRequest{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedStartResponse(r randyController, easy bool) *StartResponse {
+	this := &StartResponse{}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedCreateRequest(r randyController, easy bool) *CreateRequest {
+	this := &CreateRequest{}
+	this.Width = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Width *= -1
+	}
+	this.Height = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Height *= -1
+	}
+	this.Food = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Food *= -1
+	}
+	if r.Intn(10) != 0 {
+		v1 := r.Intn(5)
+		this.Snakes = make([]*SnakeOptions, v1)
+		for i := 0; i < v1; i++ {
+			this.Snakes[i] = NewPopulatedSnakeOptions(r, easy)
+		}
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedCreateResponse(r randyController, easy bool) *CreateResponse {
+	this := &CreateResponse{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedAddGameTickRequest(r randyController, easy bool) *AddGameTickRequest {
+	this := &AddGameTickRequest{}
+	this.ID = string(randStringController(r))
+	if r.Intn(10) != 0 {
+		this.GameTick = NewPopulatedGameTick(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedAddGameTickResponse(r randyController, easy bool) *AddGameTickResponse {
+	this := &AddGameTickResponse{}
+	if r.Intn(10) != 0 {
+		this.Game = NewPopulatedGame(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedEndGameRequest(r randyController, easy bool) *EndGameRequest {
+	this := &EndGameRequest{}
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedEndGameResponse(r randyController, easy bool) *EndGameResponse {
+	this := &EndGameResponse{}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedSnakeOptions(r randyController, easy bool) *SnakeOptions {
+	this := &SnakeOptions{}
+	this.Name = string(randStringController(r))
+	this.URL = string(randStringController(r))
+	this.ID = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedGame(r randyController, easy bool) *Game {
+	this := &Game{}
+	this.ID = string(randStringController(r))
+	this.Status = string(randStringController(r))
+	this.Width = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Width *= -1
+	}
+	this.Height = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Height *= -1
+	}
+	if r.Intn(10) != 0 {
+		v2 := r.Intn(5)
+		this.Ticks = make([]*GameTick, v2)
+		for i := 0; i < v2; i++ {
+			this.Ticks[i] = NewPopulatedGameTick(r, easy)
+		}
+	}
+	this.SnakeTimeout = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.SnakeTimeout *= -1
+	}
+	this.TurnTimeout = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.TurnTimeout *= -1
+	}
+	this.Mode = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedGameTick(r randyController, easy bool) *GameTick {
+	this := &GameTick{}
+	this.Turn = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Turn *= -1
+	}
+	if r.Intn(10) != 0 {
+		v3 := r.Intn(5)
+		this.Food = make([]*Point, v3)
+		for i := 0; i < v3; i++ {
+			this.Food[i] = NewPopulatedPoint(r, easy)
+		}
+	}
+	if r.Intn(10) != 0 {
+		v4 := r.Intn(5)
+		this.Snakes = make([]*Snake, v4)
+		for i := 0; i < v4; i++ {
+			this.Snakes[i] = NewPopulatedSnake(r, easy)
+		}
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedPoint(r randyController, easy bool) *Point {
+	this := &Point{}
+	this.X = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.X *= -1
+	}
+	this.Y = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Y *= -1
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedSnake(r randyController, easy bool) *Snake {
+	this := &Snake{}
+	this.ID = string(randStringController(r))
+	this.Name = string(randStringController(r))
+	this.URL = string(randStringController(r))
+	if r.Intn(10) != 0 {
+		v5 := r.Intn(5)
+		this.Body = make([]*Point, v5)
+		for i := 0; i < v5; i++ {
+			this.Body[i] = NewPopulatedPoint(r, easy)
+		}
+	}
+	this.Health = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Health *= -1
+	}
+	if r.Intn(10) != 0 {
+		this.Death = NewPopulatedDeath(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedDeath(r randyController, easy bool) *Death {
+	this := &Death{}
+	this.Cause = string(randStringController(r))
+	this.Turn = int64(r.Int63())
+	if r.Intn(2) == 0 {
+		this.Turn *= -1
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+type randyController interface {
+	Float32() float32
+	Float64() float64
+	Int63() int64
+	Int31() int32
+	Uint32() uint32
+	Intn(n int) int
+}
+
+func randUTF8RuneController(r randyController) rune {
+	ru := r.Intn(62)
+	if ru < 10 {
+		return rune(ru + 48)
+	} else if ru < 36 {
+		return rune(ru + 55)
+	}
+	return rune(ru + 61)
+}
+func randStringController(r randyController) string {
+	v6 := r.Intn(100)
+	tmps := make([]rune, v6)
+	for i := 0; i < v6; i++ {
+		tmps[i] = randUTF8RuneController(r)
+	}
+	return string(tmps)
+}
+func randUnrecognizedController(r randyController, maxFieldNumber int) (dAtA []byte) {
+	l := r.Intn(5)
+	for i := 0; i < l; i++ {
+		wire := r.Intn(4)
+		if wire == 3 {
+			wire = 5
+		}
+		fieldNumber := maxFieldNumber + r.Intn(100)
+		dAtA = randFieldController(dAtA, r, fieldNumber, wire)
+	}
+	return dAtA
+}
+func randFieldController(dAtA []byte, r randyController, fieldNumber int, wire int) []byte {
+	key := uint32(fieldNumber)<<3 | uint32(wire)
+	switch wire {
+	case 0:
+		dAtA = encodeVarintPopulateController(dAtA, uint64(key))
+		v7 := r.Int63()
+		if r.Intn(2) == 0 {
+			v7 *= -1
+		}
+		dAtA = encodeVarintPopulateController(dAtA, uint64(v7))
+	case 1:
+		dAtA = encodeVarintPopulateController(dAtA, uint64(key))
+		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
+	case 2:
+		dAtA = encodeVarintPopulateController(dAtA, uint64(key))
+		ll := r.Intn(100)
+		dAtA = encodeVarintPopulateController(dAtA, uint64(ll))
+		for j := 0; j < ll; j++ {
+			dAtA = append(dAtA, byte(r.Intn(256)))
+		}
+	default:
+		dAtA = encodeVarintPopulateController(dAtA, uint64(key))
+		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
+	}
+	return dAtA
+}
+func encodeVarintPopulateController(dAtA []byte, v uint64) []byte {
+	for v >= 1<<7 {
+		dAtA = append(dAtA, uint8(uint64(v)&0x7f|0x80))
+		v >>= 7
+	}
+	dAtA = append(dAtA, uint8(v))
+	return dAtA
+}
+
 func init() { proto.RegisterFile("controller.proto", fileDescriptorController) }
 
 var fileDescriptorController = []byte{
-	// 452 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x53, 0xeb, 0x8a, 0xda, 0x40,
-	0x14, 0x26, 0x17, 0xa5, 0x9e, 0x68, 0x8c, 0x43, 0x29, 0x21, 0xd4, 0x56, 0x42, 0x91, 0x16, 0x4a,
-	0x0a, 0xb6, 0x85, 0xd2, 0xbf, 0xf6, 0x4a, 0xa5, 0x2d, 0xd3, 0xca, 0xfe, 0x8e, 0x3a, 0xac, 0x92,
-	0x6c, 0x26, 0x9b, 0x8c, 0x0b, 0xbe, 0xcd, 0xbe, 0xd4, 0xbe, 0xcf, 0xce, 0x2d, 0x26, 0x71, 0x71,
-	0xff, 0x9d, 0xeb, 0x77, 0xbe, 0x73, 0xe6, 0x1b, 0xf0, 0xd6, 0x34, 0x63, 0x05, 0x4d, 0x53, 0x52,
-	0x44, 0x79, 0x41, 0x19, 0x45, 0x66, 0xbe, 0x0a, 0xc7, 0xe0, 0x2c, 0xe8, 0x3a, 0xc1, 0xe4, 0x7a,
-	0x4f, 0x4a, 0x86, 0x5c, 0x30, 0x7f, 0x7e, 0xf1, 0x8d, 0x89, 0xf1, 0xba, 0x87, 0xb9, 0x15, 0xbe,
-	0x82, 0xbe, 0x4a, 0x97, 0x39, 0xcd, 0x4a, 0x82, 0x9e, 0x42, 0xe7, 0x3f, 0x4d, 0x48, 0xa6, 0x4b,
-	0x94, 0x13, 0xbe, 0x84, 0xc1, 0x32, 0x4b, 0x1f, 0x81, 0xf1, 0xc0, 0xad, 0x0a, 0x14, 0x50, 0xd8,
-	0x07, 0xf8, 0x4b, 0x73, 0x5d, 0x2f, 0x58, 0x48, 0x4f, 0x4f, 0x39, 0x6d, 0x8f, 0xc0, 0xfe, 0x1e,
-	0x5f, 0x3d, 0x88, 0xa3, 0x67, 0xd0, 0xfd, 0xc7, 0x62, 0xb6, 0x2f, 0x7d, 0x53, 0xc6, 0xb4, 0x27,
-	0xf8, 0x28, 0xeb, 0x1c, 0x9f, 0x08, 0xdc, 0xaa, 0x40, 0x8f, 0x7c, 0xae, 0x46, 0xc8, 0x1a, 0x67,
-	0xf6, 0x24, 0xca, 0x57, 0x91, 0xf0, 0xb1, 0x8c, 0x86, 0x2f, 0xa0, 0xcf, 0xeb, 0x0b, 0x76, 0x0e,
-	0x6f, 0x28, 0x07, 0x8a, 0xbc, 0x5e, 0xef, 0xce, 0x80, 0xc1, 0xbc, 0x20, 0x31, 0x23, 0x55, 0x0b,
-	0xbf, 0xdc, 0xc5, 0x6e, 0xc3, 0xb6, 0xb2, 0xcb, 0xc2, 0xca, 0x11, 0x1b, 0xfc, 0x20, 0xbb, 0xcb,
-	0x2d, 0x93, 0x1b, 0x58, 0x58, 0x7b, 0x08, 0x81, 0xfd, 0x8d, 0xd2, 0x8d, 0x6f, 0xc9, 0xa8, 0xb4,
-	0xd1, 0x47, 0xbe, 0x6d, 0x16, 0x27, 0xa4, 0xf4, 0xed, 0x89, 0xc5, 0x49, 0x8e, 0x05, 0xc9, 0xd6,
-	0x90, 0x48, 0xe5, 0xbf, 0xf2, 0x77, 0x3e, 0x60, 0x5d, 0x1c, 0xfc, 0x02, 0xa7, 0x11, 0x46, 0x1e,
-	0x58, 0x09, 0x39, 0x68, 0xee, 0xc2, 0x44, 0x53, 0xe8, 0xdc, 0xc4, 0xe9, 0x9e, 0x48, 0x0a, 0xce,
-	0xcc, 0x13, 0xb0, 0xb2, 0xe3, 0x4f, 0xce, 0x76, 0x7c, 0x1b, 0xac, 0xd2, 0x9f, 0xcd, 0x4f, 0x46,
-	0x38, 0x01, 0xb7, 0x9a, 0x78, 0xe6, 0xad, 0x3e, 0xf0, 0x53, 0x35, 0x9a, 0xc5, 0x26, 0xbf, 0xab,
-	0xc3, 0xf6, 0xb0, 0xb4, 0x05, 0x87, 0x25, 0x5e, 0xe8, 0x47, 0x13, 0xe6, 0xec, 0xd6, 0x04, 0x98,
-	0x1f, 0xf5, 0x89, 0xde, 0x80, 0x2d, 0x64, 0x87, 0x86, 0x82, 0x4b, 0x43, 0x9f, 0x81, 0x57, 0x07,
-	0xf4, 0xfc, 0x77, 0xd0, 0x55, 0xd2, 0x42, 0x23, 0x91, 0x6b, 0xe9, 0x30, 0x40, 0xcd, 0x90, 0x6e,
-	0x98, 0x82, 0xc5, 0xb5, 0x86, 0x5c, 0x91, 0xaa, 0x25, 0x18, 0x0c, 0x8f, 0x7e, 0x0d, 0xac, 0x34,
-	0xa2, 0x80, 0x5b, 0x82, 0x52, 0xc0, 0x27, 0x12, 0x7a, 0x0b, 0x1d, 0x29, 0x02, 0xe4, 0xe9, 0xe4,
-	0x51, 0x2f, 0xc1, 0xa8, 0x11, 0xa9, 0xe1, 0xd5, 0x25, 0x15, 0x7c, 0xeb, 0x1d, 0x15, 0x7c, 0xfb,
-	0xd0, 0xab, 0xae, 0xfc, 0xb4, 0xef, 0xef, 0x03, 0x00, 0x00, 0xff, 0xff, 0xc7, 0xfc, 0x08, 0x1c,
-	0xc8, 0x03, 0x00, 0x00,
+	// 741 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x55, 0xdb, 0x6e, 0xd3, 0x4c,
+	0x10, 0x96, 0xe3, 0x24, 0x6d, 0x26, 0x69, 0xe2, 0x6e, 0x7f, 0xf5, 0xb7, 0x2c, 0xda, 0x06, 0x83,
+	0x50, 0x91, 0x20, 0x15, 0xe9, 0x3d, 0x12, 0x6d, 0x39, 0x49, 0xa5, 0x54, 0x6e, 0x2a, 0x5a, 0xae,
+	0x48, 0x1a, 0x93, 0x58, 0x4d, 0xbd, 0x21, 0x5e, 0x5f, 0x20, 0x5e, 0x03, 0xde, 0x81, 0x47, 0xe0,
+	0x59, 0xb8, 0x83, 0xa7, 0xe0, 0x92, 0xdd, 0xd9, 0xf1, 0x29, 0x69, 0xb8, 0x88, 0xb4, 0x73, 0xfa,
+	0x76, 0xf6, 0x9b, 0xc9, 0x67, 0xb0, 0xae, 0x78, 0x28, 0x66, 0x7c, 0x32, 0xf1, 0x67, 0x9d, 0xe9,
+	0x8c, 0x0b, 0xce, 0x4a, 0xd3, 0x81, 0xf3, 0x78, 0x14, 0x88, 0x71, 0x3c, 0xe8, 0x5c, 0xf1, 0x9b,
+	0xbd, 0x11, 0x1f, 0xf1, 0x3d, 0x0c, 0x0d, 0xe2, 0x8f, 0x68, 0xa1, 0x81, 0x27, 0x5d, 0xe2, 0x6e,
+	0x41, 0xfd, 0x98, 0x5f, 0x5d, 0x7b, 0xfe, 0xa7, 0xd8, 0x8f, 0x04, 0x6b, 0x42, 0xe9, 0xf5, 0x91,
+	0x6d, 0xb4, 0x8d, 0xdd, 0x9a, 0x27, 0x4f, 0xee, 0x7d, 0x68, 0xe8, 0x70, 0x34, 0xe5, 0x61, 0xe4,
+	0xb3, 0xff, 0xa0, 0xd2, 0xe3, 0xd7, 0x7e, 0x48, 0x29, 0xda, 0x70, 0x77, 0x60, 0xed, 0x3c, 0x9c,
+	0xfc, 0x03, 0xc6, 0x82, 0x66, 0x92, 0xa0, 0x81, 0xdc, 0x06, 0xc0, 0x29, 0x9f, 0x52, 0xbe, 0xea,
+	0x02, 0x2d, 0xba, 0x65, 0xbe, 0x5c, 0xe2, 0x9f, 0x89, 0xbe, 0x88, 0xa3, 0x65, 0xf8, 0x1d, 0x68,
+	0x26, 0x09, 0x04, 0x71, 0x07, 0xca, 0x2f, 0xfb, 0x37, 0x3e, 0xe6, 0xd4, 0xbb, 0xab, 0x9d, 0xe9,
+	0xa0, 0xa3, 0x6c, 0x0f, 0xbd, 0xee, 0x36, 0x34, 0x64, 0xfe, 0x4c, 0x2c, 0xc3, 0x6b, 0xe1, 0x85,
+	0x2a, 0x4e, 0xed, 0x7e, 0x81, 0xb5, 0xc3, 0x99, 0xdf, 0x17, 0x7e, 0x52, 0x21, 0x89, 0x78, 0x17,
+	0x0c, 0xc5, 0x18, 0x8b, 0x4c, 0x4f, 0x1b, 0x6c, 0x13, 0xaa, 0xaf, 0xfc, 0x60, 0x34, 0x16, 0x76,
+	0x09, 0xdd, 0x64, 0x31, 0x06, 0xe5, 0x17, 0x9c, 0x0f, 0x6d, 0x13, 0xbd, 0x78, 0x66, 0xbb, 0x50,
+	0x3d, 0x0b, 0xfb, 0xd7, 0x7e, 0x64, 0x97, 0xdb, 0xa6, 0xec, 0xd1, 0x52, 0x3d, 0xa2, 0xe7, 0xed,
+	0x54, 0x04, 0xf2, 0x56, 0x8f, 0xe2, 0x6e, 0x1b, 0x9a, 0xc9, 0xe5, 0x4b, 0x08, 0x3a, 0x01, 0xf6,
+	0x6c, 0x38, 0x54, 0x4f, 0xeb, 0x05, 0x4b, 0xa7, 0x20, 0x6f, 0x5c, 0x4d, 0x52, 0xb0, 0xbf, 0x7a,
+	0xb7, 0x91, 0xf0, 0x82, 0x65, 0x69, 0xd4, 0xdd, 0x87, 0x8d, 0x02, 0x5e, 0x46, 0xea, 0xe8, 0x56,
+	0x52, 0x95, 0x57, 0xb5, 0xf9, 0x3c, 0xc4, 0xa2, 0x65, 0xb4, 0xae, 0x43, 0x2b, 0xcd, 0x20, 0x62,
+	0x8f, 0xe4, 0x24, 0x72, 0x6f, 0x56, 0x4c, 0x9d, 0x24, 0x57, 0xd4, 0x3c, 0x3c, 0x33, 0x0b, 0xcc,
+	0x73, 0xef, 0x18, 0x5b, 0xae, 0x79, 0xea, 0x48, 0xc0, 0x66, 0x0a, 0xfc, 0xd3, 0xd0, 0xe3, 0x5e,
+	0x78, 0xb2, 0x1c, 0x88, 0x5e, 0x0c, 0xaa, 0x26, 0x2b, 0x1b, 0x9f, 0x79, 0xfb, 0xf8, 0xca, 0x85,
+	0xf1, 0xb9, 0x72, 0xeb, 0x25, 0x0f, 0x91, 0x5d, 0xc1, 0x49, 0x15, 0x59, 0xd3, 0x21, 0x99, 0xa3,
+	0x1f, 0xd2, 0x0b, 0x6e, 0x7c, 0x1e, 0x0b, 0xbb, 0x8a, 0x08, 0x05, 0x1f, 0x6b, 0x43, 0xbd, 0x17,
+	0xcf, 0xc2, 0x24, 0x65, 0x05, 0x53, 0xf2, 0x2e, 0xf5, 0xfc, 0x37, 0x7c, 0xe8, 0xdb, 0xab, 0xfa,
+	0xf9, 0xea, 0xec, 0x7e, 0xc8, 0xc6, 0xa6, 0xe2, 0x2a, 0x9d, 0xb6, 0x0e, 0xcf, 0x6c, 0x8b, 0x96,
+	0xab, 0x84, 0xcd, 0xd5, 0x54, 0x73, 0xa7, 0x3c, 0x08, 0x05, 0xed, 0xd9, 0xdd, 0x74, 0xcf, 0xcc,
+	0x2c, 0x01, 0x3d, 0xe9, 0x82, 0xdd, 0x83, 0x0a, 0x56, 0xb0, 0x06, 0x18, 0x17, 0x84, 0x6d, 0x5c,
+	0x28, 0xeb, 0x92, 0x16, 0xd9, 0xb8, 0x74, 0xbf, 0x19, 0x50, 0xc1, 0xfc, 0x05, 0x92, 0x93, 0x99,
+	0x95, 0x16, 0x67, 0x66, 0x66, 0x33, 0x93, 0x6d, 0x1e, 0xf0, 0xe1, 0x67, 0xda, 0xf6, 0x7c, 0x9b,
+	0xca, 0xad, 0xb9, 0xef, 0x4f, 0xe4, 0x48, 0x2a, 0x09, 0xf7, 0xca, 0x62, 0x3b, 0x50, 0x39, 0x92,
+	0xbb, 0x3f, 0x46, 0x42, 0xa9, 0x0e, 0x1d, 0x9e, 0xf6, 0xbb, 0x4f, 0x28, 0x41, 0xcd, 0xf4, 0xb0,
+	0x1f, 0x47, 0xc9, 0xee, 0x68, 0x23, 0x65, 0xac, 0x94, 0x31, 0xd6, 0xfd, 0x6a, 0x02, 0x1c, 0xa6,
+	0xe2, 0xc9, 0x1e, 0x42, 0x59, 0x89, 0x1c, 0x6b, 0x29, 0xec, 0x9c, 0x1a, 0x3a, 0x56, 0xe6, 0xa0,
+	0x7f, 0xc0, 0x1e, 0x54, 0xb5, 0x90, 0xb1, 0x75, 0x15, 0x2b, 0xa8, 0x9e, 0xc3, 0xf2, 0x2e, 0x2a,
+	0x78, 0x00, 0xa6, 0x54, 0x36, 0xd6, 0xd4, 0xcf, 0x4d, 0x04, 0xcf, 0x69, 0xa5, 0x76, 0x06, 0x4c,
+	0xab, 0x89, 0xc0, 0x05, 0xb9, 0xd3, 0xc0, 0x73, 0x02, 0xf7, 0x48, 0x4e, 0x43, 0x49, 0x14, 0xb3,
+	0x28, 0x98, 0xaa, 0x99, 0xb3, 0x9e, 0xf3, 0x64, 0xf0, 0x5a, 0x42, 0x34, 0x7c, 0x41, 0xcb, 0x34,
+	0xfc, 0x9c, 0xc2, 0x3c, 0x85, 0x7a, 0x4e, 0x01, 0xd8, 0xa6, 0x4a, 0x59, 0x94, 0x18, 0xe7, 0xff,
+	0x05, 0x3f, 0xd5, 0x77, 0x61, 0x85, 0xfe, 0xea, 0x0c, 0xe1, 0x8b, 0xca, 0xe0, 0x6c, 0x14, 0x7c,
+	0xba, 0xe6, 0xc0, 0xfa, 0xf3, 0x6b, 0xdb, 0xf8, 0xfe, 0x7b, 0xdb, 0xf8, 0x21, 0x7f, 0xef, 0xe5,
+	0xc7, 0x6c, 0x50, 0xc5, 0x8f, 0xd4, 0xfe, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xeb, 0xa5, 0x90,
+	0x16, 0xeb, 0x06, 0x00, 0x00,
 }

@@ -9,7 +9,6 @@ import (
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
-	"github.com/satori/go.uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -87,22 +86,55 @@ func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResp
 	if err != nil {
 		return nil, err
 	}
+	rules.NotifyGameStart(g)
 	return &pb.StartResponse{}, nil
 }
 
 // Create creates a new game
 func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
-	id := uuid.NewV4().String()
-	err := s.Store.PutGame(ctx, &pb.Game{
-		ID:     id,
-		Status: rules.GameStatusStopped,
-	})
+	game, err := rules.CreateInitialGame(req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Store.PutGame(ctx, game)
 	if err != nil {
 		return nil, err
 	}
 	return &pb.CreateResponse{
-		ID: id,
+		ID: game.ID,
 	}, nil
+}
+
+// AddGameTick adds a new game tick to the game
+func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*pb.AddGameTickResponse, error) {
+	game, err := s.Store.GetGame(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	game.Ticks = append(game.Ticks, req.GameTick)
+	err = s.Store.PutGame(ctx, game)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AddGameTickResponse{
+		Game: game,
+	}, nil
+}
+
+// EndGame sets the game status to complete
+func (s *Server) EndGame(ctx context.Context, req *pb.EndGameRequest) (*pb.EndGameResponse, error) {
+	game, err := s.Store.GetGame(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	game.Status = rules.GameStatusComplete
+	err = s.Store.PutGame(ctx, game)
+	if err != nil {
+		return nil, err
+	}
+	rules.NotifyGameEnd(game)
+	return &pb.EndGameResponse{}, nil
 }
 
 // Serve will intantiate a grpc server.

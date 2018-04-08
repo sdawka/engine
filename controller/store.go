@@ -103,7 +103,7 @@ func (in *inmem) PopGameID(ctx context.Context) (string, error) {
 	defer in.lock.Unlock()
 
 	for id, g := range in.games {
-		if !in.isLocked(id) && g.Status != rules.GameStatusStopped {
+		if !in.isLocked(id) && g.Status == rules.GameStatusRunning {
 			return id, nil
 		}
 	}

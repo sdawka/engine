@@ -40,8 +40,6 @@ func main() {
 		log.Fatalf("controller failed to dial (%s): %v", controllerAddr, err)
 	}
 
-	client = controller.NewInMemory(c)
-
 	go func() {
 		api := api.New(apiAddr, client)
 		api.WaitForExit()

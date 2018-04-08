@@ -5,11 +5,11 @@ package worker
 
 import (
 	"context"
-	"log"
-	"math/rand"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,17 +24,46 @@ type Worker struct {
 
 // perform does the actual work of running a game.
 func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
-	for i := 0; i < 2; i++ {
-		// Stubbed out work emulation.
-		log.Printf("[%d] performing work on %s", workerID, id)
+	resp, err := w.ControllerClient.Status(ctx, &pb.StatusRequest{ID: id})
+	if err != nil {
+		return err
+	}
+	for {
 		select {
 		case <-ctx.Done():
-			log.Println("perform closed")
 			return ctx.Err()
-		case <-time.After(time.Duration(rand.Intn(10)) * time.Second):
+		default:
+		}
+
+		start := time.Now()
+
+		gt, err := rules.GameTick(resp.Game)
+		if err != nil {
+			resp.Game.Status = rules.GameStatusError // TODO: this may need to be changed
+			return err
+		}
+
+		_, err = w.ControllerClient.AddGameTick(ctx, &pb.AddGameTickRequest{ID: resp.Game.ID, GameTick: gt})
+		if err != nil {
+			return err
+		}
+
+		resp.Game.Ticks = append(resp.Game.Ticks, gt)
+
+		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), gt) {
+			_, err := w.ControllerClient.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
+			if err != nil {
+				log.WithError(err).WithField("GameID", resp.Game.ID).Error("unable to end game")
+			}
+			return nil
+		}
+
+		turnDelay := time.Duration(resp.Game.TurnTimeout) * time.Millisecond
+		remainingDelay := turnDelay - time.Since(start)
+		if remainingDelay > 0 {
+			time.Sleep(remainingDelay)
 		}
 	}
-	return nil
 }
 
 // Run will run the worker in a loop.
