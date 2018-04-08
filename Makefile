@@ -4,6 +4,17 @@ install:
 run: install
 	engine
 
+make run-game: install-cli
+	$(eval GAME_ID := $(shell engine-cli create -c ~/snake-config.json | jq '.ID'))
+	engine-cli run -g $(GAME_ID)
+
+install-cli:
+	go install github.com/battlesnakeio/engine/cmd/engine-cli
+	@echo "use engine-cli to run now."
+
+generate-snake-api-models:
+	go run cmd/generate-models/main.go
+
 test:
 	go test -timeout 10s -coverprofile c.out ./...
 

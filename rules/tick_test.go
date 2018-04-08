@@ -8,7 +8,7 @@ import (
 )
 
 func TestUpdateFood(t *testing.T) {
-	updated := updateFood(20, 20, &pb.GameTick{
+	updated, err := updateFood(20, 20, &pb.GameTick{
 		Food: []*pb.Point{
 			{X: 1, Y: 1},
 			{X: 1, Y: 2},
@@ -23,6 +23,7 @@ func TestUpdateFood(t *testing.T) {
 	}, []*pb.Point{
 		{X: 1, Y: 2},
 	})
+	require.NoError(t, err)
 	require.Len(t, updated, 2)
 	require.False(t, updated[1].Equal(&pb.Point{X: 1, Y: 2}))
 }

@@ -5,11 +5,11 @@ package worker
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -39,12 +39,23 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 
 		gt, err := rules.GameTick(resp.Game)
 		if err != nil {
+			resp.Game.Status = rules.GameStatusError // TODO: this may need to be changed
 			return err
 		}
 
 		_, err = w.ControllerClient.AddGameTick(ctx, &pb.AddGameTickRequest{ID: resp.Game.ID, GameTick: gt})
 		if err != nil {
 			return err
+		}
+
+		resp.Game.Ticks = append(resp.Game.Ticks, gt)
+
+		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), gt) {
+			_, err := w.ControllerClient.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
+			if err != nil {
+				log.WithError(err).WithField("GameID", resp.Game.ID).Error("unable to end game")
+			}
+			return nil
 		}
 
 		turnDelay := time.Duration(resp.Game.TurnTimeout) * time.Millisecond

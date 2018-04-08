@@ -58,3 +58,8 @@ func (s *ServerShim) Create(ctx context.Context, req *pb.CreateRequest, opts ...
 func (s *ServerShim) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest, opts ...grpc.CallOption) (*pb.AddGameTickResponse, error) {
 	return s.server.AddGameTick(ctx, req)
 }
+
+// EndGame sets the game status to complete
+func (s *ServerShim) EndGame(ctx context.Context, req *pb.EndGameRequest, opts ...grpc.CallOption) (*pb.EndGameResponse, error) {
+	return s.server.EndGame(ctx, req)
+}

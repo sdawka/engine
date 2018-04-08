@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,7 +63,7 @@ func testStoreGames(t *testing.T, s Store) {
 	ctx := context.Background()
 
 	// Create and fetch a game.
-	err := s.PutGame(ctx, &pb.Game{ID: "test"})
+	err := s.PutGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning})
 	require.Nil(t, err)
 	g, err := s.GetGame(ctx, "test")
 	require.Nil(t, err)

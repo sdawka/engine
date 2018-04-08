@@ -2,6 +2,7 @@ package rules
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -17,6 +18,13 @@ type mockHTTPClient struct {
 
 func (mockHTTPClient) SetTimeout(time.Duration) {}
 func (c mockHTTPClient) Get(url string) (*http.Response, error) {
+	if c.err != nil {
+		return nil, c.err
+	}
+	return c.resp, nil
+}
+
+func (c mockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	if c.err != nil {
 		return nil, c.err
 	}
@@ -40,7 +48,7 @@ func TestGatherSnakeMoves(t *testing.T) {
 		},
 	}
 	netClient = mock
-	updates := GatherSnakeMoves(1*time.Second, &pb.GameTick{
+	updates := GatherSnakeMoves(1*time.Second, &pb.Game{}, &pb.GameTick{
 		Snakes: []*pb.Snake{
 			&pb.Snake{
 				URL: "http://not.a.snake.com",
@@ -69,5 +77,21 @@ func TestIsValidURL(t *testing.T) {
 	for _, test := range tests {
 		actual := isValidURL(test.URL)
 		require.Equal(t, test.Expected, actual, "URL: %s", test.URL)
+	}
+}
+
+func TestGetURL(t *testing.T) {
+	tests := []struct {
+		URL      string
+		Path     string
+		Expected string
+	}{
+		{URL: "http://localhost", Path: "move", Expected: "http://localhost/move"},
+		{URL: "http://localhost/", Path: "move", Expected: "http://localhost/move"},
+	}
+
+	for _, test := range tests {
+		actual := getURL(test.URL, test.Path)
+		require.Equal(t, test.Expected, actual)
 	}
 }

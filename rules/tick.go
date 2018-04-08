@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	log "github.com/sirupsen/logrus"
 )
 
 // GameTick runs the game one tick and updates the state
@@ -21,14 +22,31 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 		Snakes: lastTick.Snakes,
 		Food:   lastTick.Food,
 	}
-	moves := GatherSnakeMoves(time.Duration(game.SnakeTimeout)*time.Millisecond, lastTick)
+	duration := time.Duration(game.SnakeTimeout) * time.Millisecond
+	log.WithFields(log.Fields{
+		"GameID":  game.ID,
+		"Turn":    nextTick.Turn,
+		"Timeout": duration,
+	}).Info("GatherSnakeMoves")
+	moves := GatherSnakeMoves(duration, game, lastTick)
 
 	// we have all the snake moves now
 	// 1. update snake coords
 	for update := range moves {
 		if update.Err != nil {
+			log.WithFields(log.Fields{
+				"GameID":  game.ID,
+				"SnakeID": update.Snake.ID,
+				"Turn":    nextTick.Turn,
+			}).Info("Default move")
 			update.Snake.DefaultMove()
 		} else {
+			log.WithFields(log.Fields{
+				"GameID":  game.ID,
+				"SnakeID": update.Snake.ID,
+				"Turn":    nextTick.Turn,
+				"Move":    update.Move,
+			}).Info("Move")
 			update.Snake.Move(update.Move)
 		}
 	}
@@ -36,6 +54,10 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 	// 	  a - starvation
 	//    b - wall collision
 	//    c - snake collision
+	log.WithFields(log.Fields{
+		"GameID": game.ID,
+		"Turn":   nextTick.Turn,
+	}).Info("check for death")
 	deathUpdates := checkForDeath(game.Width, game.Height, nextTick)
 	for _, du := range deathUpdates {
 		if du.Snake.Death == nil {
@@ -49,10 +71,18 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 	//    d - shrink snakes that didn't et
 	//    e - remove eaten food
 	//    f - replace eaten food
+	log.WithFields(log.Fields{
+		"GameID": game.ID,
+		"Turn":   nextTick.Turn,
+	}).Info("reduce snake health")
 	for _, s := range nextTick.AliveSnakes() {
 		s.Health = s.Health - 1
 	}
 
+	log.WithFields(log.Fields{
+		"GameID": game.ID,
+		"Turn":   nextTick.Turn,
+	}).Info("handle food")
 	foodToRemove := []*pb.Point{}
 	for _, snake := range nextTick.AliveSnakes() {
 		ate := false
@@ -68,11 +98,15 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 		}
 	}
 
-	nextTick.Food = updateFood(game.Width, game.Height, lastTick, foodToRemove)
+	nextFood, err := updateFood(game.Width, game.Height, lastTick, foodToRemove)
+	if err != nil {
+		return nil, err
+	}
+	nextTick.Food = nextFood
 	return nextTick, nil
 }
 
-func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.Point) []*pb.Point {
+func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.Point) ([]*pb.Point, error) {
 	food := []*pb.Point{}
 	for _, foodPos := range gameTick.Food {
 		found := false
@@ -89,24 +123,33 @@ func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.P
 	}
 
 	for range foodToRemove {
-		food = append(food, getUnoccupiedPoint(width, height, gameTick))
+		p, err := getUnoccupiedPoint(width, height, gameTick.Food, gameTick.AliveSnakes())
+		if err != nil {
+			return nil, err
+		}
+		food = append(food, p)
 	}
 
-	return food
+	return food, nil
 }
 
-func getUnoccupiedPoint(width, height int64, gameTick *pb.GameTick) *pb.Point {
+func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snake) (*pb.Point, error) {
+	attempts := 0
 	for {
+		attempts++
+		if attempts > 20 {
+			return nil, errors.New("unable to find available empty location after 20 attempts")
+		}
 		x := rand.Int63n(width)
 		y := rand.Int63n(height)
 		p := &pb.Point{X: x, Y: y}
-		for _, f := range gameTick.Food {
+		for _, f := range food {
 			if f.Equal(p) {
 				continue
 			}
 		}
 
-		for _, s := range gameTick.AliveSnakes() {
+		for _, s := range snakes {
 			for _, b := range s.Body {
 				if b.Equal(p) {
 					continue
@@ -114,6 +157,6 @@ func getUnoccupiedPoint(width, height int64, gameTick *pb.GameTick) *pb.Point {
 			}
 		}
 
-		return p
+		return p, nil
 	}
 }
