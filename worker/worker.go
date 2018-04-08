@@ -64,8 +64,6 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 			time.Sleep(remainingDelay)
 		}
 	}
-
-	return nil
 }
 
 // Run will run the worker in a loop.
