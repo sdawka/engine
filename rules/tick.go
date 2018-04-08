@@ -32,24 +32,7 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 
 	// we have all the snake moves now
 	// 1. update snake coords
-	for update := range moves {
-		if update.Err != nil {
-			log.WithFields(log.Fields{
-				"GameID":  game.ID,
-				"SnakeID": update.Snake.ID,
-				"Turn":    nextTick.Turn,
-			}).Info("Default move")
-			update.Snake.DefaultMove()
-		} else {
-			log.WithFields(log.Fields{
-				"GameID":  game.ID,
-				"SnakeID": update.Snake.ID,
-				"Turn":    nextTick.Turn,
-				"Move":    update.Move,
-			}).Info("Move")
-			update.Snake.Move(update.Move)
-		}
-	}
+	updateSnakes(game, nextTick, moves)
 	// 2. check for death
 	// 	  a - starvation
 	//    b - wall collision
@@ -83,21 +66,8 @@ func GameTick(game *pb.Game) (*pb.GameTick, error) {
 		"GameID": game.ID,
 		"Turn":   nextTick.Turn,
 	}).Info("handle food")
-	foodToRemove := []*pb.Point{}
-	for _, snake := range nextTick.AliveSnakes() {
-		ate := false
-		for _, foodPos := range nextTick.Food {
-			if snake.Head().Equal(foodPos) {
-				snake.Health = 100
-				ate = true
-				foodToRemove = append(foodToRemove, foodPos)
-			}
-		}
-		if !ate {
-			snake.Body = snake.Body[:len(snake.Body)-1]
-		}
-	}
 
+	foodToRemove := checkForSnakesEating(nextTick)
 	nextFood, err := updateFood(game.Width, game.Height, lastTick, foodToRemove)
 	if err != nil {
 		return nil, err
@@ -159,4 +129,43 @@ func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snak
 
 		return p, nil
 	}
+}
+
+func updateSnakes(game *pb.Game, tick *pb.GameTick, moves <-chan SnakeUpdate) {
+	for update := range moves {
+		if update.Err != nil {
+			log.WithFields(log.Fields{
+				"GameID":  game.ID,
+				"SnakeID": update.Snake.ID,
+				"Turn":    tick.Turn,
+			}).Info("Default move")
+			update.Snake.DefaultMove()
+		} else {
+			log.WithFields(log.Fields{
+				"GameID":  game.ID,
+				"SnakeID": update.Snake.ID,
+				"Turn":    tick.Turn,
+				"Move":    update.Move,
+			}).Info("Move")
+			update.Snake.Move(update.Move)
+		}
+	}
+}
+
+func checkForSnakesEating(tick *pb.GameTick) []*pb.Point {
+	foodToRemove := []*pb.Point{}
+	for _, snake := range tick.AliveSnakes() {
+		ate := false
+		for _, foodPos := range tick.Food {
+			if snake.Head().Equal(foodPos) {
+				snake.Health = 100
+				ate = true
+				foodToRemove = append(foodToRemove, foodPos)
+			}
+		}
+		if !ate {
+			snake.Body = snake.Body[:len(snake.Body)-1]
+		}
+	}
+	return foodToRemove
 }
