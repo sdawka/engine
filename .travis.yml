@@ -12,5 +12,6 @@ before_script:
 script: 
   - make test
 after_script:
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT coverage.txt
+  - cp coverage.txt c.out
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
   - bash <(curl -s https://codecov.io/bash)
