@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -130,4 +131,50 @@ func TestGameTickDeadSnakeDoNotUpdate(t *testing.T) {
 	require.Equal(t, &pb.Point{X: 1, Y: 1}, snake.Body[0])
 	require.Equal(t, &pb.Point{X: 1, Y: 2}, snake.Body[1])
 	require.Equal(t, &pb.Point{X: 1, Y: 3}, snake.Body[2])
+}
+
+func TestGameTickUpdatesDeath(t *testing.T) {
+	snake := &pb.Snake{
+		Health: 0,
+		Body: []*pb.Point{
+			{X: 1, Y: 1},
+			{X: 1, Y: 2},
+			{X: 1, Y: 3},
+		},
+	}
+
+	game.Ticks[0].Snakes = []*pb.Snake{snake}
+
+	gt, err := GameTick(game)
+	require.NoError(t, err)
+	require.NotNil(t, gt.Snakes[0].Death)
+}
+
+func TestUpdateSnakes(t *testing.T) {
+	snake := &pb.Snake{
+		Body: []*pb.Point{
+			{X: 1, Y: 1},
+		},
+	}
+	moves := make(chan SnakeUpdate, 1)
+	moves <- SnakeUpdate{
+		Snake: snake,
+		Err:   errors.New("some error"),
+	}
+	close(moves)
+	updateSnakes(&pb.Game{}, &pb.GameTick{
+		Snakes: []*pb.Snake{snake},
+	}, moves)
+	require.Equal(t, &pb.Point{X: 1, Y: 0}, snake.Head(), "snake did not move up")
+
+	moves = make(chan SnakeUpdate, 1)
+	moves <- SnakeUpdate{
+		Snake: snake,
+		Move:  "left",
+	}
+	close(moves)
+	updateSnakes(&pb.Game{}, &pb.GameTick{
+		Snakes: []*pb.Snake{snake},
+	}, moves)
+	require.Equal(t, &pb.Point{X: 0, Y: 0}, snake.Head(), "snake did not move left")
 }
