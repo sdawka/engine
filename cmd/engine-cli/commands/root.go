@@ -24,6 +24,7 @@ func Execute() {
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(replayCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
