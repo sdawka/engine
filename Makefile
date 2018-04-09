@@ -12,7 +12,7 @@ install-cli:
 	go install github.com/battlesnakeio/engine/cmd/engine-cli
 
 test:
-	go test -timeout 10s -coverprofile c.out ./...
+	go test -timeout 20s -race -coverprofile coverage.txt -covermode=atomic ./...
 
 proto:
 	docker run -it --rm -v $$PWD/controller/pb:/build/pb sendwithus/protoc \

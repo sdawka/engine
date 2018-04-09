@@ -10,3 +10,4 @@ build
 # General
 *.tgz
 .DS_Store
+coverage.txt
