@@ -1,0 +1,4 @@
+ignore:
+  - "**/*.pb.go"
+  - "**/*pb_test.go"
+  - "**/vendor/"
