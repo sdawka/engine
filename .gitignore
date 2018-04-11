@@ -6,6 +6,7 @@
 # Builds
 build
 *.out
+*.test
 
 # General
 *.tgz

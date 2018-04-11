@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -43,6 +44,17 @@ func createAPIServer() (*Server, *MockController) {
 	return s, client
 }
 
+func createAPIServerWithError() (*Server, *MockController) {
+	var client = &MockController{
+		Error:          errors.New("failed"),
+		CreateResponse: &pb.CreateResponse{},
+		StartResponse:  &pb.StartResponse{},
+		StatusResponse: &pb.StatusResponse{},
+	}
+	s := New(":1234", client)
+	return s, client
+}
+
 func TestCreate(t *testing.T) {
 	s, _ := createAPIServer()
 
@@ -53,6 +65,30 @@ func TestCreate(t *testing.T) {
 
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestCreateWithBadBodyJSON(t *testing.T) {
+	s, _ := createAPIServer()
+
+	buf := &bytes.Buffer{}
+	buf.WriteString("invalid json")
+	req, _ := http.NewRequest("POST", "/game/create", buf)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
+func TestCreateHandlesErrors(t *testing.T) {
+	s, _ := createAPIServerWithError()
+
+	buf := &bytes.Buffer{}
+	buf.WriteString("{}")
+	req, _ := http.NewRequest("POST", "/game/create", buf)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
 func TestStart(t *testing.T) {

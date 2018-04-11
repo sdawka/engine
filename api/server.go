@@ -28,15 +28,33 @@ func New(addr string, c pb.ControllerClient) *Server {
 			return
 		}
 		req := &pb.CreateRequest{}
-		// TODO: handle error
-		json.Unmarshal(body, req)
-		// TODO: use a context with timeout, and handle error
-		resp, _ := c.Create(context.Background(), req)
 
-		// TODO: Handle error
-		j, _ := json.Marshal(resp)
+		err = json.Unmarshal(body, req)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid JSON: " + err.Error()))
+			return
+		}
+
+		// TODO: use a context with timeout
+		resp, err := c.Create(context.Background(), req)
+		if err != nil {
+			log.WithError(err).Error("Error creating game")
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		j, err := json.Marshal(resp)
+		if err != nil {
+			log.WithError(err).WithField("resp", resp).Error("Error serializing to JSON")
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
 		w.Write(j)
 	})
+
 	router.POST("/game/start/:id", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		id := ps.ByName("id")
 		req := &pb.StartRequest{
@@ -66,8 +84,14 @@ func New(addr string, c pb.ControllerClient) *Server {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		// TODO: Handle error
-		j, _ := json.Marshal(resp)
+
+		j, err := json.Marshal(resp)
+		if err != nil {
+			log.WithError(err).WithField("resp", resp).Error("Error serializing response to JSON")
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
 		w.Write(j)
 	})
 
