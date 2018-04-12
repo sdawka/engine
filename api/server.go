@@ -16,16 +16,16 @@ type Server struct {
 	hs *http.Server
 }
 
-// ClientHandle is a function that handles an http route and accepts a ControllerClient
+// clientHandle is a function that handles an http route and accepts a ControllerClient
 // in addition to the normal httprouter.Handle parameters.
-type ClientHandle func(http.ResponseWriter, *http.Request, httprouter.Params, pb.ControllerClient)
+type clientHandle func(http.ResponseWriter, *http.Request, httprouter.Params, pb.ControllerClient)
 
 // New creates a new api server
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
-	router.POST("/game/create", clientHandle(c, createGame))
-	router.POST("/game/start/:id", clientHandle(c, startGame))
-	router.GET("/game/status/:id", clientHandle(c, getStatus))
+	router.POST("/game/create", clientHandler(c, createGame))
+	router.POST("/game/start/:id", clientHandler(c, startGame))
+	router.GET("/game/status/:id", clientHandler(c, getStatus))
 
 	return &Server{
 		hs: &http.Server{
@@ -35,7 +35,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	}
 }
 
-func clientHandle(c pb.ControllerClient, innerHandle ClientHandle) httprouter.Handle {
+func clientHandler(c pb.ControllerClient, innerHandle clientHandle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		innerHandle(w, r, p, c)
 	}
