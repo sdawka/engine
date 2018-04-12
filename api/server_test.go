@@ -110,3 +110,13 @@ func TestStatus(t *testing.T) {
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusOK, rr.Code)
 }
+
+func TestStatusHandlesErrors(t *testing.T) {
+	s, _ := createAPIServerWithError()
+
+	req, _ := http.NewRequest("GET", "/game/status/abc_123", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusInternalServerError, rr.Code)
+}
