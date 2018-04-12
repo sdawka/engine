@@ -23,9 +23,9 @@ type clientHandle func(http.ResponseWriter, *http.Request, httprouter.Params, pb
 // New creates a new api server
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
-	router.POST("/game/create", clientHandler(c, createGame))
-	router.POST("/game/start/:id", clientHandler(c, startGame))
-	router.GET("/game/status/:id", clientHandler(c, getStatus))
+	router.POST("/game/create", newClientHandle(c, createGame))
+	router.POST("/game/start/:id", newClientHandle(c, startGame))
+	router.GET("/game/status/:id", newClientHandle(c, getStatus))
 
 	return &Server{
 		hs: &http.Server{
@@ -35,7 +35,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	}
 }
 
-func clientHandler(c pb.ControllerClient, innerHandle clientHandle) httprouter.Handle {
+func newClientHandle(c pb.ControllerClient, innerHandle clientHandle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		innerHandle(w, r, p, c)
 	}
