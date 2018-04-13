@@ -42,7 +42,6 @@ func TestWorker_RunNoGame(t *testing.T) {
 }
 
 func TestWorker_Run(t *testing.T) {
-	t.Skip("skip this until it handles more error types")
 	w := &Worker{
 		ControllerClient:  client,
 		PollInterval:      1 * time.Millisecond,
@@ -54,11 +53,36 @@ func TestWorker_Run(t *testing.T) {
 		ID: resp.ID,
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 0*time.Millisecond)
 	defer cancel()
 
-	err := w.run(ctx, 1)
-	require.Equal(t, context.DeadlineExceeded, err)
+	// Will hold the lock forever, if it exits, we're good.
+	w.heartbeat(ctx, cancel, 1, resp.ID)
+}
+
+func TestWorker_RunAndCancel(t *testing.T) {
+	w := &Worker{
+		ControllerClient:  client,
+		PollInterval:      1 * time.Millisecond,
+		HeartbeatInterval: 1 * time.Millisecond,
+	}
+
+	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
+	client.Start(context.Background(), &pb.StartRequest{
+		ID: resp.ID,
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		_, err := client.EndGame(ctx, &pb.EndGameRequest{
+			ID: resp.ID,
+		})
+		require.Nil(t, err)
+	}()
+
+	// Will hold the lock forever, if it exits, we're good.
+	w.heartbeat(ctx, cancel, 1, resp.ID)
 }
 
 func TestWorker_RunLoop(t *testing.T) {

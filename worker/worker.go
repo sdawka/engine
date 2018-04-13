@@ -61,7 +61,11 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 		turnDelay := time.Duration(resp.Game.TurnTimeout) * time.Millisecond
 		remainingDelay := turnDelay - time.Since(start)
 		if remainingDelay > 0 {
-			time.Sleep(remainingDelay)
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(remainingDelay):
+			}
 		}
 	}
 }
@@ -122,26 +126,40 @@ func (w *Worker) run(ctx context.Context, workerID int) error {
 	}()
 
 	// Hold the lock, heartbeating every HeartbeatInterval.
-	go func() {
-		t := time.NewTicker(w.HeartbeatInterval)
-		defer t.Stop()
-		for {
-			select {
-			case <-t.C:
-				_, err := w.ControllerClient.Lock(ctx, &pb.LockRequest{ID: id})
-				if err != nil {
-					log.Printf("[%d] lock expired during heartbeat %v", workerID, err)
-					cancel()
-					return
-				}
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
+	go w.heartbeat(ctx, cancel, workerID, id)
 
 	// Perform the actual work, this should respect context and Done() rules.
 	// Perform should be able to write to storage using the context and have
 	// a valid lock for the key.
 	return w.perform(ctx, id, workerID)
+}
+
+func (w *Worker) heartbeat(ctx context.Context, cancel context.CancelFunc, workerID int, id string) {
+	t := time.NewTicker(w.HeartbeatInterval)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			_, err := w.ControllerClient.Lock(ctx, &pb.LockRequest{ID: id})
+			if err != nil {
+				log.Printf("[%d] lock expired during heartbeat %v", workerID, err)
+				cancel()
+				return
+			}
+
+			st, err := w.ControllerClient.Status(ctx, &pb.StatusRequest{ID: id})
+			if err != nil {
+				log.Printf("[%d] failed to get status during heartbeat %v", workerID, err)
+				cancel()
+				return
+			}
+			if st.Game.Status != rules.GameStatusRunning {
+				log.Printf("[%d] game stopped during heartbeat", workerID)
+				cancel()
+				return
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
 }
