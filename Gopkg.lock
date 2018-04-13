@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/buger/goterm"
+  packages = ["."]
+  revision = "c9def0117b24a53e86f6c4c942e4042090a4fe8c"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -172,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "60df527d61e2edb66b18cce13778f1febbe50f19f9d84b7976434105df85abcb"
+  inputs-digest = "566fc528ff93f6a156b77088502fac32db2ec8c551e59c589d2c09c5c59cad48"
   solver-name = "gps-cdcl"
   solver-version = 1
