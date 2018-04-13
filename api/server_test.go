@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -43,16 +44,39 @@ func createAPIServer() (*Server, *MockController) {
 	return s, client
 }
 
-func TestCreate(t *testing.T) {
-	s, _ := createAPIServer()
+func createAPIServerWithError(err error) (*Server, *MockController) {
+	var client = &MockController{
+		Error:          err,
+		CreateResponse: &pb.CreateResponse{},
+		StartResponse:  &pb.StartResponse{},
+		StatusResponse: &pb.StatusResponse{},
+	}
+	s := New(":1234", client)
+	return s, client
+}
+
+func basicCreateTest(t *testing.T, bodyJSON string, expectedStatusCode int, controllerError error) {
+	s, _ := createAPIServerWithError(controllerError)
 
 	buf := &bytes.Buffer{}
-	buf.WriteString("{}")
+	buf.WriteString(bodyJSON)
 	req, _ := http.NewRequest("POST", "/game/create", buf)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
-	require.Equal(t, http.StatusOK, rr.Code)
+	require.Equal(t, expectedStatusCode, rr.Code)
+}
+
+func TestCreate(t *testing.T) {
+	basicCreateTest(t, "{}", http.StatusOK, nil)
+}
+
+func TestCreateWithBadBodyJSON(t *testing.T) {
+	basicCreateTest(t, "invalid json", http.StatusBadRequest, nil)
+}
+
+func TestCreateHandlesErrors(t *testing.T) {
+	basicCreateTest(t, "{}", http.StatusInternalServerError, errors.New("fail"))
 }
 
 func TestStart(t *testing.T) {
@@ -65,12 +89,20 @@ func TestStart(t *testing.T) {
 	require.Equal(t, http.StatusOK, rr.Code)
 }
 
-func TestStatus(t *testing.T) {
-	s, _ := createAPIServer()
+func basicStatusTest(t *testing.T, id string, expectedStatusCode int, controllerError error) {
+	s, _ := createAPIServerWithError(controllerError)
 
-	req, _ := http.NewRequest("GET", "/game/status/abc_123", nil)
+	req, _ := http.NewRequest("GET", "/game/status/"+id, nil)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
-	require.Equal(t, http.StatusOK, rr.Code)
+	require.Equal(t, expectedStatusCode, rr.Code)
+}
+
+func TestStatus(t *testing.T) {
+	basicStatusTest(t, "abc_123", http.StatusOK, nil)
+}
+
+func TestStatusHandlesErrors(t *testing.T) {
+	basicStatusTest(t, "12345", http.StatusInternalServerError, errors.New("fail"))
 }
