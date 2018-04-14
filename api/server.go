@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/julienschmidt/httprouter"
@@ -58,8 +59,10 @@ func createGame(w http.ResponseWriter, r *http.Request, _ httprouter.Params, c p
 		return
 	}
 
-	// TODO: use a context with timeout
-	resp, err := c.Create(context.Background(), req)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := c.Create(ctx, req)
 	if err != nil {
 		log.WithError(err).Error("Error creating game")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -82,8 +85,11 @@ func startGame(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	req := &pb.StartRequest{
 		ID: id,
 	}
-	// TODO: use a context with timeout
-	_, err := c.Start(context.Background(), req)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := c.Start(ctx, req)
 	if err != nil {
 		log.WithError(err).WithField("req", req).Error("Error while calling controller start")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -98,8 +104,11 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	req := &pb.StatusRequest{
 		ID: id,
 	}
-	// TODO: use a context with timeout
-	resp, err := c.Status(context.Background(), req)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := c.Status(ctx, req)
 	if err != nil {
 		log.WithError(err).WithField("req", req).Error("Error while calling controller status")
 		w.WriteHeader(http.StatusInternalServerError)
