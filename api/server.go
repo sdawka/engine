@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -24,9 +25,10 @@ type clientHandle func(http.ResponseWriter, *http.Request, httprouter.Params, pb
 // New creates a new api server
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
-	router.POST("/game/create", newClientHandle(c, createGame))
-	router.POST("/game/start/:id", newClientHandle(c, startGame))
-	router.GET("/game/status/:id", newClientHandle(c, getStatus))
+	router.POST("/games", newClientHandle(c, createGame))
+	router.POST("/games/:id/start", newClientHandle(c, startGame))
+	router.GET("/games/:id", newClientHandle(c, getStatus))
+	router.GET("/games/:id/ticks", newClientHandle(c, getTicks))
 
 	return &Server{
 		hs: &http.Server{
@@ -109,6 +111,37 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	defer cancel()
 
 	resp, err := c.Status(ctx, req)
+	if err != nil {
+		log.WithError(err).WithField("req", req).Error("Error while calling controller status")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	j, err := json.Marshal(resp)
+	if err != nil {
+		log.WithError(err).WithField("resp", resp).Error("Error serializing response to JSON")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Write(j)
+}
+
+func getTicks(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+	id := ps.ByName("id")
+	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 0)
+	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)
+	if limit == 0 {
+		limit = 100
+	}
+	req := &pb.ListGameTicksRequest{
+		ID:     id,
+		Offset: int32(offset),
+		Limit:  int32(limit),
+	}
+	// TODO: use a context with timeout
+	resp, err := c.ListGameTicks(r.Context(), req)
 	if err != nil {
 		log.WithError(err).WithField("req", req).Error("Error while calling controller status")
 		w.WriteHeader(http.StatusInternalServerError)

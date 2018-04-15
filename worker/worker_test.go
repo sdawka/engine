@@ -41,7 +41,7 @@ func TestWorker_RunNoGame(t *testing.T) {
 	require.Contains(t, err.Error(), "not found")
 }
 
-func TestWorker_Run(t *testing.T) {
+func TestWorker_HeartbeatNoTimeout(t *testing.T) {
 	w := &Worker{
 		ControllerClient:  client,
 		PollInterval:      1 * time.Millisecond,
@@ -60,7 +60,7 @@ func TestWorker_Run(t *testing.T) {
 	w.heartbeat(ctx, cancel, 1, resp.ID)
 }
 
-func TestWorker_RunAndCancel(t *testing.T) {
+func TestWorker_HeartbeatCancel(t *testing.T) {
 	w := &Worker{
 		ControllerClient:  client,
 		PollInterval:      1 * time.Millisecond,

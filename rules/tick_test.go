@@ -30,12 +30,7 @@ func TestUpdateFood(t *testing.T) {
 }
 
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
-	game := &pb.Game{
-		Ticks: []*pb.GameTick{
-			&pb.GameTick{Turn: 5},
-		},
-	}
-	gt, err := GameTick(game)
+	gt, err := GameTick(game, &pb.GameTick{Turn: 5})
 	require.NoError(t, err)
 	require.Equal(t, int64(6), gt.Turn)
 }
@@ -52,16 +47,13 @@ func TestGameTickUpdatesSnake(t *testing.T) {
 	game := &pb.Game{
 		Width:  20,
 		Height: 20,
-		Ticks: []*pb.GameTick{
-			&pb.GameTick{
-				Turn: 5,
-				Snakes: []*pb.Snake{
-					snake,
-				},
-			},
-		},
 	}
-	gt, err := GameTick(game)
+	gt, err := GameTick(game, &pb.GameTick{
+		Turn: 5,
+		Snakes: []*pb.Snake{
+			snake,
+		},
+	})
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
@@ -75,14 +67,12 @@ func TestGameTickUpdatesSnake(t *testing.T) {
 var game = &pb.Game{
 	Width:  20,
 	Height: 20,
-	Ticks: []*pb.GameTick{
-		&pb.GameTick{
-			Turn:   5,
-			Snakes: []*pb.Snake{},
-			Food: []*pb.Point{
-				{X: 1, Y: 0},
-			},
-		},
+}
+var lastTick = &pb.GameTick{
+	Turn:   5,
+	Snakes: []*pb.Snake{},
+	Food: []*pb.Point{
+		{X: 1, Y: 0},
 	},
 }
 
@@ -96,9 +86,9 @@ func TestGameTickSnakeEats(t *testing.T) {
 		},
 	}
 
-	game.Ticks[0].Snakes = []*pb.Snake{snake}
+	lastTick.Snakes = []*pb.Snake{snake}
 
-	gt, err := GameTick(game)
+	gt, err := GameTick(game, lastTick)
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
@@ -120,9 +110,9 @@ func TestGameTickDeadSnakeDoNotUpdate(t *testing.T) {
 		},
 	}
 
-	game.Ticks[0].Snakes = []*pb.Snake{snake}
+	lastTick.Snakes = []*pb.Snake{snake}
 
-	gt, err := GameTick(game)
+	gt, err := GameTick(game, lastTick)
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
@@ -143,9 +133,9 @@ func TestGameTickUpdatesDeath(t *testing.T) {
 		},
 	}
 
-	game.Ticks[0].Snakes = []*pb.Snake{snake}
+	lastTick.Snakes = []*pb.Snake{snake}
 
-	gt, err := GameTick(game)
+	gt, err := GameTick(game, lastTick)
 	require.NoError(t, err)
 	require.NotNil(t, gt.Snakes[0].Death)
 }

@@ -66,38 +66,42 @@ func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, er
 	return &pb.PopResponse{ID: id}, nil
 }
 
-// Status retreives the status of a game
+// Status retrieves the game state including the last processed game tick.
 func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusResponse, error) {
 	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.StatusResponse{Game: game}, nil
+	var lastTick *pb.GameTick
+	ticks, err := s.Store.ListGameTicks(ctx, req.ID, 1, -1)
+	if err != nil {
+		return nil, err
+	}
+	if len(ticks) > 0 {
+		lastTick = ticks[0]
+	}
+	return &pb.StatusResponse{Game: game, LastTick: lastTick}, nil
 }
 
-// Start starts an existing game, ready to be picked up by a worker.
+// Start starts the game running, and will make it ready to be picked up by a
+// worker.
 func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResponse, error) {
-	g, err := s.Store.GetGame(ctx, req.ID)
+	err := s.Store.SetGameStatus(ctx, req.ID, rules.GameStatusRunning)
 	if err != nil {
 		return nil, err
 	}
-	g.Status = rules.GameStatusRunning
-	err = s.Store.PutGame(ctx, g)
-	if err != nil {
-		return nil, err
-	}
-	rules.NotifyGameStart(g)
+	// TODO: Move this to the worker.
+	// rules.NotifyGameStart(g)
 	return &pb.StartResponse{}, nil
 }
 
-// Create creates a new game
+// Create creates a new game, but doesn't start running frames.
 func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
-	game, err := rules.CreateInitialGame(req)
+	game, ticks, err := rules.CreateInitialGame(req)
 	if err != nil {
 		return nil, err
 	}
-
-	err = s.Store.PutGame(ctx, game)
+	err = s.Store.CreateGame(ctx, game, ticks)
 	if err != nil {
 		return nil, err
 	}
@@ -106,14 +110,16 @@ func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	}, nil
 }
 
-// AddGameTick adds a new game tick to the game
+// AddGameTick adds a new game tick to the game, this method must be called
+// with a valid lock token passed through the `x-lock-token` header. View the
+// pb.ContextWithLockToken(...) function.
 func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*pb.AddGameTickResponse, error) {
-	game, err := s.Store.GetGame(ctx, req.ID)
+	token := pb.ContextGetLockToken(ctx)
+	err := s.Store.PushGameTick(ctx, req.ID, req.GameTick, token)
 	if err != nil {
 		return nil, err
 	}
-	game.Ticks = append(game.Ticks, req.GameTick)
-	err = s.Store.PutGame(ctx, game)
+	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -122,18 +128,26 @@ func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*
 	}, nil
 }
 
-// EndGame sets the game status to complete
+// ListGameTicks will list all game ticks given a limit and offset.
+func (s *Server) ListGameTicks(ctx context.Context, req *pb.ListGameTicksRequest) (*pb.ListGameTicksResponse, error) {
+	ticks, err := s.Store.ListGameTicks(ctx, req.ID, int(req.Limit), int(req.Offset))
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListGameTicksResponse{
+		Ticks: ticks,
+		Count: int32(len(ticks)),
+	}, nil
+}
+
+// EndGame sets the game status to complete.
 func (s *Server) EndGame(ctx context.Context, req *pb.EndGameRequest) (*pb.EndGameResponse, error) {
-	game, err := s.Store.GetGame(ctx, req.ID)
+	err := s.Store.SetGameStatus(ctx, req.ID, rules.GameStatusComplete)
 	if err != nil {
 		return nil, err
 	}
-	game.Status = rules.GameStatusComplete
-	err = s.Store.PutGame(ctx, game)
-	if err != nil {
-		return nil, err
-	}
-	rules.NotifyGameEnd(game)
+	// TODO: Move to the worker.
+	// rules.NotifyGameEnd(game)
 	return &pb.EndGameResponse{}, nil
 }
 
@@ -153,7 +167,7 @@ func (s *Server) Serve(listen string) error {
 // DialAddress will return a localhost address to reach the server. This is
 // useful if the server will select it's own port.
 func (s *Server) DialAddress() string {
-	<-s.started
+	s.Wait()
 	return fmt.Sprintf("127.0.0.1:%d", s.port)
 }
 

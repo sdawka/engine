@@ -8,6 +8,33 @@ option (gogoproto.populate_all) = true;
 option (gogoproto.equal_all) = true;
 option go_package = "pb";
 
+// The controller is the data storage layer and configures sending work to the
+// individual workers. The key workflow that a game goes through is as follows:
+// 1. Create is called (from the api).
+// 2. Start is called (from the api).
+// 3. Pop is called by the worker, since the game is started and unlocked, the
+//    active game id is returned to the worker in this call.
+// 4. Lock is called by the current worker.
+// 5. The worker initiates work and begins pushing game ticks through
+//    AddGameTick. The worker will also call Lock continually to keep the lock
+//    token valid.
+// 6. Once work is finished, the worker will call EndGame and Unlock the game.
+//
+// The data model for the store includes the following components:
+//
+// Game:
+// A game is an immutable model that describes the configuration of the specific
+// game. Timeouts and board size are stored on the game. If you need to change
+// board size clone the game and start a new one.
+//
+// GameTick:
+// Game ticks point to a game and effectively represent the history of a game.
+// Ticks are pushed continually by workers through the controller interface into
+// the store.
+//
+// GameLock:
+// However, only one worker is allowed to push a tick at one time, otherwise the
+// game ticks would be in a weird order.
 service Controller {
   // Lock should lock a specific game using the passed in ID. No writes to the
   // game should happen as long as the lock is valid. The game being locked does
@@ -20,15 +47,20 @@ service Controller {
   // be subject to race conditions where it is locked immediately after, this is
   // expected.
   rpc Pop(PopRequest) returns (PopResponse);
-  // Status retrieves the game state.
+  // Status retrieves the game state including the last processed game tick.
   rpc Status(StatusRequest) returns (StatusResponse);
-  // Start starts the game running, and will make it ready to be picked up by a worker.
+  // Start starts the game running, and will make it ready to be picked up by a
+  // worker.
   rpc Start(StartRequest) returns (StartResponse);
-  // Create creates a new game, but doesn't start running frames
+  // Create creates a new game, but doesn't start running frames.
   rpc Create(CreateRequest) returns (CreateResponse);
-  // AddGameTick adds a new game tick to the game
+  // AddGameTick adds a new game tick to the game, this method must be called
+  // with a valid lock token passed through the `x-lock-token` header. View the
+  // pb.ContextWithLockToken(...) function.
   rpc AddGameTick(AddGameTickRequest) returns (AddGameTickResponse);
-  // EndGame sets the game status to complete
+  // ListGameTicks will list all game ticks given a limit and offset.
+  rpc ListGameTicks(ListGameTicksRequest) returns (ListGameTicksResponse);
+  // EndGame sets the game status to complete.
   rpc EndGame(EndGameRequest) returns (EndGameResponse);
 }
 
@@ -43,12 +75,15 @@ message PopResponse { string ID = 1; }
 
 
 message StatusRequest  { string ID = 1; }
-message StatusResponse { Game Game = 1; }
+message StatusResponse {
+  Game Game = 1;
+  GameTick LastTick = 2;
+}
 
 message StartRequest  { string ID = 1; }
 message StartResponse {}
 
-message CreateRequest  { 
+message CreateRequest  {
   int64 Width = 1;
   int64 Height = 2;
   int64 Food = 3;
@@ -58,11 +93,21 @@ message CreateResponse {
   string ID = 1;
 }
 
-message AddGameTickRequest { 
+message AddGameTickRequest {
   string ID = 1;
-  GameTick GameTick = 2; 
+  GameTick GameTick = 2;
 }
 message AddGameTickResponse { Game game = 1; }
+
+message ListGameTicksRequest {
+  string ID = 1;
+  int32 Limit = 2;
+  int32 Offset = 3;
+}
+message ListGameTicksResponse {
+  repeated GameTick Ticks = 1;
+  int32 Count = 2;
+}
 
 message EndGameRequest  { string ID = 1; }
 message EndGameResponse {}
@@ -73,12 +118,11 @@ message SnakeOptions {
   string ID = 3;
 }
 
-message Game { 
-  string ID = 1; 
+message Game {
+  string ID = 1;
   string Status = 2;
   int64 Width = 3;
   int64 Height = 4;
-  repeated GameTick Ticks = 5;
   int64 SnakeTimeout = 6; // number of milliseconds for snake api calls
   int64 TurnTimeout = 7; // number of milliseconds for turn delay
   string Mode = 8;

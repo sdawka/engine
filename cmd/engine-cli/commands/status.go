@@ -24,7 +24,7 @@ var statusCmd = &cobra.Command{
 			Timeout: 5 * time.Second,
 		}
 
-		resp, err := client.Get(fmt.Sprintf("%s/game/status/%s", apiAddr, gameID))
+		resp, err := client.Get(fmt.Sprintf("%s/games/%s", apiAddr, gameID))
 		if err != nil {
 			fmt.Println("error while posting to status endpoint", err)
 			return

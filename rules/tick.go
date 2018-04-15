@@ -10,13 +10,7 @@ import (
 )
 
 // GameTick runs the game one tick and updates the state
-func GameTick(game *pb.Game) (*pb.GameTick, error) {
-
-	if len(game.Ticks) == 0 {
-		return nil, errors.New("invalid game tick, current ticks is empty")
-	}
-
-	lastTick := game.Ticks[len(game.Ticks)-1]
+func GameTick(game *pb.Game, lastTick *pb.GameTick) (*pb.GameTick, error) {
 	nextTick := &pb.GameTick{
 		Turn:   lastTick.Turn + 1,
 		Snakes: lastTick.Snakes,

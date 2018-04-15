@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -47,6 +49,14 @@ func testStoreLockExpiry(t *testing.T, s Store) {
 	require.Nil(t, err)
 	require.NotEmpty(t, tok)
 
+	// Lock (with token) has expired.
+	_, err = s.Lock(ctx, "test", tok)
+	require.Nil(t, err)
+
+	// Unlock (no token) has expired.
+	err = s.Unlock(ctx, "test", "")
+	require.Nil(t, err)
+
 	// Lock (no token) has expired.
 	_, err = s.Lock(ctx, "test", "")
 	require.Nil(t, err)
@@ -63,7 +73,7 @@ func testStoreGames(t *testing.T, s Store) {
 	ctx := context.Background()
 
 	// Create and fetch a game.
-	err := s.PutGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning})
+	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning}, nil)
 	require.Nil(t, err)
 	g, err := s.GetGame(ctx, "test")
 	require.Nil(t, err)
@@ -85,6 +95,81 @@ func testStoreGames(t *testing.T, s Store) {
 	require.NotNil(t, err)
 }
 
-func TestStore_InMem_Lock(t *testing.T)       { testStoreLock(t, InMemStore()) }
-func TestStore_InMem_LockExpiry(t *testing.T) { testStoreLockExpiry(t, InMemStore()) }
-func TestStore_InMem_Games(t *testing.T)      { testStoreGames(t, InMemStore()) }
+func testStoreGameTicks(t *testing.T, s Store) {
+	ctx := context.Background()
+
+	// Create and fetch a game.
+	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning}, nil)
+	require.Nil(t, err)
+	g, err := s.GetGame(ctx, "test")
+	require.Nil(t, err)
+	require.Equal(t, "test", g.ID)
+
+	// Push a game tick, fails without lock.
+	err = s.PushGameTick(ctx, "test", &pb.GameTick{}, "")
+	require.NotNil(t, err)
+
+	// Lock key, push allowed.
+	token, err := s.Lock(ctx, "test", "")
+	require.Nil(t, err)
+	err = s.PushGameTick(ctx, "test", &pb.GameTick{}, token)
+	require.Nil(t, err)
+
+	// Unlock game.
+	err = s.Unlock(ctx, "test", token)
+	require.Nil(t, err)
+
+	// Read the game ticks.
+	ticks, err := s.ListGameTicks(ctx, "test", 1, 0)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(ticks))
+
+	// Read game ticks that don't exist.
+	ticks, err = s.ListGameTicks(ctx, "test22", 1, 0)
+	require.Equal(t, ErrNotFound, err)
+	require.Equal(t, 0, len(ticks))
+}
+
+func testStoreConcurrentWriters(t *testing.T, s Store) {
+	ctx := context.Background()
+
+	// Create and fetch a game.
+	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning}, nil)
+	require.Nil(t, err)
+
+	var ok uint32 // How many got the lock.
+	var wg sync.WaitGroup
+	wg.Add(20)
+
+	for i := 0; i < 20; i++ {
+		go func() {
+			// Lock key, push allowed.
+			token, errl := s.Lock(ctx, "test", "")
+			errp := s.PushGameTick(ctx, "test", &pb.GameTick{}, token)
+			// If locked, push should be allowed. If not locked, push not
+			// allowed.
+			if errl != nil {
+				require.NotNil(t, errp)
+			}
+			if errl == nil {
+				require.Nil(t, errp)
+				atomic.AddUint32(&ok, 1)
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+
+	// Read the game ticks.
+	ticks, err := s.ListGameTicks(ctx, "test", 1, 0)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(ticks))
+	require.Equal(t, uint32(1), ok)
+}
+
+func TestStore_InMem_Lock(t *testing.T)              { testStoreLock(t, InMemStore()) }
+func TestStore_InMem_LockExpiry(t *testing.T)        { testStoreLockExpiry(t, InMemStore()) }
+func TestStore_InMem_Games(t *testing.T)             { testStoreGames(t, InMemStore()) }
+func TestStore_InMem_GameTicks(t *testing.T)         { testStoreGameTicks(t, InMemStore()) }
+func TestStore_InMem_ConcurrentWriters(t *testing.T) { testStoreConcurrentWriters(t, InMemStore()) }

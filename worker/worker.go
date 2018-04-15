@@ -28,6 +28,8 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 	if err != nil {
 		return err
 	}
+	lastTick := resp.LastTick
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -37,20 +39,20 @@ func (w *Worker) perform(ctx context.Context, id string, workerID int) error {
 
 		start := time.Now()
 
-		gt, err := rules.GameTick(resp.Game)
+		lastTick, err = rules.GameTick(resp.Game, lastTick)
 		if err != nil {
 			resp.Game.Status = rules.GameStatusError // TODO: this may need to be changed
 			return err
 		}
 
-		_, err = w.ControllerClient.AddGameTick(ctx, &pb.AddGameTickRequest{ID: resp.Game.ID, GameTick: gt})
+		_, err = w.ControllerClient.AddGameTick(ctx, &pb.AddGameTickRequest{
+			ID:       resp.Game.ID,
+			GameTick: lastTick,
+		})
 		if err != nil {
 			return err
 		}
-
-		resp.Game.Ticks = append(resp.Game.Ticks, gt)
-
-		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), gt) {
+		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), lastTick) {
 			_, err := w.ControllerClient.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
 			if err != nil {
 				log.WithError(err).WithField("GameID", resp.Game.ID).Error("unable to end game")
@@ -134,6 +136,9 @@ func (w *Worker) run(ctx context.Context, workerID int) error {
 	return w.perform(ctx, id, workerID)
 }
 
+// Heartbeat will ping the Controller every HeartbeatInterval to let it know
+// that it is still working on a game. If the heartbeats fail, the controller
+// will give up the game to another worker.
 func (w *Worker) heartbeat(ctx context.Context, cancel context.CancelFunc, workerID int, id string) {
 	t := time.NewTicker(w.HeartbeatInterval)
 	defer t.Stop()

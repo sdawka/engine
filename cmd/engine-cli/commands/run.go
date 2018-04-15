@@ -29,7 +29,7 @@ var runCmd = &cobra.Command{
 			Timeout: 5 * time.Second,
 		}
 
-		resp, err := client.Post(fmt.Sprintf("%s/game/start/%s", apiAddr, gameID), "application/json", &bytes.Buffer{})
+		resp, err := client.Post(fmt.Sprintf("%s/games/%s/start", apiAddr, gameID), "application/json", &bytes.Buffer{})
 		if err != nil {
 			fmt.Println("error while posting to start endpoint", err)
 			return

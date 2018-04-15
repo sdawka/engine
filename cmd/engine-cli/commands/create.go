@@ -37,7 +37,7 @@ var createCmd = &cobra.Command{
 			return
 		}
 		buf := bytes.NewBuffer(data)
-		resp, err := client.Post(fmt.Sprintf("%s/game/create", apiAddr), "application/json", buf)
+		resp, err := client.Post(fmt.Sprintf("%s/games", apiAddr), "application/json", buf)
 		if err != nil {
 			fmt.Println("error while posting to create endpoint", err)
 			return

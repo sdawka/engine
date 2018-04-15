@@ -20,15 +20,15 @@ const (
 )
 
 // CreateInitialGame creates a new game based on the create request passed in
-func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, error) {
+func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameTick, error) {
 
 	snakes, err := getSnakes(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	food, err := generateFood(req, snakes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	id := uuid.NewV4().String()
@@ -39,21 +39,22 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, error) {
 		Status:       GameStatusStopped,
 		SnakeTimeout: 1000, // TODO: make this configurable
 		TurnTimeout:  200,  // TODO: make this configurable
-		Ticks: []*pb.GameTick{
-			{
-				Turn:   0,
-				Food:   food,
-				Snakes: snakes,
-			},
-		},
-		Mode: string(GameModeMultiPlayer),
+		Mode:         string(GameModeMultiPlayer),
 	}
 
 	if len(snakes) == 1 {
 		game.Mode = string(GameModeSinglePlayer)
 	}
 
-	return game, nil
+	ticks := []*pb.GameTick{
+		{
+			Turn:   0,
+			Food:   food,
+			Snakes: snakes,
+		},
+	}
+
+	return game, ticks, nil
 }
 
 func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {

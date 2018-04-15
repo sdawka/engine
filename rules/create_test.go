@@ -8,13 +8,13 @@ import (
 )
 
 func TestCreateInitialGame(t *testing.T) {
-	g, err := CreateInitialGame(&pb.CreateRequest{})
+	g, _, err := CreateInitialGame(&pb.CreateRequest{})
 	require.NoError(t, err)
 	require.NotNil(t, g.ID)
 }
 
 func TestCreateInitialGame_DuplicateSnakeIDs(t *testing.T) {
-	_, err := CreateInitialGame(&pb.CreateRequest{
+	_, _, err := CreateInitialGame(&pb.CreateRequest{
 		Width:  20,
 		Height: 20,
 		Snakes: []*pb.SnakeOptions{
@@ -26,7 +26,7 @@ func TestCreateInitialGame_DuplicateSnakeIDs(t *testing.T) {
 }
 
 func TestCreateInitialGame_GeneratedSnakeID(t *testing.T) {
-	g, err := CreateInitialGame(&pb.CreateRequest{
+	_, ticks, err := CreateInitialGame(&pb.CreateRequest{
 		Width:  20,
 		Height: 20,
 		Snakes: []*pb.SnakeOptions{
@@ -34,6 +34,6 @@ func TestCreateInitialGame_GeneratedSnakeID(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	require.Len(t, g.Ticks, 1)
-	require.NotEmpty(t, g.Ticks[0].Snakes[0].ID)
+	require.Len(t, ticks, 1)
+	require.NotEmpty(t, ticks[0].Snakes[0].ID)
 }

@@ -60,7 +60,7 @@ func basicCreateTest(t *testing.T, bodyJSON string, expectedStatusCode int, cont
 
 	buf := &bytes.Buffer{}
 	buf.WriteString(bodyJSON)
-	req, _ := http.NewRequest("POST", "/game/create", buf)
+	req, _ := http.NewRequest("POST", "/games", buf)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
@@ -82,7 +82,7 @@ func TestCreateHandlesErrors(t *testing.T) {
 func TestStart(t *testing.T) {
 	s, _ := createAPIServer()
 
-	req, _ := http.NewRequest("POST", "/game/start/abc_123", nil)
+	req, _ := http.NewRequest("POST", "/games/abc_123/start", nil)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
@@ -92,7 +92,7 @@ func TestStart(t *testing.T) {
 func basicStatusTest(t *testing.T, id string, expectedStatusCode int, controllerError error) {
 	s, _ := createAPIServerWithError(controllerError)
 
-	req, _ := http.NewRequest("GET", "/game/status/"+id, nil)
+	req, _ := http.NewRequest("GET", "/games/"+id, nil)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
