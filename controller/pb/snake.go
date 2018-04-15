@@ -59,5 +59,8 @@ func (s *Snake) DefaultMove() {
 
 // Head returns the first point in the body
 func (s *Snake) Head() *Point {
+	if len(s.Body) == 0 {
+		return nil
+	}
 	return s.Body[0]
 }

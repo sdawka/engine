@@ -23,7 +23,11 @@ func checkForDeath(width, height int64, tick *pb.GameTick) []deathUpdate {
 			})
 			continue
 		}
-		if s.Head().X < 0 || s.Head().X >= width || s.Head().Y < 0 || s.Head().Y >= height {
+		head := s.Head()
+		if head == nil {
+			continue
+		}
+		if head.X < 0 || head.X >= width || head.Y < 0 || head.Y >= height {
 			updates = append(updates, deathUpdate{
 				Snake: s,
 				Death: &pb.Death{

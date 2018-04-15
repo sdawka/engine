@@ -125,8 +125,8 @@ func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snak
 	}
 }
 
-func updateSnakes(game *pb.Game, tick *pb.GameTick, moves <-chan SnakeUpdate) {
-	for update := range moves {
+func updateSnakes(game *pb.Game, tick *pb.GameTick, moves []*SnakeUpdate) {
+	for _, update := range moves {
 		if update.Err != nil {
 			log.WithFields(log.Fields{
 				"GameID":  game.ID,
@@ -158,6 +158,9 @@ func checkForSnakesEating(tick *pb.GameTick) []*pb.Point {
 			}
 		}
 		if !ate {
+			if len(snake.Body) == 0 {
+				continue
+			}
 			snake.Body = snake.Body[:len(snake.Body)-1]
 		}
 	}

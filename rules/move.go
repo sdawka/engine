@@ -16,10 +16,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var netClient httpClient = &wrappedHTTPClient{
-	Client: &http.Client{
-		Timeout: 2 * time.Millisecond,
-	},
+var (
+	createClient = getNetClient
+)
+
+func getNetClient(duration time.Duration) httpClient {
+	return &wrappedHTTPClient{
+		Client: &http.Client{
+			Timeout: duration,
+		},
+	}
 }
 
 // SnakeUpdate bundles together a snake with a move for processing
@@ -47,34 +53,37 @@ func isValidURL(url string) bool {
 }
 
 // GatherSnakeMoves goes and queries each snake for the snake move
-func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameTick *pb.GameTick) <-chan SnakeUpdate {
+func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameTick *pb.GameTick) []*SnakeUpdate {
 	respChan := make(chan SnakeUpdate, len(gameTick.Snakes))
-	go func() {
-		wg := sync.WaitGroup{}
-		for _, s := range gameTick.AliveSnakes() {
-			if !isValidURL(s.URL) {
-				respChan <- SnakeUpdate{
-					Snake: s,
-					Err:   errors.New("invalid snake url"),
-				}
-				continue
+	wg := sync.WaitGroup{}
+	for _, s := range gameTick.AliveSnakes() {
+		if !isValidURL(s.URL) {
+			respChan <- SnakeUpdate{
+				Snake: s,
+				Err:   errors.New("invalid snake url"),
 			}
-			wg.Add(1)
-			go func(snake *pb.Snake) {
-				getMove(snake, buildSnakeRequest(game, gameTick, snake.ID), timeout, respChan)
-				wg.Done()
-			}(s)
+			continue
 		}
-		wg.Wait()
-		log.Info("closing snake update channel")
-		close(respChan)
-	}()
-	return respChan
+		wg.Add(1)
+		go func(snake *pb.Snake) {
+			getMove(snake, buildSnakeRequest(game, gameTick, snake.ID), timeout, respChan)
+			wg.Done()
+		}(s)
+	}
+	wg.Wait()
+	log.Info("closing snake update channel")
+	close(respChan)
+	ret := []*SnakeUpdate{}
+	for u := range respChan {
+		fmt.Println(u)
+		ret = append(ret, &u)
+	}
+	return ret
 }
 
 // GetMove queries the snake url and returns the resp on the channel
 func getMove(snake *pb.Snake, req SnakeRequest, timeout time.Duration, resp chan<- SnakeUpdate) {
-	netClient.SetTimeout(timeout)
+	netClient := createClient(timeout)
 	data, err := json.Marshal(req)
 	if err != nil {
 		log.WithError(err).Errorf("error while marshaling snake request: %s", snake.ID)
