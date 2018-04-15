@@ -13,12 +13,13 @@ option go_package = "pb";
 // 1. Create is called (from the api).
 // 2. Start is called (from the api).
 // 3. Pop is called by the worker, since the game is started and unlocked, the
-//    active game id is returned to the worker in this call.
-// 4. Lock is called by the current worker.
-// 5. The worker initiates work and begins pushing game ticks through
-//    AddGameTick. The worker will also call Lock continually to keep the lock
-//    token valid.
-// 6. Once work is finished, the worker will call EndGame and Unlock the game.
+//    active game id is returned to the worker in this call. The game is also
+//    locked internally to the controller at this point.
+// 4. The worker initiates work and begins pushing game ticks through
+//    AddGameTick. If a game tick is not pushed within controller.LockInterval
+//    then the game will become available for other workers.
+// 5. Once work is finished, the worker will call EndGame which will unlock the
+//    game.
 //
 // The data model for the store includes the following components:
 //
@@ -36,16 +37,9 @@ option go_package = "pb";
 // However, only one worker is allowed to push a tick at one time, otherwise the
 // game ticks would be in a weird order.
 service Controller {
-  // Lock should lock a specific game using the passed in ID. No writes to the
-  // game should happen as long as the lock is valid. The game being locked does
-  // not need to exist.
-  rpc Lock(LockRequest) returns (LockResponse);
-  // Unlock should unlock a game, if already unlocked a valid lock token must be
-  // present.
-  rpc Unlock(UnlockRequest) returns (UnlockResponse);
-  // Pop should pop a game that is unlocked and unfinished from the queue. It can
-  // be subject to race conditions where it is locked immediately after, this is
-  // expected.
+  // Pop should pop a game that is unlocked and unfinished from the queue, lock
+  // the game and return it to the worker to begin processing. This call will
+  // be polled by the workers.
   rpc Pop(PopRequest) returns (PopResponse);
   // Status retrieves the game state including the last processed game tick.
   rpc Status(StatusRequest) returns (StatusResponse);
@@ -54,25 +48,21 @@ service Controller {
   rpc Start(StartRequest) returns (StartResponse);
   // Create creates a new game, but doesn't start running frames.
   rpc Create(CreateRequest) returns (CreateResponse);
-  // AddGameTick adds a new game tick to the game, this method must be called
-  // with a valid lock token passed through the `x-lock-token` header. View the
-  // pb.ContextWithLockToken(...) function.
+  // AddGameTick adds a new game tick to the game. A lock must be held for this
+  // call to succeed.
   rpc AddGameTick(AddGameTickRequest) returns (AddGameTickResponse);
   // ListGameTicks will list all game ticks given a limit and offset.
   rpc ListGameTicks(ListGameTicksRequest) returns (ListGameTicksResponse);
-  // EndGame sets the game status to complete.
+  // EndGame sets the game status to complete. A lock must be held for this call
+  // to succeed.
   rpc EndGame(EndGameRequest) returns (EndGameResponse);
 }
 
-message LockRequest  { string ID = 1; }
-message LockResponse { string Token = 1; }
-
-message UnlockRequest  { string ID = 1; }
-message UnlockResponse {}
-
 message PopRequest  {}
-message PopResponse { string ID = 1; }
-
+message PopResponse {
+  string ID = 1;
+  string Token = 2;
+}
 
 message StatusRequest  { string ID = 1; }
 message StatusResponse {

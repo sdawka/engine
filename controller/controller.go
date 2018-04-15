@@ -30,40 +30,21 @@ type Server struct {
 	port    int
 }
 
-// Lock should lock a specific game using the passed in ID. No writes to the
-// game should happen as long as the lock is valid. The game being locked does
-// not need to exist.
-func (s *Server) Lock(ctx context.Context, req *pb.LockRequest) (*pb.LockResponse, error) {
-	token := pb.ContextGetLockToken(ctx)
-	token, err := s.Store.Lock(ctx, req.ID, token)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.LockResponse{Token: token}, nil
-}
-
-// Unlock should unlock a game, if already unlocked a valid lock token must be
-// present
-func (s *Server) Unlock(ctx context.Context, req *pb.UnlockRequest) (*pb.UnlockResponse, error) {
-	token := pb.ContextGetLockToken(ctx)
-	err := s.Store.Unlock(ctx, req.ID, token)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.UnlockResponse{}, nil
-}
-
-// Pop should pop a game that is unlocked and unfished from the queue. It can
-// be subject to race conditions where it is locked immediately after, this is
-// expected.
+// Pop should pop a game that is unlocked and unfinished from the queue, lock
+// the game and return it to the worker to begin processing. This call will
+// be polled by the workers.
 func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, error) {
 	id, err := s.Store.PopGameID(ctx)
-	if err == ErrNotFound {
-		return nil, status.Error(codes.NotFound, err.Error())
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
-	return &pb.PopResponse{ID: id}, nil
+
+	token, err := s.Store.Lock(ctx, id, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.PopResponse{ID: id, Token: token}, nil
 }
 
 // Status retrieves the game state including the last processed game tick.
@@ -90,8 +71,6 @@ func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResp
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Move this to the worker.
-	// rules.NotifyGameStart(g)
 	return &pb.StartResponse{}, nil
 }
 
@@ -110,12 +89,25 @@ func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	}, nil
 }
 
-// AddGameTick adds a new game tick to the game, this method must be called
-// with a valid lock token passed through the `x-lock-token` header. View the
-// pb.ContextWithLockToken(...) function.
+// AddGameTick adds a new game tick to the game. A lock must be held for this
+// call to succeed.
 func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*pb.AddGameTickResponse, error) {
 	token := pb.ContextGetLockToken(ctx)
-	err := s.Store.PushGameTick(ctx, req.ID, req.GameTick, token)
+
+	if req.GameTick == nil {
+		return nil, status.Error(codes.InvalidArgument, "controller: game tick must not be nil")
+	}
+
+	// Lock the game again, if this fails, the lock is not valid.
+	_, err := s.Store.Lock(ctx, req.ID, token)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Need to check that game tick follows the sequence from the previous
+	// tick here.
+
+	err = s.Store.PushGameTick(ctx, req.ID, req.GameTick)
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +122,12 @@ func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*
 
 // ListGameTicks will list all game ticks given a limit and offset.
 func (s *Server) ListGameTicks(ctx context.Context, req *pb.ListGameTicksRequest) (*pb.ListGameTicksResponse, error) {
+	if req.Limit == 0 {
+		req.Limit = 50
+	}
+	if req.Limit > 50 {
+		req.Limit = 50
+	}
 	ticks, err := s.Store.ListGameTicks(ctx, req.ID, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, err
@@ -140,14 +138,29 @@ func (s *Server) ListGameTicks(ctx context.Context, req *pb.ListGameTicksRequest
 	}, nil
 }
 
-// EndGame sets the game status to complete.
+// EndGame sets the game status to complete. A lock must be held for this call
+// to succeed.
 func (s *Server) EndGame(ctx context.Context, req *pb.EndGameRequest) (*pb.EndGameResponse, error) {
-	err := s.Store.SetGameStatus(ctx, req.ID, rules.GameStatusComplete)
+	token := pb.ContextGetLockToken(ctx)
+
+	// Lock the game again, if this fails, the lock is not valid. We only need
+	// the lock for the next part where we set the game status.
+	newToken, err := s.Store.Lock(ctx, req.ID, token)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Move to the worker.
-	// rules.NotifyGameEnd(game)
+	token = newToken
+
+	err = s.Store.SetGameStatus(ctx, req.ID, rules.GameStatusComplete)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Store.Unlock(ctx, req.ID, token)
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.EndGameResponse{}, nil
 }
 

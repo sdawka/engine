@@ -46,9 +46,9 @@ func main() {
 	}()
 
 	w := &worker.Worker{
-		ControllerClient:  client,
-		PollInterval:      1 * time.Second,
-		HeartbeatInterval: 300 * time.Millisecond,
+		ControllerClient: client,
+		PollInterval:     1 * time.Second,
+		RunGame:          worker.Runner,
 	}
 
 	ctx := context.Background()

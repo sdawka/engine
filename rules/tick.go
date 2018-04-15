@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -11,6 +12,9 @@ import (
 
 // GameTick runs the game one tick and updates the state
 func GameTick(game *pb.Game, lastTick *pb.GameTick) (*pb.GameTick, error) {
+	if lastTick == nil {
+		return nil, fmt.Errorf("rules: invalid state, previous tick is nil")
+	}
 	nextTick := &pb.GameTick{
 		Turn:   lastTick.Turn + 1,
 		Snakes: lastTick.Snakes,
