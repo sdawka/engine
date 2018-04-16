@@ -76,8 +76,6 @@ func TestWorker_RunnerErrors(t *testing.T) {
 }
 
 func TestWorker_Runner(t *testing.T) {
-	t.Skip("skipping due to race conditions")
-
 	client, _ := server()
 
 	games := map[string]*pb.CreateRequest{
