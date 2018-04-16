@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
@@ -37,6 +37,9 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			return err
 		}
 
+		log.WithField("game", id).
+			WithField("turn", nextTick.Turn).
+			Info("adding game tick")
 		_, err = client.AddGameTick(ctx, &pb.AddGameTickRequest{
 			ID:       resp.Game.ID,
 			GameTick: nextTick,
@@ -47,9 +50,15 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 		}
 
 		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), nextTick) {
+			log.WithField("game", id).
+				WithField("turn", nextTick.Turn).
+				Info("ending game")
 			rules.NotifyGameEnd(resp.Game)
 			_, err := client.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
-			return err
+			if err != nil {
+				return err
+			}
+			return nil
 		}
 
 		lastTick = nextTick

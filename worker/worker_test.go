@@ -10,10 +10,11 @@ import (
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/metadata"
 )
 
 func server() (pb.ControllerClient, controller.Store) {
-	controller.LockExpiry = 3 * time.Millisecond
+	controller.LockExpiry = 150 * time.Millisecond
 
 	store := controller.InMemStore()
 	ctrl := controller.New(store)
@@ -31,7 +32,7 @@ func server() (pb.ControllerClient, controller.Store) {
 }
 
 func TestWorker_Run(t *testing.T) {
-	client, _ := server()
+	client, store := server()
 
 	w := &Worker{
 		ControllerClient: client,
@@ -104,8 +105,9 @@ func TestWorker_Run(t *testing.T) {
 			if gameID != id {
 				return fmt.Errorf("game expected %s found %s", gameID, id)
 			}
-			// Sleep to expire lock.
-			time.Sleep(10 * time.Millisecond)
+			// Unlock the given game.
+			md, _ := metadata.FromOutgoingContext(c)
+			store.Unlock(c, id, md[pb.TokenKey][0])
 			// Lock the game
 			client.Pop(ctx, &pb.PopRequest{})
 			// Push game tick.

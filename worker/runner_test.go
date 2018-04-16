@@ -76,8 +76,6 @@ func TestWorker_RunnerErrors(t *testing.T) {
 }
 
 func TestWorker_Runner(t *testing.T) {
-	t.Skip("skipping due to race conditions")
-
 	client, _ := server()
 
 	games := map[string]*pb.CreateRequest{
@@ -143,6 +141,8 @@ func TestWorker_Runner(t *testing.T) {
 
 	for key, game := range games {
 		t.Run(fmt.Sprintf("%s", key), func(t *testing.T) {
+			t.Parallel()
+
 			g, err := client.Create(ctx, game)
 			require.Nil(t, err)
 
