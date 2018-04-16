@@ -4,6 +4,9 @@ package pb
 // after snakes have eaten
 func (s *Snake) Move(direction string) {
 	h := s.Head()
+	if h == nil {
+		return
+	}
 	switch direction {
 	case "up":
 		s.Body = append([]*Point{
