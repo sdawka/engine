@@ -42,19 +42,26 @@ func (readCloser) Close() error {
 func TestGatherSnakeMoves(t *testing.T) {
 	body := readCloser{Buffer: &bytes.Buffer{}}
 	body.WriteString("{\"move\":\"up\"}")
-	mock := mockHTTPClient{
-		resp: &http.Response{
-			Body: body,
-		},
-	}
-	netClient = mock
-	updates := GatherSnakeMoves(1*time.Second, &pb.Game{}, &pb.GameTick{
-		Snakes: []*pb.Snake{
-			&pb.Snake{
-				URL: "http://not.a.snake.com",
+	createClient = func(time.Duration) httpClient {
+		return mockHTTPClient{
+			resp: &http.Response{
+				Body: body,
 			},
-		},
-	})
+		}
+	}
+	updates := make(chan *SnakeUpdate)
+	go func() {
+		u := GatherSnakeMoves(1*time.Second, &pb.Game{}, &pb.GameTick{
+			Snakes: []*pb.Snake{
+				&pb.Snake{
+					URL: "http://not.a.snake.com",
+				},
+			},
+		})
+		if len(u) > 0 {
+			updates <- u[0]
+		}
+	}()
 	select {
 	case update := <-updates:
 		require.Equal(t, "up", update.Move)

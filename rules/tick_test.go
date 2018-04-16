@@ -146,23 +146,23 @@ func TestUpdateSnakes(t *testing.T) {
 			{X: 1, Y: 1},
 		},
 	}
-	moves := make(chan SnakeUpdate, 1)
-	moves <- SnakeUpdate{
-		Snake: snake,
-		Err:   errors.New("some error"),
+	moves := []*SnakeUpdate{
+		&SnakeUpdate{
+			Snake: snake,
+			Err:   errors.New("some error"),
+		},
 	}
-	close(moves)
 	updateSnakes(&pb.Game{}, &pb.GameTick{
 		Snakes: []*pb.Snake{snake},
 	}, moves)
 	require.Equal(t, &pb.Point{X: 1, Y: 0}, snake.Head(), "snake did not move up")
 
-	moves = make(chan SnakeUpdate, 1)
-	moves <- SnakeUpdate{
-		Snake: snake,
-		Move:  "left",
+	moves = []*SnakeUpdate{
+		&SnakeUpdate{
+			Snake: snake,
+			Move:  "left",
+		},
 	}
-	close(moves)
 	updateSnakes(&pb.Game{}, &pb.GameTick{
 		Snakes: []*pb.Snake{snake},
 	}, moves)
