@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -11,15 +10,18 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
+// LockExpiry is the time after which a lock will expire.
+var LockExpiry = 1 * time.Second
+
 var (
-	// LockExpiry is the time after which a lock will expire.
-	LockExpiry = 1 * time.Second
 	// ErrNotFound is thrown when a game is not found.
-	ErrNotFound = errors.New("controller: game not found")
+	ErrNotFound = status.Error(codes.NotFound, "controller: game not found")
 	// ErrIsLocked is returned when a game is locked.
-	ErrIsLocked = errors.New("controller: game is locked")
+	ErrIsLocked = status.Error(codes.ResourceExhausted, "controller: game is locked")
 )
 
 // Store is the interface to the game store. It implements locking for workers
@@ -35,12 +37,13 @@ type Store interface {
 	// PopGameID returns a new game that is unlocked and running. Workers call
 	// this method through the controller to find games to process.
 	PopGameID(context.Context) (string, error)
-	// SetGameStatus is used to set a specific game status. No lock is required.
+	// SetGameStatus is used to set a specific game status. This operation
+	// should be atomic.
 	SetGameStatus(c context.Context, id, status string) error
 	// CreateGame will insert a game with the default game ticks.
 	CreateGame(context.Context, *pb.Game, []*pb.GameTick) error
 	// PushGameTick will push a game tick onto the list of ticks.
-	PushGameTick(c context.Context, id string, t *pb.GameTick, token string) error
+	PushGameTick(c context.Context, id string, t *pb.GameTick) error
 	// ListGameTicks will list ticks by an offset and limit, it supports
 	// negative offset.
 	ListGameTicks(c context.Context, id string, limit, offset int) ([]*pb.GameTick, error)
@@ -106,14 +109,6 @@ func (in *inmem) isLocked(key string) bool {
 	return ok && l.expires.After(time.Now())
 }
 
-func (in *inmem) isLockedBy(key, token string) bool {
-	l, ok := in.locks[key]
-	if ok && l.expires.After(time.Now()) {
-		return l.token == token
-	}
-	return false
-}
-
 func (in *inmem) Unlock(ctx context.Context, key, token string) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
@@ -167,12 +162,9 @@ func (in *inmem) SetGameStatus(ctx context.Context, id, status string) error {
 	return ErrNotFound
 }
 
-func (in *inmem) PushGameTick(ctx context.Context, id string, g *pb.GameTick, token string) error {
+func (in *inmem) PushGameTick(ctx context.Context, id string, g *pb.GameTick) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
-	if !in.isLockedBy(id, token) {
-		return ErrIsLocked
-	}
 	in.ticks[id] = append(in.ticks[id], g)
 	return nil
 }
@@ -180,12 +172,18 @@ func (in *inmem) PushGameTick(ctx context.Context, id string, g *pb.GameTick, to
 func (in *inmem) ListGameTicks(ctx context.Context, id string, limit, offset int) ([]*pb.GameTick, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
+	if _, ok := in.games[id]; !ok {
+		return nil, ErrNotFound
+	}
 	ticks := in.ticks[id]
+	if len(ticks) == 0 {
+		return nil, nil
+	}
 	if offset < 0 {
 		offset = len(ticks) + offset
 	}
 	if offset >= len(ticks) {
-		return nil, ErrNotFound
+		return nil, nil
 	}
 	if offset+limit >= len(ticks) {
 		limit = len(ticks) - offset

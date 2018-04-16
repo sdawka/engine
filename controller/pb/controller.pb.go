@@ -8,10 +8,6 @@ It is generated from these files:
 	controller.proto
 
 It has these top-level messages:
-	LockRequest
-	LockResponse
-	UnlockRequest
-	UnlockResponse
 	PopRequest
 	PopResponse
 	StatusRequest
@@ -54,82 +50,34 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
-type LockRequest struct {
-	ID string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-}
-
-func (m *LockRequest) Reset()                    { *m = LockRequest{} }
-func (m *LockRequest) String() string            { return proto.CompactTextString(m) }
-func (*LockRequest) ProtoMessage()               {}
-func (*LockRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{0} }
-
-func (m *LockRequest) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-type LockResponse struct {
-	Token string `protobuf:"bytes,1,opt,name=Token,proto3" json:"Token,omitempty"`
-}
-
-func (m *LockResponse) Reset()                    { *m = LockResponse{} }
-func (m *LockResponse) String() string            { return proto.CompactTextString(m) }
-func (*LockResponse) ProtoMessage()               {}
-func (*LockResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{1} }
-
-func (m *LockResponse) GetToken() string {
-	if m != nil {
-		return m.Token
-	}
-	return ""
-}
-
-type UnlockRequest struct {
-	ID string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-}
-
-func (m *UnlockRequest) Reset()                    { *m = UnlockRequest{} }
-func (m *UnlockRequest) String() string            { return proto.CompactTextString(m) }
-func (*UnlockRequest) ProtoMessage()               {}
-func (*UnlockRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{2} }
-
-func (m *UnlockRequest) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-type UnlockResponse struct {
-}
-
-func (m *UnlockResponse) Reset()                    { *m = UnlockResponse{} }
-func (m *UnlockResponse) String() string            { return proto.CompactTextString(m) }
-func (*UnlockResponse) ProtoMessage()               {}
-func (*UnlockResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{3} }
-
 type PopRequest struct {
 }
 
 func (m *PopRequest) Reset()                    { *m = PopRequest{} }
 func (m *PopRequest) String() string            { return proto.CompactTextString(m) }
 func (*PopRequest) ProtoMessage()               {}
-func (*PopRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{4} }
+func (*PopRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{0} }
 
 type PopResponse struct {
-	ID string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	ID    string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Token string `protobuf:"bytes,2,opt,name=Token,proto3" json:"Token,omitempty"`
 }
 
 func (m *PopResponse) Reset()                    { *m = PopResponse{} }
 func (m *PopResponse) String() string            { return proto.CompactTextString(m) }
 func (*PopResponse) ProtoMessage()               {}
-func (*PopResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{5} }
+func (*PopResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{1} }
 
 func (m *PopResponse) GetID() string {
 	if m != nil {
 		return m.ID
+	}
+	return ""
+}
+
+func (m *PopResponse) GetToken() string {
+	if m != nil {
+		return m.Token
 	}
 	return ""
 }
@@ -141,7 +89,7 @@ type StatusRequest struct {
 func (m *StatusRequest) Reset()                    { *m = StatusRequest{} }
 func (m *StatusRequest) String() string            { return proto.CompactTextString(m) }
 func (*StatusRequest) ProtoMessage()               {}
-func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{6} }
+func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{2} }
 
 func (m *StatusRequest) GetID() string {
 	if m != nil {
@@ -158,7 +106,7 @@ type StatusResponse struct {
 func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
 func (m *StatusResponse) String() string            { return proto.CompactTextString(m) }
 func (*StatusResponse) ProtoMessage()               {}
-func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
+func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{3} }
 
 func (m *StatusResponse) GetGame() *Game {
 	if m != nil {
@@ -181,7 +129,7 @@ type StartRequest struct {
 func (m *StartRequest) Reset()                    { *m = StartRequest{} }
 func (m *StartRequest) String() string            { return proto.CompactTextString(m) }
 func (*StartRequest) ProtoMessage()               {}
-func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
+func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{4} }
 
 func (m *StartRequest) GetID() string {
 	if m != nil {
@@ -196,7 +144,7 @@ type StartResponse struct {
 func (m *StartResponse) Reset()                    { *m = StartResponse{} }
 func (m *StartResponse) String() string            { return proto.CompactTextString(m) }
 func (*StartResponse) ProtoMessage()               {}
-func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
+func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{5} }
 
 type CreateRequest struct {
 	Width  int64           `protobuf:"varint,1,opt,name=Width,proto3" json:"Width,omitempty"`
@@ -208,7 +156,7 @@ type CreateRequest struct {
 func (m *CreateRequest) Reset()                    { *m = CreateRequest{} }
 func (m *CreateRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()               {}
-func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
+func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{6} }
 
 func (m *CreateRequest) GetWidth() int64 {
 	if m != nil {
@@ -245,7 +193,7 @@ type CreateResponse struct {
 func (m *CreateResponse) Reset()                    { *m = CreateResponse{} }
 func (m *CreateResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateResponse) ProtoMessage()               {}
-func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
+func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
 
 func (m *CreateResponse) GetID() string {
 	if m != nil {
@@ -262,7 +210,7 @@ type AddGameTickRequest struct {
 func (m *AddGameTickRequest) Reset()                    { *m = AddGameTickRequest{} }
 func (m *AddGameTickRequest) String() string            { return proto.CompactTextString(m) }
 func (*AddGameTickRequest) ProtoMessage()               {}
-func (*AddGameTickRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
+func (*AddGameTickRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
 
 func (m *AddGameTickRequest) GetID() string {
 	if m != nil {
@@ -285,7 +233,7 @@ type AddGameTickResponse struct {
 func (m *AddGameTickResponse) Reset()                    { *m = AddGameTickResponse{} }
 func (m *AddGameTickResponse) String() string            { return proto.CompactTextString(m) }
 func (*AddGameTickResponse) ProtoMessage()               {}
-func (*AddGameTickResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
+func (*AddGameTickResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
 
 func (m *AddGameTickResponse) GetGame() *Game {
 	if m != nil {
@@ -303,7 +251,7 @@ type ListGameTicksRequest struct {
 func (m *ListGameTicksRequest) Reset()                    { *m = ListGameTicksRequest{} }
 func (m *ListGameTicksRequest) String() string            { return proto.CompactTextString(m) }
 func (*ListGameTicksRequest) ProtoMessage()               {}
-func (*ListGameTicksRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{14} }
+func (*ListGameTicksRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
 
 func (m *ListGameTicksRequest) GetID() string {
 	if m != nil {
@@ -334,7 +282,7 @@ type ListGameTicksResponse struct {
 func (m *ListGameTicksResponse) Reset()                    { *m = ListGameTicksResponse{} }
 func (m *ListGameTicksResponse) String() string            { return proto.CompactTextString(m) }
 func (*ListGameTicksResponse) ProtoMessage()               {}
-func (*ListGameTicksResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{15} }
+func (*ListGameTicksResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
 
 func (m *ListGameTicksResponse) GetTicks() []*GameTick {
 	if m != nil {
@@ -357,7 +305,7 @@ type EndGameRequest struct {
 func (m *EndGameRequest) Reset()                    { *m = EndGameRequest{} }
 func (m *EndGameRequest) String() string            { return proto.CompactTextString(m) }
 func (*EndGameRequest) ProtoMessage()               {}
-func (*EndGameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
+func (*EndGameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
 
 func (m *EndGameRequest) GetID() string {
 	if m != nil {
@@ -372,7 +320,7 @@ type EndGameResponse struct {
 func (m *EndGameResponse) Reset()                    { *m = EndGameResponse{} }
 func (m *EndGameResponse) String() string            { return proto.CompactTextString(m) }
 func (*EndGameResponse) ProtoMessage()               {}
-func (*EndGameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{17} }
+func (*EndGameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
 
 type SnakeOptions struct {
 	Name string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
@@ -383,7 +331,7 @@ type SnakeOptions struct {
 func (m *SnakeOptions) Reset()                    { *m = SnakeOptions{} }
 func (m *SnakeOptions) String() string            { return proto.CompactTextString(m) }
 func (*SnakeOptions) ProtoMessage()               {}
-func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{18} }
+func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{14} }
 
 func (m *SnakeOptions) GetName() string {
 	if m != nil {
@@ -419,7 +367,7 @@ type Game struct {
 func (m *Game) Reset()                    { *m = Game{} }
 func (m *Game) String() string            { return proto.CompactTextString(m) }
 func (*Game) ProtoMessage()               {}
-func (*Game) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{19} }
+func (*Game) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{15} }
 
 func (m *Game) GetID() string {
 	if m != nil {
@@ -479,7 +427,7 @@ type GameTick struct {
 func (m *GameTick) Reset()                    { *m = GameTick{} }
 func (m *GameTick) String() string            { return proto.CompactTextString(m) }
 func (*GameTick) ProtoMessage()               {}
-func (*GameTick) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{20} }
+func (*GameTick) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
 
 func (m *GameTick) GetTurn() int64 {
 	if m != nil {
@@ -510,7 +458,7 @@ type Point struct {
 func (m *Point) Reset()                    { *m = Point{} }
 func (m *Point) String() string            { return proto.CompactTextString(m) }
 func (*Point) ProtoMessage()               {}
-func (*Point) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{21} }
+func (*Point) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{17} }
 
 func (m *Point) GetX() int64 {
 	if m != nil {
@@ -538,7 +486,7 @@ type Snake struct {
 func (m *Snake) Reset()                    { *m = Snake{} }
 func (m *Snake) String() string            { return proto.CompactTextString(m) }
 func (*Snake) ProtoMessage()               {}
-func (*Snake) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{22} }
+func (*Snake) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{18} }
 
 func (m *Snake) GetID() string {
 	if m != nil {
@@ -590,7 +538,7 @@ type Death struct {
 func (m *Death) Reset()                    { *m = Death{} }
 func (m *Death) String() string            { return proto.CompactTextString(m) }
 func (*Death) ProtoMessage()               {}
-func (*Death) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{23} }
+func (*Death) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{19} }
 
 func (m *Death) GetCause() string {
 	if m != nil {
@@ -607,10 +555,6 @@ func (m *Death) GetTurn() int64 {
 }
 
 func init() {
-	proto.RegisterType((*LockRequest)(nil), "pb.LockRequest")
-	proto.RegisterType((*LockResponse)(nil), "pb.LockResponse")
-	proto.RegisterType((*UnlockRequest)(nil), "pb.UnlockRequest")
-	proto.RegisterType((*UnlockResponse)(nil), "pb.UnlockResponse")
 	proto.RegisterType((*PopRequest)(nil), "pb.PopRequest")
 	proto.RegisterType((*PopResponse)(nil), "pb.PopResponse")
 	proto.RegisterType((*StatusRequest)(nil), "pb.StatusRequest")
@@ -631,99 +575,6 @@ func init() {
 	proto.RegisterType((*Point)(nil), "pb.Point")
 	proto.RegisterType((*Snake)(nil), "pb.Snake")
 	proto.RegisterType((*Death)(nil), "pb.Death")
-}
-func (this *LockRequest) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*LockRequest)
-	if !ok {
-		that2, ok := that.(LockRequest)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ID != that1.ID {
-		return false
-	}
-	return true
-}
-func (this *LockResponse) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*LockResponse)
-	if !ok {
-		that2, ok := that.(LockResponse)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Token != that1.Token {
-		return false
-	}
-	return true
-}
-func (this *UnlockRequest) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*UnlockRequest)
-	if !ok {
-		that2, ok := that.(UnlockRequest)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ID != that1.ID {
-		return false
-	}
-	return true
-}
-func (this *UnlockResponse) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*UnlockResponse)
-	if !ok {
-		that2, ok := that.(UnlockResponse)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	return true
 }
 func (this *PopRequest) Equal(that interface{}) bool {
 	if that == nil {
@@ -766,6 +617,9 @@ func (this *PopResponse) Equal(that interface{}) bool {
 		return false
 	}
 	if this.ID != that1.ID {
+		return false
+	}
+	if this.Token != that1.Token {
 		return false
 	}
 	return true
@@ -1308,28 +1162,24 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Controller service
 
 type ControllerClient interface {
-	// Lock should lock a specific game using the passed in ID. No writes to the
-	// game should happen as long as the lock is valid. The game being locked does
-	// not need to exist.
-	Lock(ctx context.Context, in *LockRequest, opts ...grpc.CallOption) (*LockResponse, error)
-	// Unlock should unlock a game, if already unlocked a valid lock token must be
-	// present.
-	Unlock(ctx context.Context, in *UnlockRequest, opts ...grpc.CallOption) (*UnlockResponse, error)
 	// Pop should pop a game that is unlocked and unfinished from the queue. It can
 	// be subject to race conditions where it is locked immediately after, this is
 	// expected.
 	Pop(ctx context.Context, in *PopRequest, opts ...grpc.CallOption) (*PopResponse, error)
-	// Status retrieves the game state.
+	// Status retrieves the game state including the last processed game tick.
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
-	// Start starts the game running, and will make it ready to be picked up by a worker.
+	// Start starts the game running, and will make it ready to be picked up by a
+	// worker.
 	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (*StartResponse, error)
-	// Create creates a new game, but doesn't start running frames
+	// Create creates a new game, but doesn't start running frames.
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
-	// AddGameTick adds a new game tick to the game
+	// AddGameTick adds a new game tick to the game, this method must be called
+	// with a valid lock token passed through the `x-lock-token` header. View the
+	// pb.ContextWithLockToken(...) function.
 	AddGameTick(ctx context.Context, in *AddGameTickRequest, opts ...grpc.CallOption) (*AddGameTickResponse, error)
-	// ListGameTicks will list all game ticks.
+	// ListGameTicks will list all game ticks given a limit and offset.
 	ListGameTicks(ctx context.Context, in *ListGameTicksRequest, opts ...grpc.CallOption) (*ListGameTicksResponse, error)
-	// EndGame sets the game status to complete
+	// EndGame sets the game status to complete.
 	EndGame(ctx context.Context, in *EndGameRequest, opts ...grpc.CallOption) (*EndGameResponse, error)
 }
 
@@ -1339,24 +1189,6 @@ type controllerClient struct {
 
 func NewControllerClient(cc *grpc.ClientConn) ControllerClient {
 	return &controllerClient{cc}
-}
-
-func (c *controllerClient) Lock(ctx context.Context, in *LockRequest, opts ...grpc.CallOption) (*LockResponse, error) {
-	out := new(LockResponse)
-	err := grpc.Invoke(ctx, "/pb.Controller/Lock", in, out, c.cc, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *controllerClient) Unlock(ctx context.Context, in *UnlockRequest, opts ...grpc.CallOption) (*UnlockResponse, error) {
-	out := new(UnlockResponse)
-	err := grpc.Invoke(ctx, "/pb.Controller/Unlock", in, out, c.cc, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *controllerClient) Pop(ctx context.Context, in *PopRequest, opts ...grpc.CallOption) (*PopResponse, error) {
@@ -1425,69 +1257,29 @@ func (c *controllerClient) EndGame(ctx context.Context, in *EndGameRequest, opts
 // Server API for Controller service
 
 type ControllerServer interface {
-	// Lock should lock a specific game using the passed in ID. No writes to the
-	// game should happen as long as the lock is valid. The game being locked does
-	// not need to exist.
-	Lock(context.Context, *LockRequest) (*LockResponse, error)
-	// Unlock should unlock a game, if already unlocked a valid lock token must be
-	// present.
-	Unlock(context.Context, *UnlockRequest) (*UnlockResponse, error)
 	// Pop should pop a game that is unlocked and unfinished from the queue. It can
 	// be subject to race conditions where it is locked immediately after, this is
 	// expected.
 	Pop(context.Context, *PopRequest) (*PopResponse, error)
-	// Status retrieves the game state.
+	// Status retrieves the game state including the last processed game tick.
 	Status(context.Context, *StatusRequest) (*StatusResponse, error)
-	// Start starts the game running, and will make it ready to be picked up by a worker.
+	// Start starts the game running, and will make it ready to be picked up by a
+	// worker.
 	Start(context.Context, *StartRequest) (*StartResponse, error)
-	// Create creates a new game, but doesn't start running frames
+	// Create creates a new game, but doesn't start running frames.
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
-	// AddGameTick adds a new game tick to the game
+	// AddGameTick adds a new game tick to the game, this method must be called
+	// with a valid lock token passed through the `x-lock-token` header. View the
+	// pb.ContextWithLockToken(...) function.
 	AddGameTick(context.Context, *AddGameTickRequest) (*AddGameTickResponse, error)
-	// ListGameTicks will list all game ticks.
+	// ListGameTicks will list all game ticks given a limit and offset.
 	ListGameTicks(context.Context, *ListGameTicksRequest) (*ListGameTicksResponse, error)
-	// EndGame sets the game status to complete
+	// EndGame sets the game status to complete.
 	EndGame(context.Context, *EndGameRequest) (*EndGameResponse, error)
 }
 
 func RegisterControllerServer(s *grpc.Server, srv ControllerServer) {
 	s.RegisterService(&_Controller_serviceDesc, srv)
-}
-
-func _Controller_Lock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LockRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ControllerServer).Lock(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.Controller/Lock",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ControllerServer).Lock(ctx, req.(*LockRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Controller_Unlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnlockRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ControllerServer).Unlock(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.Controller/Unlock",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ControllerServer).Unlock(ctx, req.(*UnlockRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Controller_Pop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1621,14 +1413,6 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*ControllerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Lock",
-			Handler:    _Controller_Lock_Handler,
-		},
-		{
-			MethodName: "Unlock",
-			Handler:    _Controller_Unlock_Handler,
-		},
-		{
 			MethodName: "Pop",
 			Handler:    _Controller_Pop_Handler,
 		},
@@ -1661,37 +1445,6 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 	Metadata: "controller.proto",
 }
 
-func NewPopulatedLockRequest(r randyController, easy bool) *LockRequest {
-	this := &LockRequest{}
-	this.ID = string(randStringController(r))
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedLockResponse(r randyController, easy bool) *LockResponse {
-	this := &LockResponse{}
-	this.Token = string(randStringController(r))
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedUnlockRequest(r randyController, easy bool) *UnlockRequest {
-	this := &UnlockRequest{}
-	this.ID = string(randStringController(r))
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
-func NewPopulatedUnlockResponse(r randyController, easy bool) *UnlockResponse {
-	this := &UnlockResponse{}
-	if !easy && r.Intn(10) != 0 {
-	}
-	return this
-}
-
 func NewPopulatedPopRequest(r randyController, easy bool) *PopRequest {
 	this := &PopRequest{}
 	if !easy && r.Intn(10) != 0 {
@@ -1702,6 +1455,7 @@ func NewPopulatedPopRequest(r randyController, easy bool) *PopRequest {
 func NewPopulatedPopResponse(r randyController, easy bool) *PopResponse {
 	this := &PopResponse{}
 	this.ID = string(randStringController(r))
+	this.Token = string(randStringController(r))
 	if !easy && r.Intn(10) != 0 {
 	}
 	return this
@@ -2035,57 +1789,53 @@ func encodeVarintPopulateController(dAtA []byte, v uint64) []byte {
 func init() { proto.RegisterFile("controller.proto", fileDescriptorController) }
 
 var fileDescriptorController = []byte{
-	// 818 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x55, 0xdd, 0x6e, 0xda, 0x48,
-	0x14, 0x96, 0x31, 0x90, 0x70, 0x20, 0x40, 0x26, 0xd9, 0x2c, 0x6b, 0x6d, 0x12, 0xd6, 0xbb, 0x5a,
-	0x65, 0xa5, 0x2d, 0x51, 0x93, 0xfb, 0x4a, 0x4d, 0xe8, 0x9f, 0x44, 0x93, 0xd4, 0x21, 0x6a, 0xd2,
-	0xab, 0xf2, 0xe3, 0x80, 0x05, 0x78, 0x28, 0x1e, 0x5f, 0x54, 0x7d, 0x8e, 0xbe, 0x43, 0x9f, 0xa0,
-	0xea, 0xb3, 0xf4, 0xae, 0x7d, 0x8a, 0x5e, 0x76, 0xe6, 0xcc, 0xb1, 0x8d, 0xf9, 0xe9, 0x05, 0xd2,
-	0x9c, 0xbf, 0x6f, 0xce, 0x7c, 0xe7, 0xf8, 0x03, 0xaa, 0x3d, 0xee, 0x8b, 0x19, 0x1f, 0x8f, 0xdd,
-	0x59, 0x63, 0x3a, 0xe3, 0x82, 0xb3, 0xcc, 0xb4, 0x6b, 0x3d, 0x18, 0x78, 0x62, 0x18, 0x76, 0x1b,
-	0x3d, 0x3e, 0x39, 0x1e, 0xf0, 0x01, 0x3f, 0xc6, 0x50, 0x37, 0xbc, 0x47, 0x0b, 0x0d, 0x3c, 0xe9,
-	0x12, 0x7b, 0x1f, 0x8a, 0x2d, 0xde, 0x1b, 0x39, 0xee, 0xbb, 0xd0, 0x0d, 0x04, 0x2b, 0x43, 0xe6,
-	0x45, 0xb3, 0x66, 0xd4, 0x8d, 0xa3, 0x82, 0x23, 0x4f, 0xf6, 0x3f, 0x50, 0xd2, 0xe1, 0x60, 0xca,
-	0xfd, 0xc0, 0x65, 0xbb, 0x90, 0x6b, 0xf3, 0x91, 0xeb, 0x53, 0x8a, 0x36, 0xec, 0x43, 0xd8, 0xba,
-	0xf1, 0xc7, 0xbf, 0x80, 0xa9, 0x42, 0x39, 0x4a, 0xd0, 0x40, 0x76, 0x09, 0xe0, 0x8a, 0x4f, 0x29,
-	0x5f, 0x75, 0x81, 0x16, 0xdd, 0xb2, 0x58, 0x2e, 0xf1, 0xaf, 0x45, 0x47, 0x84, 0xc1, 0x3a, 0xfc,
-	0x5b, 0x28, 0x47, 0x09, 0x04, 0xf1, 0x27, 0x64, 0x9f, 0x75, 0x26, 0x2e, 0xe6, 0x14, 0x4f, 0x36,
-	0x1b, 0xd3, 0x6e, 0x43, 0xd9, 0x0e, 0x7a, 0xd9, 0x11, 0x6c, 0xb6, 0x3a, 0x81, 0x68, 0x7b, 0xbd,
-	0x51, 0x2d, 0x83, 0x19, 0xa5, 0x28, 0x43, 0xf9, 0x9c, 0x38, 0x6a, 0x1f, 0x40, 0x49, 0x22, 0xcf,
-	0xc4, 0xba, 0x9b, 0x2b, 0xd8, 0x9a, 0x8a, 0xd3, 0xc3, 0x3e, 0xc0, 0xd6, 0xf9, 0xcc, 0xed, 0x08,
-	0x37, 0xaa, 0x90, 0x94, 0xbd, 0xf6, 0xfa, 0x62, 0x88, 0x45, 0xa6, 0xa3, 0x0d, 0xb6, 0x07, 0xf9,
-	0xe7, 0xae, 0x37, 0x18, 0x0a, 0xbc, 0xdf, 0x74, 0xc8, 0x62, 0x0c, 0xb2, 0x4f, 0x39, 0xef, 0xd7,
-	0x4c, 0xf4, 0xe2, 0x59, 0x76, 0x9b, 0xbf, 0xf6, 0x3b, 0x23, 0x37, 0xa8, 0x65, 0xeb, 0xa6, 0xec,
-	0xb5, 0xaa, 0x7a, 0x45, 0xcf, 0xe5, 0x54, 0x78, 0xf2, 0x56, 0x87, 0xe2, 0x76, 0x1d, 0xca, 0xd1,
-	0xe5, 0x6b, 0xa8, 0xbc, 0x00, 0xf6, 0xb8, 0xdf, 0x8f, 0x1f, 0xba, 0xfa, 0x55, 0x8a, 0x9f, 0x28,
-	0x65, 0x35, 0x3f, 0xd1, 0xc9, 0x3e, 0x85, 0x9d, 0x14, 0x5e, 0x42, 0xff, 0x60, 0x25, 0xfd, 0xca,
-	0x6b, 0xb7, 0x61, 0xb7, 0xe5, 0x05, 0x22, 0xaa, 0x5a, 0x37, 0x56, 0x45, 0x5d, 0xcb, 0x9b, 0x78,
-	0x9a, 0xa3, 0x9c, 0xa3, 0x0d, 0x45, 0xdd, 0xe5, 0xfd, 0x7d, 0xe0, 0x0a, 0x24, 0x29, 0xe7, 0x90,
-	0x65, 0xbf, 0x82, 0xdf, 0x16, 0x50, 0xa9, 0x19, 0x5b, 0x2e, 0xad, 0x72, 0x48, 0x64, 0x73, 0xe9,
-	0x29, 0x3a, 0xa4, 0xae, 0x3a, 0xe7, 0xa1, 0x1f, 0x5f, 0x85, 0x86, 0xe2, 0xf3, 0x89, 0x8f, 0xaf,
-	0x5b, 0x37, 0xff, 0x6d, 0xa8, 0xc4, 0x19, 0xb4, 0x01, 0x4d, 0xb9, 0x32, 0x73, 0xc3, 0x51, 0x23,
-	0xbd, 0x88, 0xb8, 0x28, 0x38, 0x78, 0x66, 0x55, 0x30, 0x6f, 0x9c, 0x16, 0x5e, 0x56, 0x70, 0xd4,
-	0x91, 0x80, 0xcd, 0x18, 0xf8, 0xb3, 0xa1, 0x37, 0x78, 0x89, 0x14, 0xf9, 0x7c, 0xbd, 0xeb, 0x54,
-	0x4d, 0x56, 0xb2, 0x67, 0xe6, 0xea, 0x3d, 0xcb, 0xa6, 0xf6, 0xcc, 0xa6, 0x26, 0xdb, 0xde, 0xc4,
-	0xe5, 0xa1, 0xa8, 0xe5, 0x31, 0x9a, 0xf2, 0xb1, 0x3a, 0x14, 0xdb, 0xe1, 0xcc, 0x8f, 0x52, 0x36,
-	0x30, 0x65, 0xde, 0xa5, 0x9e, 0xf6, 0x92, 0xf7, 0xdd, 0xda, 0xa6, 0x7e, 0x9a, 0x3a, 0xdb, 0x6f,
-	0x93, 0xdd, 0x51, 0x71, 0x95, 0x4e, 0xab, 0x8f, 0x67, 0xb6, 0x4f, 0x1b, 0x9e, 0xc1, 0x61, 0x14,
-	0xd4, 0x30, 0xae, 0xb8, 0xe7, 0x0b, 0x5a, 0xf6, 0xbf, 0xe2, 0x65, 0x37, 0x93, 0x04, 0xf4, 0xc4,
-	0x5b, 0xfe, 0x37, 0xe4, 0xb0, 0x82, 0x95, 0xc0, 0xb8, 0x25, 0x6c, 0xe3, 0x56, 0x59, 0x77, 0xf4,
-	0x35, 0x19, 0x77, 0xf6, 0x47, 0x03, 0x72, 0x98, 0xbf, 0x44, 0x60, 0x34, 0x8f, 0xcc, 0xf2, 0x3c,
-	0xcc, 0x64, 0x1e, 0xb2, 0xcd, 0x33, 0xde, 0x7f, 0x4f, 0x9f, 0xdc, 0x7c, 0x9b, 0xca, 0xad, 0x79,
-	0xed, 0x8c, 0x25, 0xdd, 0xb9, 0x88, 0x57, 0x65, 0xb1, 0x43, 0xc8, 0x35, 0xe5, 0x07, 0x38, 0x44,
-	0x42, 0xa9, 0x0e, 0x1d, 0x8e, 0xf6, 0xdb, 0x0f, 0x29, 0x01, 0x37, 0xae, 0x13, 0x06, 0xd1, 0x5e,
-	0x68, 0x23, 0x66, 0x2c, 0x93, 0x30, 0x76, 0xf2, 0xd5, 0x04, 0x38, 0x8f, 0xb5, 0x9e, 0xfd, 0x07,
-	0x59, 0xa5, 0xc9, 0xac, 0xa2, 0xb0, 0xe7, 0xc4, 0xdb, 0xaa, 0x26, 0x0e, 0xda, 0xfc, 0x63, 0xc8,
-	0x6b, 0xdd, 0x65, 0xdb, 0x2a, 0x96, 0x12, 0x69, 0x8b, 0xcd, 0xbb, 0xa8, 0xe0, 0x5f, 0x30, 0xa5,
-	0x10, 0xb3, 0xb2, 0x7e, 0x6e, 0xa4, 0xcf, 0x56, 0x25, 0xb6, 0x13, 0x60, 0x5a, 0x3b, 0x04, 0x4e,
-	0xa9, 0xb3, 0x06, 0x5e, 0xd0, 0xe3, 0xff, 0xe5, 0x34, 0x94, 0x4e, 0xb2, 0x2a, 0x05, 0x63, 0x49,
-	0xb5, 0xb6, 0xe7, 0x3c, 0x09, 0xbc, 0xd6, 0x31, 0x0d, 0x9f, 0x12, 0x54, 0x0d, 0xbf, 0x20, 0x73,
-	0x8f, 0xa0, 0x38, 0x27, 0x43, 0x6c, 0x4f, 0xa5, 0x2c, 0xeb, 0x9c, 0xf5, 0xfb, 0x92, 0x9f, 0xea,
-	0x9b, 0xb0, 0x95, 0xd2, 0x0e, 0x56, 0x43, 0x2e, 0x57, 0x88, 0x94, 0xf5, 0xc7, 0x8a, 0x08, 0xa1,
-	0x9c, 0xc0, 0x06, 0x89, 0x01, 0xc3, 0x26, 0xd3, 0xda, 0x61, 0xed, 0xa4, 0x7c, 0xba, 0xe6, 0xac,
-	0xfa, 0xe3, 0xdb, 0x81, 0xf1, 0xe9, 0xfb, 0x81, 0xf1, 0x45, 0xfe, 0xde, 0xc8, 0x7f, 0xf0, 0x6e,
-	0x1e, 0xff, 0x99, 0x4f, 0x7f, 0x06, 0x00, 0x00, 0xff, 0xff, 0x06, 0xdc, 0x0a, 0xf5, 0xe0, 0x07,
-	0x00, 0x00,
+	// 762 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x74, 0x55, 0xdd, 0x4e, 0x13, 0x41,
+	0x14, 0xce, 0x76, 0xdb, 0x02, 0xa7, 0xa5, 0x94, 0x01, 0xb1, 0x6e, 0x14, 0xea, 0x98, 0x18, 0x2e,
+	0xb4, 0xc4, 0x72, 0x6f, 0x22, 0xd4, 0xbf, 0xa4, 0x02, 0x2e, 0x35, 0x82, 0x57, 0x6e, 0xe9, 0xd2,
+	0x6e, 0xa0, 0x3b, 0xb5, 0x3b, 0x7b, 0x61, 0x7c, 0x0e, 0xdf, 0xc1, 0x27, 0x30, 0xbe, 0x8e, 0x3e,
+	0x85, 0x57, 0xc6, 0x99, 0x33, 0x33, 0xfb, 0x43, 0x97, 0x8b, 0x26, 0x73, 0xbe, 0xf3, 0x33, 0x67,
+	0xbe, 0xf3, 0xed, 0x29, 0x34, 0x2f, 0x58, 0xc8, 0xe7, 0xec, 0xfa, 0xda, 0x9f, 0x77, 0x66, 0x73,
+	0xc6, 0x19, 0x29, 0xcd, 0x86, 0xce, 0xd3, 0x71, 0xc0, 0x27, 0xf1, 0xb0, 0x73, 0xc1, 0xa6, 0x7b,
+	0x63, 0x36, 0x66, 0x7b, 0xe8, 0x1a, 0xc6, 0x97, 0x68, 0xa1, 0x81, 0x27, 0x95, 0x42, 0xeb, 0x00,
+	0x27, 0x6c, 0xe6, 0xfa, 0x5f, 0x62, 0x3f, 0xe2, 0x74, 0x1f, 0x6a, 0x68, 0x45, 0x33, 0x16, 0x46,
+	0x3e, 0x69, 0x40, 0xe9, 0x6d, 0xaf, 0x65, 0xb5, 0xad, 0xdd, 0x15, 0x57, 0x9c, 0xc8, 0x26, 0x54,
+	0x06, 0xec, 0xca, 0x0f, 0x5b, 0x25, 0x84, 0x94, 0x41, 0x77, 0x60, 0xf5, 0x94, 0x7b, 0x3c, 0x8e,
+	0x74, 0x95, 0x9b, 0x69, 0xf4, 0x0c, 0x1a, 0x26, 0x40, 0x17, 0xbe, 0x0f, 0xe5, 0xd7, 0xde, 0xd4,
+	0xc7, 0x98, 0x5a, 0x77, 0xb9, 0x33, 0x1b, 0x76, 0xa4, 0xed, 0x22, 0x4a, 0x76, 0x61, 0xb9, 0xef,
+	0x45, 0x7c, 0x10, 0x5c, 0x5c, 0xe1, 0x4d, 0xb5, 0x6e, 0xdd, 0x44, 0x48, 0xcc, 0x4d, 0xbc, 0x74,
+	0x1b, 0xea, 0xa2, 0xf2, 0x9c, 0xdf, 0x76, 0xf3, 0x1a, 0xb6, 0x26, 0xfd, 0xea, 0x62, 0xfa, 0x0d,
+	0x56, 0x0f, 0xe7, 0xbe, 0xc7, 0x7d, 0x93, 0x21, 0x9e, 0xf4, 0x31, 0x18, 0xf1, 0x09, 0x26, 0xd9,
+	0xae, 0x32, 0xc8, 0x16, 0x54, 0xdf, 0xf8, 0xc1, 0x78, 0xc2, 0xf1, 0x7e, 0xdb, 0xd5, 0x16, 0x21,
+	0x50, 0x7e, 0xc5, 0xd8, 0xa8, 0x65, 0x23, 0x8a, 0x67, 0xd1, 0x6d, 0xf5, 0x34, 0xf4, 0xae, 0xfc,
+	0xa8, 0x55, 0x6e, 0xdb, 0xa2, 0xd7, 0xa6, 0xec, 0x15, 0x91, 0xe3, 0x19, 0x0f, 0xc4, 0xad, 0xae,
+	0xf6, 0xd3, 0x36, 0x34, 0xcc, 0xe5, 0xc5, 0x04, 0xd3, 0x23, 0x20, 0x2f, 0x46, 0xa3, 0xe4, 0xa1,
+	0xc5, 0xaf, 0x92, 0xfc, 0x98, 0x90, 0x62, 0x7e, 0xcc, 0x49, 0xcc, 0x73, 0x23, 0x57, 0x2f, 0xa5,
+	0x7f, 0x5c, 0x48, 0xbf, 0x44, 0xe9, 0x00, 0x36, 0xfb, 0x41, 0xc4, 0x4d, 0xd6, 0x6d, 0x63, 0x95,
+	0xd4, 0xf5, 0x83, 0x69, 0xa0, 0x38, 0xaa, 0xb8, 0xca, 0x90, 0xd4, 0x1d, 0x5f, 0x5e, 0x46, 0x3e,
+	0x47, 0x92, 0x2a, 0xae, 0xb6, 0xe8, 0x7b, 0xb8, 0x73, 0xa3, 0xaa, 0x6e, 0x86, 0x0a, 0x51, 0x49,
+	0x40, 0x54, 0xb6, 0x17, 0x9e, 0xa2, 0x5c, 0xf2, 0xaa, 0x43, 0x16, 0x87, 0xc9, 0x55, 0x68, 0x48,
+	0x3e, 0x5f, 0x86, 0xf8, 0xba, 0xdb, 0xe6, 0xbf, 0x0e, 0x6b, 0x49, 0x84, 0x56, 0x40, 0x4f, 0x48,
+	0x26, 0x33, 0x1c, 0x39, 0xd2, 0x23, 0xc3, 0xc5, 0x8a, 0x8b, 0x67, 0xd2, 0x04, 0xfb, 0x83, 0xdb,
+	0xd7, 0x2a, 0x97, 0x47, 0x5d, 0xd8, 0x4e, 0x0a, 0xff, 0xb4, 0x94, 0x82, 0x17, 0x48, 0x11, 0xcf,
+	0x57, 0x5a, 0xd7, 0xd9, 0xda, 0x4a, 0x75, 0x66, 0x17, 0xeb, 0xac, 0x9c, 0xd3, 0x19, 0xd5, 0x4d,
+	0x0e, 0x82, 0xa9, 0xcf, 0x62, 0xde, 0xaa, 0xa2, 0x37, 0x87, 0x91, 0x36, 0xd4, 0x06, 0xf1, 0x3c,
+	0x34, 0x21, 0x4b, 0x18, 0x92, 0x85, 0xe4, 0xd3, 0xde, 0xb1, 0x91, 0xdf, 0x5a, 0x56, 0x4f, 0x93,
+	0x67, 0xfa, 0x39, 0xd5, 0x8e, 0xf4, 0xcb, 0x70, 0x2d, 0x7d, 0x3c, 0x93, 0x07, 0x5a, 0xe1, 0x25,
+	0x1c, 0xc6, 0x8a, 0x1c, 0xc6, 0x09, 0x0b, 0x42, 0xae, 0xc5, 0xfe, 0x30, 0x11, 0xbb, 0x9d, 0x06,
+	0x20, 0x92, 0xa8, 0xfc, 0x11, 0x54, 0x30, 0x83, 0xd4, 0xc1, 0x3a, 0xd3, 0xb5, 0xad, 0x33, 0x69,
+	0x9d, 0xeb, 0xaf, 0xc9, 0x3a, 0xa7, 0xdf, 0x2d, 0xa8, 0x60, 0xfc, 0x02, 0x81, 0x66, 0x1e, 0xa5,
+	0xc5, 0x79, 0xd8, 0xe9, 0x3c, 0x44, 0x9b, 0x07, 0x6c, 0xf4, 0x55, 0x7f, 0x72, 0xd9, 0x36, 0x25,
+	0xac, 0x78, 0xf5, 0xae, 0x05, 0xdd, 0x15, 0xc3, 0xab, 0xb4, 0xc8, 0x0e, 0x54, 0x7a, 0xe2, 0x03,
+	0x9c, 0x20, 0xa1, 0x3a, 0x0f, 0x01, 0x57, 0xe1, 0xf4, 0x99, 0x0e, 0x40, 0xc5, 0x79, 0x71, 0x64,
+	0x74, 0xa1, 0x8c, 0x84, 0xb1, 0x52, 0xca, 0x58, 0xf7, 0x5f, 0x09, 0xe0, 0x30, 0xd9, 0xc4, 0xe4,
+	0x31, 0xd8, 0x62, 0x85, 0x92, 0x86, 0x6a, 0xc9, 0x6c, 0x56, 0x67, 0x2d, 0xb1, 0xb5, 0xec, 0xf7,
+	0x8c, 0x50, 0xc8, 0x3a, 0x72, 0x98, 0xdd, 0xa0, 0x0e, 0xc9, 0x42, 0x3a, 0xe1, 0x89, 0x60, 0x4c,
+	0xee, 0x32, 0xd2, 0xd4, 0xce, 0x64, 0xed, 0x39, 0xeb, 0x19, 0x24, 0x2d, 0xaf, 0x76, 0x8d, 0x2a,
+	0x9f, 0x5b, 0x7a, 0xaa, 0xfc, 0x8d, 0x55, 0xf4, 0x1c, 0x6a, 0x99, 0x55, 0x41, 0xb6, 0x64, 0xc8,
+	0xe2, 0x2e, 0x72, 0xee, 0x2e, 0xe0, 0x3a, 0xbf, 0x07, 0xab, 0xb9, 0xef, 0x9b, 0xb4, 0x64, 0x64,
+	0xd1, 0x22, 0x71, 0xee, 0x15, 0x78, 0x74, 0x95, 0x2e, 0x2c, 0xe9, 0x0f, 0x96, 0x60, 0x93, 0xf9,
+	0xef, 0xdb, 0xd9, 0xc8, 0x61, 0x2a, 0xe7, 0xa0, 0xf9, 0xf7, 0xf7, 0xb6, 0xf5, 0xe3, 0xcf, 0xb6,
+	0xf5, 0x4b, 0xfc, 0x3e, 0x89, 0xff, 0xc0, 0x61, 0x15, 0xff, 0xdb, 0xf6, 0xff, 0x07, 0x00, 0x00,
+	0xff, 0xff, 0xd1, 0x23, 0xe8, 0x2c, 0x22, 0x07, 0x00, 0x00,
 }

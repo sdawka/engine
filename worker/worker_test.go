@@ -2,6 +2,8 @@ package worker
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -10,95 +12,169 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var client pb.ControllerClient
+func server() (pb.ControllerClient, controller.Store) {
+	controller.LockExpiry = 3 * time.Millisecond
 
-func init() {
-	ctrl := controller.New(controller.InMemStore())
+	store := controller.InMemStore()
+	ctrl := controller.New(store)
 	go func() {
 		if err := ctrl.Serve(":0"); err != nil {
 			panic(err)
 		}
 	}()
 	var err error
-	client, err = pb.Dial(ctrl.DialAddress())
+	client, err := pb.Dial(ctrl.DialAddress())
 	if err != nil {
 		panic(err)
 	}
+	return client, store
 }
 
-func TestWorker_RunNoGame(t *testing.T) {
+func TestWorker_Run(t *testing.T) {
+	client, _ := server()
+
 	w := &Worker{
-		ControllerClient:  client,
-		PollInterval:      200 * time.Millisecond,
-		HeartbeatInterval: 200 * time.Millisecond,
+		ControllerClient: client,
+		PollInterval:     1 * time.Millisecond,
+		RunGame:          Runner,
 	}
+	ctx := context.Background()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	defer cancel()
-
-	err := w.run(ctx, 1)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "not found")
-}
-
-func TestWorker_HeartbeatNoTimeout(t *testing.T) {
-	w := &Worker{
-		ControllerClient:  client,
-		PollInterval:      1 * time.Millisecond,
-		HeartbeatInterval: 1 * time.Millisecond,
-	}
-
-	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
-	client.Start(context.Background(), &pb.StartRequest{
-		ID: resp.ID,
-	})
-
-	ctx, cancel := context.WithTimeout(context.Background(), 0*time.Millisecond)
-	defer cancel()
-
-	// Will hold the lock forever, if it exits, we're good.
-	w.heartbeat(ctx, cancel, 1, resp.ID)
-}
-
-func TestWorker_HeartbeatCancel(t *testing.T) {
-	w := &Worker{
-		ControllerClient:  client,
-		PollInterval:      1 * time.Millisecond,
-		HeartbeatInterval: 1 * time.Millisecond,
-	}
-
-	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
-	client.Start(context.Background(), &pb.StartRequest{
-		ID: resp.ID,
-	})
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	go func() {
-		_, err := client.EndGame(ctx, &pb.EndGameRequest{
-			ID: resp.ID,
-		})
+	setup := func() string {
+		res, err := client.Create(context.Background(), &pb.CreateRequest{})
 		require.Nil(t, err)
-	}()
+		_, err = client.Start(context.Background(), &pb.StartRequest{ID: res.ID})
+		require.Nil(t, err)
+		return res.ID
+	}
 
-	// Will hold the lock forever, if it exits, we're good.
-	w.heartbeat(ctx, cancel, 1, resp.ID)
+	t.Run("RunNoGame", func(t *testing.T) {
+		err := w.run(ctx, 1)
+		require.NotNil(t, err)
+		require.Equal(t,
+			"rpc error: code = NotFound desc = controller: game not found",
+			err.Error(),
+		)
+	})
+
+	t.Run("PopCorrectGame", func(t *testing.T) {
+		gameID := setup()
+		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {
+			if gameID != id {
+				return fmt.Errorf("game expected %s found %s", gameID, id)
+			}
+			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		err := w.run(ctx, 1)
+		require.Nil(t, err)
+	})
+
+	t.Run("PushGameTicks", func(t *testing.T) {
+		gameID := setup()
+		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {
+			if gameID != id {
+				return fmt.Errorf("game expected %s found %s", gameID, id)
+			}
+			for i := 0; i < 5; i++ {
+				_, err := cl.AddGameTick(c, &pb.AddGameTickRequest{
+					ID:       id,
+					GameTick: &pb.GameTick{},
+				})
+				if err != nil {
+					return err
+				}
+			}
+			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		err := w.run(ctx, 1)
+		require.Nil(t, err)
+	})
+
+	t.Run("PushGameTickTimeout", func(t *testing.T) {
+		gameID := setup()
+		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {
+			if gameID != id {
+				return fmt.Errorf("game expected %s found %s", gameID, id)
+			}
+			// Sleep to expire lock.
+			time.Sleep(10 * time.Millisecond)
+			// Lock the game
+			client.Pop(ctx, &pb.PopRequest{})
+			// Push game tick.
+			_, err := cl.AddGameTick(c, &pb.AddGameTickRequest{
+				ID:       id,
+				GameTick: &pb.GameTick{},
+			})
+			return err
+		}
+		err := w.run(ctx, 1)
+		require.NotNil(t, err)
+		require.Equal(t,
+			"rpc error: code = ResourceExhausted desc = controller: game is locked",
+			err.Error(),
+		)
+	})
 }
 
 func TestWorker_RunLoop(t *testing.T) {
+	client, _ := server()
+
 	w := &Worker{
-		ControllerClient:  client,
-		PollInterval:      1 * time.Millisecond,
-		HeartbeatInterval: 1 * time.Millisecond,
+		ControllerClient: client,
+		PollInterval:     1 * time.Millisecond,
+		RunGame: func(c context.Context, cl pb.ControllerClient, id string) error {
+			for i := 0; i < 5; i++ {
+				_, err := cl.AddGameTick(c, &pb.AddGameTickRequest{
+					ID:       id,
+					GameTick: &pb.GameTick{},
+				})
+				if err != nil {
+					return err
+				}
+			}
+			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
 	}
 
 	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
-	client.Start(context.Background(), &pb.StartRequest{
-		ID: resp.ID,
-	})
+	client.Start(context.Background(), &pb.StartRequest{ID: resp.ID})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
+	w.Run(ctx, 1)
+}
 
+func TestWorker_RunLoopError(t *testing.T) {
+	client, _ := server()
+
+	w := &Worker{
+		ControllerClient: client,
+		PollInterval:     1 * time.Millisecond,
+		RunGame: func(c context.Context, cl pb.ControllerClient, id string) error {
+			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
+			if err != nil {
+				return err
+			}
+			return errors.New("im an error")
+		},
+	}
+
+	resp, _ := client.Create(context.Background(), &pb.CreateRequest{})
+	client.Start(context.Background(), &pb.StartRequest{ID: resp.ID})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	defer cancel()
 	w.Run(ctx, 1)
 }
