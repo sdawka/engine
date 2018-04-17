@@ -2,14 +2,13 @@ package controller
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/gogo/protobuf/proto"
+	uuid "github.com/satori/go.uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -95,9 +94,12 @@ func (in *inmem) Lock(ctx context.Context, key, token string) (string, error) {
 			return "", ErrIsLocked
 		}
 	}
+	if token == "" {
+		token = uuid.NewV4().String()
+	}
 	// Lock was expired or non-existant, create a new token.
 	l = &lock{
-		token:   fmt.Sprint(rand.Int63()),
+		token:   token,
 		expires: now.Add(LockExpiry),
 	}
 	in.locks[key] = l

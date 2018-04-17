@@ -50,8 +50,9 @@ func testStoreLockExpiry(t *testing.T, s Store) {
 	require.NotEmpty(t, tok)
 
 	// Lock (with token) has expired.
-	_, err = s.Lock(ctx, "test", tok)
+	tok2, err := s.Lock(ctx, "test", tok)
 	require.Nil(t, err)
+	require.Equal(t, tok, tok2)
 
 	// Unlock (no token) has expired.
 	err = s.Unlock(ctx, "test", "")
