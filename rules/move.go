@@ -54,11 +54,11 @@ func isValidURL(url string) bool {
 
 // GatherSnakeMoves goes and queries each snake for the snake move
 func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameTick *pb.GameTick) []*SnakeUpdate {
-	respChan := make(chan SnakeUpdate, len(gameTick.Snakes))
+	respChan := make(chan *SnakeUpdate, len(gameTick.Snakes))
 	wg := sync.WaitGroup{}
 	for _, s := range gameTick.AliveSnakes() {
 		if !isValidURL(s.URL) {
-			respChan <- SnakeUpdate{
+			respChan <- &SnakeUpdate{
 				Snake: s,
 				Err:   errors.New("invalid snake url"),
 			}
@@ -76,18 +76,18 @@ func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameTick *pb.GameTic
 	ret := []*SnakeUpdate{}
 	for u := range respChan {
 		fmt.Println(u)
-		ret = append(ret, &u)
+		ret = append(ret, u)
 	}
 	return ret
 }
 
 // GetMove queries the snake url and returns the resp on the channel
-func getMove(snake *pb.Snake, req SnakeRequest, timeout time.Duration, resp chan<- SnakeUpdate) {
+func getMove(snake *pb.Snake, req SnakeRequest, timeout time.Duration, resp chan<- *SnakeUpdate) {
 	netClient := createClient(timeout)
 	data, err := json.Marshal(req)
 	if err != nil {
 		log.WithError(err).Errorf("error while marshaling snake request: %s", snake.ID)
-		resp <- SnakeUpdate{
+		resp <- &SnakeUpdate{
 			Snake: snake,
 			Err:   err,
 		}
@@ -97,7 +97,7 @@ func getMove(snake *pb.Snake, req SnakeRequest, timeout time.Duration, resp chan
 	response, err := netClient.Post(getURL(snake.URL, "move"), "application/json", buf)
 	if err != nil {
 		log.WithError(err).Errorf("error while querying %s for move", snake.ID)
-		resp <- SnakeUpdate{
+		resp <- &SnakeUpdate{
 			Snake: snake,
 			Err:   err,
 		}
@@ -106,7 +106,7 @@ func getMove(snake *pb.Snake, req SnakeRequest, timeout time.Duration, resp chan
 	data, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.WithError(err).Errorf("error while decoding response body for %s", snake.ID)
-		resp <- SnakeUpdate{
+		resp <- &SnakeUpdate{
 			Snake: snake,
 			Err:   err,
 		}
@@ -117,13 +117,13 @@ func getMove(snake *pb.Snake, req SnakeRequest, timeout time.Duration, resp chan
 	err = json.Unmarshal(data, mr)
 	if err != nil {
 		log.WithError(err).WithField("body", string(data)).Errorf("error while converting response body to json for %s", snake.ID)
-		resp <- SnakeUpdate{
+		resp <- &SnakeUpdate{
 			Snake: snake,
 			Err:   err,
 		}
 		return
 	}
-	resp <- SnakeUpdate{
+	resp <- &SnakeUpdate{
 		Snake: snake,
 		Move:  mr.Move,
 	}
