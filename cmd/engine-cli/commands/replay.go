@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	termbox "github.com/nsf/termbox-go"
-
 	"github.com/battlesnakeio/engine/controller/pb"
+	termbox "github.com/nsf/termbox-go"
 	"github.com/spf13/cobra"
 )
 
