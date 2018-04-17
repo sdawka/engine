@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
-	tm "github.com/buger/goterm"
+	termbox "github.com/nsf/termbox-go"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ var replayCmd = &cobra.Command{
 			Timeout: 5 * time.Second,
 		}
 
-		var ticks []*pb.GameTick
+		tr := &pb.ListGameTicksResponse{}
 		var game *pb.Game
 		{
 			resp, err := client.Get(fmt.Sprintf("%s/games/%s/ticks", apiAddr, gameID))
@@ -38,10 +38,10 @@ var replayCmd = &cobra.Command{
 				fmt.Println("error while getting ticks", err)
 				return
 			}
-			err = json.NewDecoder(resp.Body).Decode(ticks)
+			err = json.NewDecoder(resp.Body).Decode(tr)
 			resp.Body.Close()
 			if err != nil {
-				fmt.Println("error while getting ticks", err)
+				fmt.Println("error while decoding ticks", err)
 				return
 			}
 		}
@@ -61,36 +61,15 @@ var replayCmd = &cobra.Command{
 			game = s.Game
 		}
 
-		tm.Clear() // Clear current screen
+		if err := termbox.Init(); err != nil {
+			panic(err)
+		}
+		defer termbox.Close()
 
-		for _, gt := range ticks {
-			// By moving cursor to top-left position we ensure that console output
-			// will be overwritten each time, instead of adding new.
-			tm.MoveCursor(1, 1)
-
-			tm.Print("┌")
-			for x := int64(0); x < game.Width; x++ {
-				tm.Print("─")
+		for _, gt := range tr.Ticks {
+			if err := render(game, gt); err != nil {
+				panic(err)
 			}
-			tm.Println("┐")
-			for y := int64(0); y < game.Height; y++ {
-				tm.Print("│")
-				for x := int64(0); x < game.Width; x++ {
-					c := getCharacter(gt, x, y)
-					tm.Print(c)
-				}
-				tm.Println("│")
-			}
-
-			tm.Print("└")
-			for x := int64(0); x < game.Width; x++ {
-				tm.Print("─")
-			}
-			tm.Println("┘")
-
-			tm.Println()
-
-			tm.Flush() // Call it every time at the end of rendering
 
 			time.Sleep(200 * time.Millisecond)
 		}

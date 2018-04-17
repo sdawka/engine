@@ -135,6 +135,7 @@ func updateSnakes(game *pb.Game, tick *pb.GameTick, moves []*SnakeUpdate) {
 			log.WithFields(log.Fields{
 				"GameID":  game.ID,
 				"SnakeID": update.Snake.ID,
+				"Name":    update.Snake.Name,
 				"Turn":    tick.Turn,
 			}).Info("Default move")
 			update.Snake.DefaultMove()
@@ -142,6 +143,7 @@ func updateSnakes(game *pb.Game, tick *pb.GameTick, moves []*SnakeUpdate) {
 			log.WithFields(log.Fields{
 				"GameID":  game.ID,
 				"SnakeID": update.Snake.ID,
+				"Name":    update.Snake.Name,
 				"Turn":    tick.Turn,
 				"Move":    update.Move,
 			}).Info("Move")
