@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/buger/goterm"
-  packages = ["."]
-  revision = "c9def0117b24a53e86f6c4c942e4042090a4fe8c"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -49,6 +43,18 @@
   packages = ["."]
   revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
   version = "v1.1"
+
+[[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/nsf/termbox-go"
+  packages = ["."]
+  revision = "3e24a7b6661e09b87a9f49d693034219f81602fa"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -178,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "566fc528ff93f6a156b77088502fac32db2ec8c551e59c589d2c09c5c59cad48"
+  inputs-digest = "e34704c7eff982dd72b0ee0e7b994b2ea2117b9335c5e12b3833052d0e7796e2"
   solver-name = "gps-cdcl"
   solver-version = 1
