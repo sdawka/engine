@@ -31,7 +31,7 @@ var replayCmd = &cobra.Command{
 			Timeout: 5 * time.Second,
 		}
 
-		tr := &ticksResponse{}
+		tr := &pb.ListGameTicksResponse{}
 		var game *pb.Game
 		{
 			resp, err := client.Get(fmt.Sprintf("%s/games/%s/ticks", apiAddr, gameID))
@@ -62,7 +62,6 @@ var replayCmd = &cobra.Command{
 			game = s.Game
 		}
 
-		// tm.Clear() // Clear current screen
 		if err := termbox.Init(); err != nil {
 			panic(err)
 		}
