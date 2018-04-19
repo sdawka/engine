@@ -66,14 +66,84 @@ var replayCmd = &cobra.Command{
 		}
 		defer termbox.Close()
 
-		for _, gt := range tr.Ticks {
-			if err := render(game, gt); err != nil {
-				panic(err)
+		eventQueue := make(chan termbox.Event)
+		go func(ev chan<- termbox.Event) {
+			for {
+				ev <- termbox.PollEvent()
+			}
+		}(eventQueue)
+
+		cycle := time.NewTicker(200 * time.Millisecond)
+		if len(tr.Ticks) == 0 {
+			return
+		}
+		currentFrame := tr.Ticks[0]
+		frameIndex := 0
+		paused := false
+		done := false
+
+		for {
+			if done {
+				break
 			}
 
-			time.Sleep(200 * time.Millisecond)
+			select {
+			case ev := <-eventQueue:
+				if ev.Type == termbox.EventKey {
+					switch ev.Key {
+					case termbox.KeyEsc:
+						done = true
+					case termbox.KeySpace:
+						paused = !paused
+						if paused {
+							cycle.Stop()
+						} else {
+							cycle = time.NewTicker(200 * time.Millisecond)
+						}
+
+					case termbox.KeyArrowLeft:
+						paused = true
+						frameIndex, currentFrame = moveFrameBackwards(frameIndex, tr)
+						if err := render(game, currentFrame); err != nil {
+							panic(err)
+						}
+					case termbox.KeyArrowRight:
+						paused = true
+						frameIndex, currentFrame, done = moveFrameForwards(frameIndex, tr)
+						if err := render(game, currentFrame); err != nil {
+							panic(err)
+						}
+					}
+
+				}
+			case <-cycle.C:
+				if paused {
+					continue
+				}
+				if err := render(game, currentFrame); err != nil {
+					panic(err)
+				}
+				frameIndex, currentFrame, done = moveFrameForwards(frameIndex, tr)
+
+			}
 		}
 	},
+}
+
+func moveFrameForwards(frameIndex int, tr *pb.ListGameTicksResponse) (int, *pb.GameTick, bool) {
+	frameIndex++
+	if frameIndex >= len(tr.Ticks) {
+		return frameIndex, nil, true
+	}
+	return frameIndex, tr.Ticks[frameIndex], false
+}
+
+func moveFrameBackwards(frameIndex int, tr *pb.ListGameTicksResponse) (int, *pb.GameTick) {
+	frameIndex--
+	if frameIndex <= 0 {
+		frameIndex = 0
+	}
+	return frameIndex, tr.Ticks[frameIndex]
 }
 
 func getCharacter(gameTick *pb.GameTick, x, y int64) string {

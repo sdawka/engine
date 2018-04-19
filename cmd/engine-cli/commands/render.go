@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -25,19 +26,19 @@ func render(game *pb.Game, tick *pb.GameTick) error {
 		bottom = midY + (int(game.Height) / 2) + 1
 	)
 
-	renderTitle(left, top)
+	renderTitle(left, top, int(tick.Turn))
 	renderBoard(game, top, bottom, left)
 	for _, s := range tick.Snakes {
-		renderSnake(left, bottom, s)
+		renderSnake(left, top, s)
 	}
 	renderFood(left, bottom, tick.Food)
 
 	return termbox.Flush()
 }
 
-func renderSnake(left, bottom int, s *pb.Snake) {
+func renderSnake(left, top int, s *pb.Snake) {
 	for _, b := range s.Body {
-		termbox.SetCell(left+int(b.X), bottom-int(b.Y), ' ', snakeColor, snakeColor)
+		termbox.SetCell(left+int(b.X), top+int(b.Y), ' ', snakeColor, snakeColor)
 	}
 }
 
@@ -70,7 +71,9 @@ func renderFood(left, bottom int, food []*pb.Point) {
 }
 
 func renderBoard(game *pb.Game, top, bottom, left int) {
+	count := 1
 	for i := top; i < bottom; i++ {
+		termbox.SetCell(left-2, i, rune(fmt.Sprintf("%d", count)[0]), defaultColor, bgColor)
 		termbox.SetCell(left-1, i, '│', defaultColor, bgColor)
 		termbox.SetCell(left+int(game.Width), i, '│', defaultColor, bgColor)
 	}
@@ -84,8 +87,8 @@ func renderBoard(game *pb.Game, top, bottom, left int) {
 	fill(left, bottom, int(game.Width), 1, termbox.Cell{Ch: '─'})
 }
 
-func renderTitle(left, top int) {
-	tbprint(left, top-1, defaultColor, defaultColor, "Snake Game")
+func renderTitle(left, top, turn int) {
+	tbprint(left, top-1, defaultColor, defaultColor, fmt.Sprintf("Battlesnake! - Turn %d", turn))
 }
 
 func fill(x, y, w, h int, cell termbox.Cell) {
