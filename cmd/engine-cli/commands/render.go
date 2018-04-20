@@ -31,14 +31,20 @@ func render(game *pb.Game, tick *pb.GameTick) error {
 	for _, s := range tick.Snakes {
 		renderSnake(left, top, s)
 	}
-	renderFood(left, bottom, tick.Food)
+	renderFood(left, top, tick.Food)
 
 	return termbox.Flush()
 }
 
 func renderSnake(left, top int, s *pb.Snake) {
 	for _, b := range s.Body {
-		termbox.SetCell(left+int(b.X), top+int(b.Y), ' ', snakeColor, snakeColor)
+		termbox.SetCell(left+int(b.X), top+int(b.Y)+1, ' ', snakeColor, snakeColor)
+	}
+}
+
+func renderFood(left, top int, food []*pb.Point) {
+	for _, f := range food {
+		termbox.SetCell(left+int(f.X), top+int(f.Y)+1, randomFoodEmoji(), defaultColor, bgColor)
 	}
 }
 
@@ -64,16 +70,8 @@ func randomFoodEmoji() rune {
 	return f[rand.Intn(len(f))]
 }
 
-func renderFood(left, bottom int, food []*pb.Point) {
-	for _, f := range food {
-		termbox.SetCell(left+int(f.X), bottom-int(f.Y), randomFoodEmoji(), defaultColor, bgColor)
-	}
-}
-
 func renderBoard(game *pb.Game, top, bottom, left int) {
-	count := 1
-	for i := top; i < bottom; i++ {
-		termbox.SetCell(left-2, i, rune(fmt.Sprintf("%d", count)[0]), defaultColor, bgColor)
+	for i := top + 1; i < bottom; i++ {
 		termbox.SetCell(left-1, i, '│', defaultColor, bgColor)
 		termbox.SetCell(left+int(game.Width), i, '│', defaultColor, bgColor)
 	}
