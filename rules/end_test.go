@@ -2,6 +2,7 @@ package rules
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -34,4 +35,26 @@ func TestNotifyGameEnd(t *testing.T) {
 	})
 
 	require.Equal(t, urlReceived, "http://not.a.snake.com/end")
+}
+
+func TestNotifyGameEndSilentlyHandlesError(t *testing.T) {
+	createClient = func(time.Duration) httpClient {
+		return mockHTTPClient{
+			err: errors.New("fail"),
+		}
+	}
+
+	snake := &pb.Snake{
+		URL: "http://not.a.snake.com",
+	}
+
+	NotifyGameEnd(&pb.Game{}, &pb.GameTick{
+		Snakes: []*pb.Snake{snake},
+	})
+
+	defer func() {
+		if r := recover(); r != nil {
+			require.Fail(t, "Should not panic on /end error")
+		}
+	}()
 }
