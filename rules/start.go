@@ -58,7 +58,12 @@ func StartSnakes(game *pb.Game, startState *pb.GameTick) {
 }
 
 func gatherSnakeStartResponses(timeout time.Duration, game *pb.Game, startState *pb.GameTick) []SnakeMetadata {
-	responses := gatherAllSnakeResponses("start", timeout, game, startState)
+	responses := gatherAllSnakeResponses(multiSnakeRequest{
+		url:     "start",
+		timeout: timeout,
+		game:    game,
+		tick:    startState,
+	})
 
 	ret := []SnakeMetadata{}
 	for _, resp := range responses {
