@@ -61,8 +61,10 @@ func postToSnakeServer(url string, reqData []byte, s *pb.Snake, timeout time.Dur
 	netClient := createClient(timeout)
 	postResponse, err := netClient.Post(getURL(s.URL, url), "application/json", buf)
 	if err != nil {
-		log.WithError(err).
-			Errorf("error POSTing to %s for snake %s", s.ID)
+		log.WithError(err).WithFields(log.Fields{
+			"url": url,
+			"id":  s.ID,
+		}).Error("error POSTing to snake")
 		resp <- snakeResponse{
 			snake: s,
 			err:   err,
@@ -82,8 +84,8 @@ func getSnakeResponse(url string, s *pb.Snake, game *pb.Game, frame *pb.GameTick
 	data, err := json.Marshal(req)
 
 	if err != nil {
-		log.WithError(err).
-			Errorf("error while marshaling snake request: %s", s.ID)
+		log.WithError(err).WithField("snakeID", s.ID).
+			Error("error while marshaling snake request")
 		resp <- snakeResponse{
 			snake: s,
 			err:   err,
