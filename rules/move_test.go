@@ -11,8 +11,35 @@ import (
 )
 
 func TestGatherSnakeMoves(t *testing.T) {
+	updates := make(chan *SnakeUpdate)
+
+	gather(t, "{\"move\":\"up\"}", updates)
+
+	select {
+	case update := <-updates:
+		require.NoError(t, update.Err)
+		require.Equal(t, "up", update.Move)
+	case <-time.After(250 * time.Millisecond):
+		require.Fail(t, "No update received over updates channel")
+	}
+}
+
+func TestGatherSnakeMovesBadJSON(t *testing.T) {
+	updates := make(chan *SnakeUpdate)
+
+	gather(t, "{{", updates)
+
+	select {
+	case update := <-updates:
+		require.Error(t, update.Err)
+	case <-time.After(250 * time.Millisecond):
+		require.Fail(t, "No update received over updates channel")
+	}
+}
+
+func gather(t *testing.T, json string, updates chan<- *SnakeUpdate) {
 	body := readCloser{Buffer: &bytes.Buffer{}}
-	body.WriteString("{\"move\":\"up\"}")
+	body.WriteString(json)
 	createClient = func(time.Duration) httpClient {
 		return mockHTTPClient{
 			resp: func(url string) *http.Response {
@@ -25,7 +52,7 @@ func TestGatherSnakeMoves(t *testing.T) {
 			},
 		}
 	}
-	updates := make(chan *SnakeUpdate)
+
 	go func() {
 		u := GatherSnakeMoves(1*time.Second, &pb.Game{}, &pb.GameTick{
 			Snakes: []*pb.Snake{
@@ -38,10 +65,4 @@ func TestGatherSnakeMoves(t *testing.T) {
 			updates <- u[0]
 		}
 	}()
-	select {
-	case update := <-updates:
-		require.Equal(t, "up", update.Move)
-	case <-time.After(250 * time.Millisecond):
-		require.Fail(t, "No update received over updates channel")
-	}
 }
