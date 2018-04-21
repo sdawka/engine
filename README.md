@@ -10,17 +10,16 @@ API and game logic for Battlesnake.
 
 2. Set your GOPATH, [here](https://github.com/golang/go/wiki/SettingGOPATH)
 
-3. At least for my setup, I had to add a path to my Go _bin_ folder. You can use:
-`export PATH="$GOPATH/bin:$PATH"`
+3. Add Go's _bin_ folder to your paths. More on that [here](https://golang.org/doc/code.html#GOPATH), or you can use:
+`export PATH="$PATH:$GOPATH/bin"`
 
-4. Once you've setup the engine project (mine is in `~/go/src/github.com/battlesnakeio/engine`). The docs for GOPATH and project directory layouts can be found [here](çhttps://github.com/golang/go/wiki/SettingGOPATH).
-
-5. run `go get` to from the project folder to download your dependencies. 
-
+4. Git clone the project into `$GOPATH/src/github.com/battlesnakeio/engine`. Note, the docs for GOPATH and project directory layouts can be found [here](çhttps://github.com/golang/go/wiki/SettingGOPATH).
 
 # Running the engine
 
-1. Build an excutable via `go build` (add a `-a` to rebuild without cache), then call `./engine` to run the newly created executable. **Better**: run `Make run`
+Build an excutable via `go build` (add a `-a` to rebuild without cache), then call `./engine` to run the newly created executable. 
+
+**Better**: run `Make run`
 
 Note: if you use the Makefile, you'll want JQ installed, [here](https://stedolan.github.io/jq/download/)
 
@@ -59,95 +58,11 @@ go install github.com/battlesnakeio/engine/cmd/engine-cli
 engine-cli run -g "d151fe9d-8c15-4d31-a932-e7b4248d5586"
 ```
 
-3. To repeat the game run: `engine-cli replay -g <game id>`
+3. To replay a game, run: `engine-cli replay -g <game id>`
 
 
 ---
 
 # API 
 
-Last checked April 16, 2018
-
-**`/move`**
-
-```
-{
-   "game":{
-      "id":"580d0aee-e985-4383-a461-c84f88605d04"
-   },
-   "turn":5,
-   "board":{
-      "height":20,
-      "width":20,
-      "food":[
-         {
-            "x":13,
-            "y":6
-         },
-         {
-            "x":16,
-            "y":19
-         }
-      ],
-      "snakes":[
-         {
-            "id":"28556fdc-7bc8-4545-91f8-5ddfa347f1b7",
-            "name":"Snake 1",
-            "health":95,
-            "body":[
-               {
-                  "x":15,
-                  "y":0
-               },
-               {
-                  "x":15,
-                  "y":1
-               },
-               {
-                  "x":15,
-                  "y":2
-               }
-            ]
-         },
-         {
-            "id":"8b49c87f-e0ab-443b-b8eb-f214a9ce58cf",
-            "name":"Snake 2",
-            "health":95,
-            "body":[
-               {
-                  "x":5,
-                  "y":1
-               },
-               {
-                  "x":5,
-                  "y":2
-               },
-               {
-                  "x":5,
-                  "y":3
-               }
-            ]
-         }
-      ]
-   },
-   "you":{
-      "id":"28556fdc-7bc8-4545-91f8-5ddfa347f1b7",
-      "name":"Snake 1",
-      "health":95,
-      "body":[
-         {
-            "x":15,
-            "y":0
-         },
-         {
-            "x":15,
-            "y":1
-         },
-         {
-            "x":15,
-            "y":2
-         }
-      ]
-   }
-}
-```
+Refer to the [docs](https://github.com/battlesnakeio/docs) repository, specifically the snake api [here](https://github.com/battlesnakeio/docs/blob/master/apis/snake/spec.yaml) which can viewed with [Swagger's editor](https://swagger.io/swagger-editor/)
