@@ -18,14 +18,15 @@ func NotifyGameEnd(game *pb.Game, frame *pb.GameTick) {
 		data, err := json.Marshal(req)
 
 		if err != nil {
-			log.WithError(err).Errorf("error while marshaling snake request: %s", s.ID)
+			log.WithError(err).WithField("snakeID", s.ID).
+				Error("error while marshaling snake request")
 			return
 		}
 
 		buf := bytes.NewBuffer(data)
 		_, err = netClient.Post(getURL(s.URL, "end"), "application/json", buf)
 		if err != nil {
-			log.WithError(err).Errorf("error POSTing to /end for snake %s", s.ID)
+			log.WithError(err).WithField("snakeID", s.ID).Error("error POSTing to /end")
 		}
 	}
 }
