@@ -19,9 +19,8 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 
 	for {
 		if lastTick != nil && lastTick.Turn == 0 {
-			rules.NotifyGameStart(resp.Game, lastTick)
+			rules.StartSnakes(resp.Game, lastTick)
 		}
-
 		nextTick, err := rules.GameTick(resp.Game, lastTick)
 		if err != nil {
 			// This is a GameTick error, we can assume that this is a fatal

@@ -9,6 +9,11 @@ type MoveResponse struct {
 	Move string
 }
 
+// StartResponse is the format for /start responses
+type StartResponse struct {
+	Color string
+}
+
 // SnakeRequest the message send for all snake api calls
 type SnakeRequest struct {
 	Game  Game  `json:"game"`
