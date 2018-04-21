@@ -38,6 +38,24 @@ func (readCloser) Close() error {
 	return nil
 }
 
+func singleEndpointMockClient(t *testing.T, url, bodyJSON string) func(time.Duration) httpClient {
+	body := readCloser{Buffer: &bytes.Buffer{}}
+	body.WriteString(bodyJSON)
+
+	return func(time.Duration) httpClient {
+		return mockHTTPClient{
+			resp: func(reqURL string) *http.Response {
+				if reqURL != url {
+					require.Fail(t, "invalid url")
+				}
+				return &http.Response{
+					Body: body,
+				}
+			},
+		}
+	}
+}
+
 func TestIsValidURL(t *testing.T) {
 	tests := []struct {
 		URL      string
