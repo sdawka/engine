@@ -38,7 +38,7 @@ func toSnakeUpdate(resp snakeResponse) *SnakeUpdate {
 
 // GatherSnakeMoves goes and queries each snake for the snake move
 func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameTick *pb.GameTick) []*SnakeUpdate {
-	responses := gatherSnakeResponses("move", timeout, game, gameTick)
+	responses := gatherAliveSnakeResponses("move", timeout, game, gameTick)
 
 	ret := []*SnakeUpdate{}
 	for _, resp := range responses {

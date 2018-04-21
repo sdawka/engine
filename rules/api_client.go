@@ -18,11 +18,19 @@ type snakeResponse struct {
 	err   error
 }
 
-func gatherSnakeResponses(url string, timeout time.Duration, game *pb.Game, startState *pb.GameTick) []snakeResponse {
-	respChan := make(chan snakeResponse, len(startState.Snakes))
+func gatherAllSnakeResponses(url string, timeout time.Duration, game *pb.Game, tick *pb.GameTick) []snakeResponse {
+	return gatherSnakeResponses(url, timeout, game, tick, tick.Snakes)
+}
+
+func gatherAliveSnakeResponses(url string, timeout time.Duration, game *pb.Game, tick *pb.GameTick) []snakeResponse {
+	return gatherSnakeResponses(url, timeout, game, tick, tick.AliveSnakes())
+}
+
+func gatherSnakeResponses(url string, timeout time.Duration, game *pb.Game, tick *pb.GameTick, snakes []*pb.Snake) []snakeResponse {
+	respChan := make(chan snakeResponse, len(tick.Snakes))
 	wg := sync.WaitGroup{}
 
-	for _, snake := range startState.Snakes {
+	for _, snake := range snakes {
 		if !isValidURL(snake.URL) {
 			respChan <- snakeResponse{
 				snake: snake,
@@ -33,7 +41,7 @@ func gatherSnakeResponses(url string, timeout time.Duration, game *pb.Game, star
 
 		wg.Add(1)
 		go func(s *pb.Snake) {
-			getSnakeResponse(url, s, game, startState, timeout, respChan)
+			getSnakeResponse(url, s, game, tick, timeout, respChan)
 			wg.Done()
 		}(snake)
 	}
