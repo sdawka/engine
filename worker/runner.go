@@ -19,9 +19,8 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 
 	for {
 		if lastTick != nil && lastTick.Turn == 0 {
-			rules.NotifyGameStart(resp.Game)
+			rules.NotifyGameStart(resp.Game, lastTick)
 		}
-
 		nextTick, err := rules.GameTick(resp.Game, lastTick)
 		if err != nil {
 			// This is a GameTick error, we can assume that this is a fatal
@@ -53,7 +52,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			log.WithField("game", id).
 				WithField("turn", nextTick.Turn).
 				Info("ending game")
-			rules.NotifyGameEnd(resp.Game)
+			rules.NotifyGameEnd(resp.Game, nextTick)
 			_, err := client.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
 			if err != nil {
 				return err
