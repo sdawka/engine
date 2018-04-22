@@ -13,24 +13,28 @@ func TestStartSnakes(t *testing.T) {
 	resetPalette(defaultColors)
 	snake := getSnakeAfterStart(t, "{\"color\":\"#ff0000\"}", 200)
 	require.Equal(t, "#ff0000", snake.Color)
+	require.Nil(t, snake.Death, "Snake should not be dead")
 }
 
 func TestStartSnakesMissingColor(t *testing.T) {
 	resetPalette([]string{"red", "green", "blue"})
 	snake := getSnakeAfterStart(t, "{}", 200)
 	require.Equal(t, "red", snake.Color)
+	require.Nil(t, snake.Death, "Snake should not be dead")
 }
 
 func TestStartSnakesMissingEndpoint(t *testing.T) {
 	resetPalette([]string{"red", "green", "blue"})
 	snake := getSnakeAfterStart(t, "{}", 404)
 	require.Equal(t, "red", snake.Color)
+	require.Nil(t, snake.Death, "Snake should not be dead")
 }
 
 func TestStartSnakesMissingServer(t *testing.T) {
 	resetPalette([]string{"red", "green", "blue"})
 	snake := getSnakeAfterMissingServer(t)
 	require.Equal(t, "red", snake.Color)
+	require.Nil(t, snake.Death, "Snake should not be dead")
 }
 
 func getSnakeAfterStart(t *testing.T, json string, statusCode int) *pb.Snake {
