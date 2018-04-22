@@ -28,17 +28,21 @@ func render(game *pb.Game, tick *pb.GameTick) error {
 
 	renderTitle(left, top, int(tick.Turn))
 	renderBoard(game, top, bottom, left)
-	for _, s := range tick.Snakes {
-		renderSnake(left, top, s)
+	for i, s := range tick.Snakes {
+		renderSnake(left, top, i, s)
 	}
 	renderFood(left, top, tick.Food)
 
 	return termbox.Flush()
 }
 
-func renderSnake(left, top int, s *pb.Snake) {
+func renderSnake(left, top, snakeIndex int, s *pb.Snake) {
 	for _, b := range s.Body {
 		termbox.SetCell(left+int(b.X), top+int(b.Y)+1, ' ', snakeColor, snakeColor)
+	}
+
+	for _, c := range s.Name {
+
 	}
 }
 
