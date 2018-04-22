@@ -136,6 +136,7 @@ message Snake {
   repeated Point Body = 4;
   int64 Health = 5;
   Death Death = 6;
+  string Color = 7;
 }
 
 message Death {
