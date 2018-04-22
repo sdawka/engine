@@ -49,7 +49,7 @@ func getEffectiveColor(meta SnakeMetadata) string {
 func NotifyGameStart(game *pb.Game, startState *pb.GameTick) {
 	// Be nice and give snake servers a long time to respond to /start in case
 	// it's a sleeping heroku dyno or something like that.
-	timeout := 15 * time.Second
+	timeout := 5 * time.Second
 	responses := gatherSnakeStartResponses(timeout, game, startState)
 
 	for _, resp := range responses {
