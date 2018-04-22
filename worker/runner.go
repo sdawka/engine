@@ -19,7 +19,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 
 	for {
 		if lastTick != nil && lastTick.Turn == 0 {
-			rules.StartSnakes(resp.Game, lastTick)
+			rules.NotifyGameStart(resp.Game, lastTick)
 		}
 		nextTick, err := rules.GameTick(resp.Game, lastTick)
 		if err != nil {

@@ -93,6 +93,7 @@ func postToSnakeServer(req snakePostRequest, resp chan<- snakeResponse) {
 			snake: req.options.snake,
 			err:   err,
 		}
+		return
 	}
 
 	responseData, err := ioutil.ReadAll(postResponse.Body)

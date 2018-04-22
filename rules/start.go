@@ -37,23 +37,23 @@ func toSnakeStartResponse(resp snakeResponse) SnakeMetadata {
 	}
 }
 
-// StartSnakes calls /start on every snake and then adds metadata from the
+func getEffectiveColor(meta SnakeMetadata) string {
+	if meta.Err != nil || meta.Snake == nil || meta.Color == "" {
+		return nextColor()
+	}
+	return meta.Color
+}
+
+// NotifyGameStart calls /start on every snake and then adds metadata from the
 // response to the pb.Snake object.
-func StartSnakes(game *pb.Game, startState *pb.GameTick) {
+func NotifyGameStart(game *pb.Game, startState *pb.GameTick) {
 	// Be nice and give snake servers a long time to respond to /start in case
 	// it's a sleeping heroku dyno or something like that.
 	timeout := 15 * time.Second
 	responses := gatherSnakeStartResponses(timeout, game, startState)
 
 	for _, resp := range responses {
-		if resp.Err != nil {
-			resp.Snake.Death = &pb.Death{
-				Cause: DeathCauseStartFail,
-				Turn:  0,
-			}
-		} else {
-			resp.Snake.Color = resp.Color
-		}
+		resp.Snake.Color = getEffectiveColor(resp)
 	}
 }
 

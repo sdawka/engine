@@ -36,7 +36,7 @@ func TestGatherSnakeMovesBadJSON(t *testing.T) {
 }
 
 func gatherMoveResponses(t *testing.T, json string, updates chan<- *SnakeUpdate) {
-	createClient = singleEndpointMockClient(t, "http://not.a.snake.com/move", json)
+	createClient = singleEndpointMockClient(t, "http://not.a.snake.com/move", json, 200)
 
 	go func() {
 		u := GatherSnakeMoves(1*time.Second, &pb.Game{}, &pb.GameTick{

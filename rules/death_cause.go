@@ -9,6 +9,4 @@ const (
 	DeathCauseHeadToHeadCollision = "head-collision"
 	// DeathCauseWallCollision is when a snake runs off the board
 	DeathCauseWallCollision = "wall-collision"
-	// DeathCauseStartFail is when a snake does not properly respond to /start
-	DeathCauseStartFail = "start-fail"
 )
