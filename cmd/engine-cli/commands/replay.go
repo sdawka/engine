@@ -68,37 +68,51 @@ func loadGame() (*pb.Game, []*pb.GameTick, error) {
 		Timeout: 5 * time.Second,
 	}
 
+	resp, err := client.Get(fmt.Sprintf("%s/games/%s", apiAddr, gameID))
+	if err != nil {
+		fmt.Println("error while getting status", err)
+		return nil, nil, err
+	}
+	s := &pb.StatusResponse{}
+	err = json.NewDecoder(resp.Body).Decode(s)
+	resp.Body.Close()
+	if err != nil {
+		fmt.Println("error while getting status", err)
+		return nil, nil, err
+	}
+
+	ticks, err := loadFrames(0)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s.Game, ticks, nil
+}
+
+func loadFrames(offset int) ([]*pb.GameTick, error) {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	tr := &pb.ListGameTicksResponse{}
-	var game *pb.Game
-	{
-		resp, err := client.Get(fmt.Sprintf("%s/games/%s/ticks", apiAddr, gameID))
-		if err != nil {
-			fmt.Println("error while getting ticks", err)
-			return nil, nil, err
-		}
-		err = json.NewDecoder(resp.Body).Decode(tr)
-		resp.Body.Close()
-		if err != nil {
-			fmt.Println("error while decoding ticks", err)
-			return nil, nil, err
-		}
+	resp, err := client.Get(fmt.Sprintf("%s/games/%s/ticks?offset=%d", apiAddr, gameID, offset))
+	if err != nil {
+		fmt.Println("error while getting ticks", err)
+		return nil, err
 	}
-	{
-		resp, err := client.Get(fmt.Sprintf("%s/games/%s", apiAddr, gameID))
-		if err != nil {
-			fmt.Println("error while getting status", err)
-			return nil, nil, err
-		}
-		s := &pb.StatusResponse{}
-		err = json.NewDecoder(resp.Body).Decode(s)
-		resp.Body.Close()
-		if err != nil {
-			fmt.Println("error while getting status", err)
-			return nil, nil, err
-		}
-		game = s.Game
+	err = json.NewDecoder(resp.Body).Decode(tr)
+	resp.Body.Close()
+	if err != nil {
+		fmt.Println("error while decoding ticks", err)
+		return nil, err
 	}
-	return game, tr.Ticks, nil
+	return tr.Ticks, nil
+}
+
+func checkForMoreFrames(frameIndex, frameCount int) ([]*pb.GameTick, error) {
+	if frameIndex > (frameCount - 10) {
+		return []*pb.GameTick{}, nil
+	}
+
+	return loadFrames(frameCount)
 }
 
 func replayGame() {
@@ -131,6 +145,15 @@ func replayGame() {
 	for {
 		if done {
 			break
+		}
+
+		newFrames, err := checkForMoreFrames(frameIndex, len(frames))
+		if err != nil {
+			panic(err)
+		}
+
+		for _, f := range newFrames {
+			frames = append(frames, f)
 		}
 
 		select {
@@ -174,7 +197,7 @@ func replayGame() {
 		}
 	}
 
-	if !done {
+	if frameIndex >= len(frames) {
 		tbprint(0, 0, defaultColor, defaultColor, "Press any key to exit...")
 		termbox.Flush()
 		termbox.PollEvent()
