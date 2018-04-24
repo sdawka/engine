@@ -69,19 +69,78 @@ func readArchive(id string) (gameArchive, error) {
 	}, nil
 }
 
-func toTickProto(f frame) *pb.GameTick {
+func toSnakeProto(s snakeState, info snakeInfo) *pb.Snake {
+	body := []*pb.Point{}
+	for _, p := range s.Body {
+		body = append(body, toPointProto(p))
+	}
 
+	return &pb.Snake{
+		ID:     s.ID,
+		Name:   info.Name,
+		URL:    info.URL,
+		Body:   body,
+		Health: s.Health,
+		Death:  toDeathProto(s.Death),
+		Color:  info.Color,
+	}
 }
 
-func toGameTickProtos(frames []frame) []*pb.GameTick {
+func toPointProto(p point) *pb.Point {
+	return &pb.Point{
+		X: p.X,
+		Y: p.Y,
+	}
+}
+
+func toDeathProto(d *death) *pb.Death {
+	if d == nil {
+		return nil
+	}
+
+	return &pb.Death{
+		Cause: d.Cause,
+		Turn:  d.Turn,
+	}
+}
+
+func toTickProto(f frame, infoMap map[string]snakeInfo) *pb.GameTick {
+	food := []*pb.Point{}
+	for _, p := range f.Food {
+		food = append(food, toPointProto(p))
+	}
+
+	snakes := []*pb.Snake{}
+	for _, s := range f.Snakes {
+		snakes = append(snakes, toSnakeProto(s, infoMap[s.ID]))
+	}
+
+	return &pb.GameTick{
+		Turn:   f.Turn,
+		Food:   food,
+		Snakes: snakes,
+	}
+}
+
+func toGameTickProtos(frames []frame, infoMap map[string]snakeInfo) []*pb.GameTick {
 	ticks := []*pb.GameTick{}
 	for _, f := range frames {
-		ticks = append(ticks, toTickProto(f))
+		ticks = append(ticks, toTickProto(f, infoMap))
 	}
 	return ticks
 }
 
+func snakeInfoMap(archive gameArchive) map[string]snakeInfo {
+	ret := make(map[string]snakeInfo)
+	for _, s := range archive.info.Snakes {
+		ret[s.ID] = s
+	}
+	return ret
+}
+
 func toGameProtos(archive gameArchive) (*pb.Game, []*pb.GameTick) {
+	infoMap := snakeInfoMap(archive)
+
 	game := pb.Game{
 		ID:           archive.info.ID,
 		Status:       rules.GameStatusStopped,
@@ -92,7 +151,7 @@ func toGameProtos(archive gameArchive) (*pb.Game, []*pb.GameTick) {
 		Mode:         string(rules.GameModeMultiPlayer),
 	}
 
-	ticks := toGameTickProtos(archive.frames)
+	ticks := toGameTickProtos(archive.frames, infoMap)
 
 	return &game, ticks
 }

@@ -240,7 +240,12 @@ type snakeState struct {
 	ID     string  `json:"id"`
 	Body   []point `json:"body"`
 	Health int64   `json:"health"`
-	Dead   bool    `json:"dead"`
+	Death  *death  `json:"dead"`
+}
+
+type death struct {
+	Cause string `json:"cause"`
+	Turn  int64  `json:"turn"`
 }
 
 func getFilePath(id string) string {

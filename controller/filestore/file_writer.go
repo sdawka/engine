@@ -30,8 +30,15 @@ func toPoint(p *pb.Point) point {
 	}
 }
 
-func isDead(s *pb.Snake) bool {
-	return s.Death != nil && s.Death.Turn >= 0
+func toDeath(d *pb.Death) *death {
+	if d == nil {
+		return nil
+	}
+
+	return &death{
+		Cause: d.Cause,
+		Turn:  d.Turn,
+	}
 }
 
 func toSnakeState(snake *pb.Snake) snakeState {
@@ -44,7 +51,7 @@ func toSnakeState(snake *pb.Snake) snakeState {
 		ID:     snake.ID,
 		Body:   points,
 		Health: snake.Health,
-		Dead:   isDead(snake),
+		Death:  toDeath(snake.Death),
 	}
 }
 
