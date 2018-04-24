@@ -8,18 +8,25 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 )
 
+var openFileWriter = appendOnlyFileWriter
+
+type writer interface {
+	WriteString(s string) (int, error)
+	Close() error
+}
+
 func requireSaveDir() error {
 	fmt.Println("requireSaveDir()")
 	path := "/home/graeme/.battlesnake/games"
 	return os.MkdirAll(path, 0775)
 }
 
-func writeLine(f *os.File, data interface{}) error {
+func writeLine(w writer, data interface{}) error {
 	j, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	_, err = f.WriteString(string(j) + "\n")
+	_, err = w.WriteString(string(j) + "\n")
 	return err
 }
 
@@ -96,17 +103,17 @@ func toGameInfo(game *pb.Game, snakes []*pb.Snake) gameInfo {
 	}
 }
 
-func writeTick(f *os.File, tick *pb.GameTick) error {
+func writeTick(w writer, tick *pb.GameTick) error {
 	frame := toFrame(tick)
-	return writeLine(f, &frame)
+	return writeLine(w, &frame)
 }
 
-func writeGameInfo(f *os.File, game *pb.Game, snakes []*pb.Snake) error {
+func writeGameInfo(w writer, game *pb.Game, snakes []*pb.Snake) error {
 	info := toGameInfo(game, snakes)
-	return writeLine(f, &info)
+	return writeLine(w, &info)
 }
 
-func appendOnlyFileHandle(id string) (*os.File, error) {
+func appendOnlyFileWriter(id string) (writer, error) {
 	if err := requireSaveDir(); err != nil {
 		return nil, err
 	}

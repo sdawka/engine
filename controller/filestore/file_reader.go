@@ -11,7 +11,31 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 )
 
-func readLine(r *bufio.Reader, out interface{}) (bool, error) {
+var openFileReader = fsOpenFileReader
+
+type reader interface {
+	ReadBytes(delim byte) ([]byte, error)
+	Close() error
+}
+
+type fsReader struct {
+	*os.File
+	*bufio.Reader
+}
+
+func fsOpenFileReader(path string) (reader, error) {
+	f, err := os.OpenFile(path, os.O_RDONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fsReader{
+		File:   f,
+		Reader: bufio.NewReader(f),
+	}, nil
+}
+
+func readLine(r reader, out interface{}) (bool, error) {
 	bytes, err := r.ReadBytes('\n')
 	eof := err == io.EOF
 
@@ -26,35 +50,50 @@ func readLine(r *bufio.Reader, out interface{}) (bool, error) {
 	return !eof, nil
 }
 
-func readGameInfo(r *bufio.Reader) (gameInfo, bool, error) {
+func readGameInfo(r reader) (gameInfo, bool, error) {
 	info := gameInfo{}
 	more, err := readLine(r, &info)
 	return info, more, err
 }
 
-func readFrame(r *bufio.Reader) (frame, bool, error) {
+func readFrame(r reader) (frame, bool, error) {
 	f := frame{}
 	more, err := readLine(r, &f)
 	return f, more, err
 }
 
+func readArchiveHeader(id string) (gameInfo, error) {
+	r, err := openFileReader(getFilePath(id))
+	if err != nil {
+		return gameInfo{}, err
+	}
+	defer r.Close()
+
+	info, _, err := readGameInfo(r)
+	if err != nil {
+		return gameInfo{}, nil
+	}
+
+	return info, nil
+}
+
 func readArchive(id string) (gameArchive, error) {
-	f, err := os.OpenFile(getFilePath(id), os.O_RDONLY, 0644)
+	r, err := openFileReader(getFilePath(id))
 	if err != nil {
 		return gameArchive{}, err
 	}
-	defer f.Close()
+	defer r.Close()
 
-	reader := bufio.NewReader(f)
-
-	info, moreLines, err := readGameInfo(reader)
+	// Skip over game info line
+	info, moreLines, err := readGameInfo(r)
 	if err != nil {
 		return gameArchive{}, nil
 	}
 
+	// Read the actual frames
 	frames := []frame{}
 	for moreLines {
-		f, more, err := readFrame(reader)
+		f, more, err := readFrame(r)
 		moreLines = more
 		if err != nil {
 			return gameArchive{}, nil
@@ -130,39 +169,46 @@ func toGameTickProtos(frames []frame, infoMap map[string]snakeInfo) []*pb.GameTi
 	return ticks
 }
 
-func snakeInfoMap(archive gameArchive) map[string]snakeInfo {
+func snakeInfoMap(info gameInfo) map[string]snakeInfo {
 	ret := make(map[string]snakeInfo)
-	for _, s := range archive.info.Snakes {
+	for _, s := range info.Snakes {
 		ret[s.ID] = s
 	}
 	return ret
 }
 
-func toGameProtos(archive gameArchive) (*pb.Game, []*pb.GameTick) {
-	infoMap := snakeInfoMap(archive)
-
+func toGameProto(info gameInfo) *pb.Game {
 	game := pb.Game{
-		ID:           archive.info.ID,
+		ID:           info.ID,
 		Status:       rules.GameStatusStopped,
-		Width:        archive.info.Width,
-		Height:       archive.info.Height,
+		Width:        info.Width,
+		Height:       info.Height,
 		SnakeTimeout: 200, // TO DO
 		TurnTimeout:  100, // TO DO
 		Mode:         string(rules.GameModeMultiPlayer),
 	}
 
-	ticks := toGameTickProtos(archive.frames, infoMap)
-
-	return &game, ticks
+	return &game
 }
 
-// ReadGame loads the game stored in a file with the given id.
-func ReadGame(id string) (*pb.Game, []*pb.GameTick, error) {
+// ReadGameFrames loads all the game ticks stored in given file.
+func ReadGameFrames(id string) ([]*pb.GameTick, error) {
 	archive, err := readArchive(id)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	game, ticks := toGameProtos(archive)
-	return game, ticks, nil
+	infoMap := snakeInfoMap(archive.info)
+	ticks := toGameTickProtos(archive.frames, infoMap)
+	return ticks, nil
+}
+
+// ReadGameInfo reads the header info from the given file.
+func ReadGameInfo(id string) (*pb.Game, error) {
+	info, err := readArchiveHeader(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return toGameProto(info), nil
 }

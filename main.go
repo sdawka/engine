@@ -9,6 +9,7 @@ import (
 
 	"github.com/battlesnakeio/engine/api"
 	"github.com/battlesnakeio/engine/controller"
+	"github.com/battlesnakeio/engine/controller/filestore"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/worker"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ func main() {
 	flag.IntVar(&workers, "workers", 10, "Worker count.")
 	flag.Parse()
 
-	c := controller.New(controller.InMemStore())
+	c := controller.New(filestore.NewFileStore())
 	go func() {
 		log.Infof("controller listening on %s", controllerAddr)
 		if err := c.Serve(controllerAddr); err != nil {
