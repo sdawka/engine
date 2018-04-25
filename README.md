@@ -13,19 +13,19 @@ API and game logic for Battlesnake.
 3. Add Go's _bin_ folder to your paths. More on that [here](https://golang.org/doc/code.html#GOPATH), or you can use:
 `export PATH="$PATH:$GOPATH/bin"`
 
-4. Git clone the project into `$GOPATH/src/github.com/battlesnakeio/engine`. Note, the docs for GOPATH and project directory layouts can be found [here](çhttps://github.com/golang/go/wiki/SettingGOPATH).
+4. Git clone the project into `$GOPATH/src/github.com/battlesnakeio/engine`. Note, the docs for GOPATH and project directory layouts can be found [here](https://github.com/golang/go/wiki/SettingGOPATH).
 
 # Running the engine
 
 Build an excutable via `go build` (add a `-a` to rebuild without cache), then call `./engine` to run the newly created executable. 
 
-**Better**: run `Make run`
+**Better command**: `make run`
 
 Note: if you use the Makefile, you'll want JQ installed, [here](https://stedolan.github.io/jq/download/)
 
 ## Running a game with the CLI
 
-1. Setup a `snake-config.json`, by default the engine looks in the HOME directory (see Make run-game in the Makefile)
+1. Setup a `snake-config.json`, by default the engine looks in the HOME directory (see make run-game in the Makefile)
 
 Here's an example: 
 
@@ -49,16 +49,24 @@ Here's an example:
 
 2. Start the engine (refer above)
 
-3. Start a game with `Make run-game`
+3. Start a game with `make run-game`
 
-Example:
+Example Output:
 ```
-⇒  Make run-game
+⇒  make run-game
 go install github.com/battlesnakeio/engine/cmd/engine-cli
 engine-cli run -g "d151fe9d-8c15-4d31-a932-e7b4248d5586"
 ```
 
-3. To replay a game, run: `engine-cli replay -g <game id>`
+4. To replay a game, run: `engine-cli replay -g <game id>`
+
+
+For more information about the engine-cli: 
+
+`engine-cli --help`
+
+`engline-cli [command] --help`
+
 
 
 ---
