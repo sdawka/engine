@@ -85,10 +85,12 @@ func TestSetGameStatusInvalidGame(t *testing.T) {
 
 func TestLockUnlock(t *testing.T) {
 	fs, _ := testFileStore()
-	_, err := fs.Lock(context.Background(), "asdf", "")
+	token, err := fs.Lock(context.Background(), "asdf", "")
 	require.NoError(t, err)
-	fs.Unlock(context.Background(), "asdf", "")
-	//requireNoError(t, err)
+	token, err = fs.Lock(context.Background(), "asdf", token)
+	require.NoError(t, err)
+	err = fs.Unlock(context.Background(), "asdf", token)
+	require.NoError(t, err)
 }
 
 func TestPopGameID(t *testing.T) {
