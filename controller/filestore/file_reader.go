@@ -3,8 +3,10 @@ package filestore
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/battlesnakeio/engine/rules"
 
@@ -23,8 +25,8 @@ type fsReader struct {
 	*bufio.Reader
 }
 
-func fsOpenFileReader(path string) (reader, error) {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0644)
+func fsOpenFileReader(id string) (reader, error) {
+	f, err := os.OpenFile(getFilePath(id), os.O_RDONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +45,12 @@ func readLine(r reader, out interface{}) (bool, error) {
 		return false, err
 	}
 
+	if !containsJSONObject(string(bytes)) {
+		return !eof, errors.New("invalid json")
+	}
+
 	if err = json.Unmarshal(bytes, out); err != nil {
-		return false, err
+		return !eof, err
 	}
 
 	return !eof, nil
@@ -63,7 +69,7 @@ func readFrame(r reader) (frame, bool, error) {
 }
 
 func readArchiveHeader(id string) (gameInfo, error) {
-	r, err := openFileReader(getFilePath(id))
+	r, err := openFileReader(id)
 	if err != nil {
 		return gameInfo{}, err
 	}
@@ -71,14 +77,19 @@ func readArchiveHeader(id string) (gameInfo, error) {
 
 	info, _, err := readGameInfo(r)
 	if err != nil {
-		return gameInfo{}, nil
+		return gameInfo{}, err
 	}
 
 	return info, nil
 }
 
+func containsJSONObject(s string) bool {
+	trimmed := strings.TrimSpace(s)
+	return len(trimmed) > 1 && trimmed[0] == '{'
+}
+
 func readArchive(id string) (gameArchive, error) {
-	r, err := openFileReader(getFilePath(id))
+	r, err := openFileReader(id)
 	if err != nil {
 		return gameArchive{}, err
 	}
@@ -87,7 +98,7 @@ func readArchive(id string) (gameArchive, error) {
 	// Skip over game info line
 	info, moreLines, err := readGameInfo(r)
 	if err != nil {
-		return gameArchive{}, nil
+		return gameArchive{}, err
 	}
 
 	// Read the actual frames
@@ -96,7 +107,7 @@ func readArchive(id string) (gameArchive, error) {
 		f, more, err := readFrame(r)
 		moreLines = more
 		if err != nil {
-			return gameArchive{}, nil
+			continue
 		}
 
 		frames = append(frames, f)
