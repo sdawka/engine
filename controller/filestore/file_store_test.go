@@ -43,7 +43,7 @@ func TestCreateGameHandlesWriteError(t *testing.T) {
 }
 
 func TestCreateGameHandlesOpenFileError(t *testing.T) {
-	openFileWriter = func(id string) (writer, error) {
+	openFileWriter = func(id string, _ bool) (writer, error) {
 		return nil, errors.New("fail")
 	}
 	openFileReader = func(id string) (reader, error) {
@@ -103,7 +103,7 @@ func testFileStore() (controller.Store, *mockWriter) {
 	w := &mockWriter{
 		closed: false,
 	}
-	openFileWriter = func(id string) (writer, error) {
+	openFileWriter = func(id string, _ bool) (writer, error) {
 		return w, nil
 	}
 	openFileReader = func(id string) (reader, error) {

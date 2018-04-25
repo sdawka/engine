@@ -196,12 +196,12 @@ func (fs *fileStore) GetGame(ctx context.Context, id string) (*pb.Game, error) {
 	return clone, nil
 }
 
-func (fs *fileStore) requireHandle(id string) (writer, error) {
+func (fs *fileStore) requireHandle(id string, mustBeNew bool) (writer, error) {
 	if w, ok := fs.writers[id]; ok {
 		return w, nil
 	}
 
-	handle, err := openFileWriter(id)
+	handle, err := openFileWriter(id, mustBeNew)
 	if err != nil {
 		return nil, err
 	}
@@ -248,13 +248,15 @@ func (fs *fileStore) appendTick(id string, tick *pb.GameTick) error {
 		return err
 	}
 
-	handle, err := fs.requireHandle(id)
+	alreadyHasTicks := fs.hasAnyTicks(id)
+
+	handle, err := fs.requireHandle(id, !alreadyHasTicks)
 	if err != nil {
 		return err
 	}
 
 	// If this is the first tick, then first write the game info header.
-	if !fs.hasAnyTicks(id) {
+	if !alreadyHasTicks {
 		err := writeGameInfo(handle, game, tick.Snakes)
 		if err != nil {
 			return err
