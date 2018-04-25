@@ -83,6 +83,20 @@ func TestSetGameStatusInvalidGame(t *testing.T) {
 	require.NotNil(t, err)
 }
 
+func TestLockUnlock(t *testing.T) {
+	fs, _ := testFileStore()
+	_, err := fs.Lock(context.Background(), "asdf", "")
+	require.NoError(t, err)
+	fs.Unlock(context.Background(), "asdf", "")
+	//requireNoError(t, err)
+}
+
+func TestPopGameID(t *testing.T) {
+	fs, _ := testFileStore()
+	_, err := fs.PopGameID(context.Background())
+	require.NotNil(t, err)
+}
+
 func testFileStore() (controller.Store, *mockWriter) {
 	w := &mockWriter{
 		closed: false,
