@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -18,27 +19,61 @@ func render(game *pb.Game, tick *pb.GameTick) error {
 	termbox.Clear(defaultColor, defaultColor)
 
 	var (
-		w, h   = termbox.Size()
+		_, h   = termbox.Size()
 		midY   = h / 2
-		left   = (w - int(game.Width)) / 2
-		top    = midY - (int(game.Height) / 2)
+		left   = 10
+		top    = 10
 		bottom = midY + (int(game.Height) / 2) + 1
 	)
 
-	renderTitle(left, top)
+	renderTitle(left, top, int(tick.Turn))
 	renderBoard(game, top, bottom, left)
+	snakePos := 0
 	for _, s := range tick.Snakes {
-		renderSnake(left, bottom, s)
+		renderSnake(left, top, s)
+
+		text := fmt.Sprintf("%s %d/100", s.Name, s.Health)
+		if s.Death != nil {
+			text = fmt.Sprintf("%s - %s", text, s.Death.Cause)
+		}
+		tbprint(int(game.Width)+left+5, top+snakePos, defaultColor, defaultColor, text)
+		snakePos++
+		healthColor := termbox.ColorGreen
+		for i := 0; i < 10; i++ {
+			if int(s.Health) <= ((i * 10) + 1) {
+				healthColor = termbox.ColorRed
+			}
+			termbox.SetCell(int(game.Width)+left+5+i, top+snakePos, ' ', healthColor, healthColor)
+		}
+		snakePos += 2
 	}
-	renderFood(left, bottom, tick.Food)
+	renderFood(left, top, tick.Food)
 
 	return termbox.Flush()
 }
 
-func renderSnake(left, bottom int, s *pb.Snake) {
+func renderSnake(left, top int, s *pb.Snake) {
 	for _, b := range s.Body {
-		termbox.SetCell(left+int(b.X), bottom-int(b.Y), ' ', snakeColor, snakeColor)
+		termbox.SetCell(left+int(b.X), top+int(b.Y)+1, ' ', snakeColor, snakeColor)
 	}
+}
+
+func renderFood(left, top int, food []*pb.Point) {
+	for _, f := range food {
+		termbox.SetCell(left+int(f.X), top+int(f.Y)+1, getFoodEmoji(f.X, f.Y), defaultColor, bgColor)
+	}
+}
+
+var foods = map[string]rune{}
+
+func getFoodEmoji(x, y int64) rune {
+	key := fmt.Sprintf("(%d, %d)", x, y)
+	r, ok := foods[key]
+	if !ok {
+		r = randomFoodEmoji()
+		foods[key] = r
+	}
+	return r
 }
 
 func randomFoodEmoji() rune {
@@ -63,14 +98,8 @@ func randomFoodEmoji() rune {
 	return f[rand.Intn(len(f))]
 }
 
-func renderFood(left, bottom int, food []*pb.Point) {
-	for _, f := range food {
-		termbox.SetCell(left+int(f.X), bottom-int(f.Y), randomFoodEmoji(), defaultColor, bgColor)
-	}
-}
-
 func renderBoard(game *pb.Game, top, bottom, left int) {
-	for i := top; i < bottom; i++ {
+	for i := top + 1; i < bottom; i++ {
 		termbox.SetCell(left-1, i, '│', defaultColor, bgColor)
 		termbox.SetCell(left+int(game.Width), i, '│', defaultColor, bgColor)
 	}
@@ -84,8 +113,8 @@ func renderBoard(game *pb.Game, top, bottom, left int) {
 	fill(left, bottom, int(game.Width), 1, termbox.Cell{Ch: '─'})
 }
 
-func renderTitle(left, top int) {
-	tbprint(left, top-1, defaultColor, defaultColor, "Snake Game")
+func renderTitle(left, top, turn int) {
+	tbprint(left, top-1, defaultColor, defaultColor, fmt.Sprintf("Battlesnake! - Turn %d", turn))
 }
 
 func fill(x, y, w, h int, cell termbox.Cell) {
