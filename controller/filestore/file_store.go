@@ -201,7 +201,7 @@ func (fs *fileStore) requireHandle(id string) (writer, error) {
 		return w, nil
 	}
 
-	handle, err := appendOnlyFileWriter(id)
+	handle, err := openFileWriter(id)
 	if err != nil {
 		return nil, err
 	}
