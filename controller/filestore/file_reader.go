@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/battlesnakeio/engine/rules"
 
@@ -194,8 +195,8 @@ func toGameProto(info gameInfo) *pb.Game {
 		Status:       rules.GameStatusStopped,
 		Width:        info.Width,
 		Height:       info.Height,
-		SnakeTimeout: 200, // TO DO
-		TurnTimeout:  100, // TO DO
+		SnakeTimeout: int64(200 * time.Millisecond), // TO DO
+		TurnTimeout:  int64(100 * time.Millisecond), // TO DO
 		Mode:         string(rules.GameModeMultiPlayer),
 	}
 
