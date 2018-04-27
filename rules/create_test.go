@@ -26,7 +26,7 @@ func TestCreateInitialGame_DuplicateSnakeIDs(t *testing.T) {
 }
 
 func TestCreateInitialGame_GeneratedSnakeID(t *testing.T) {
-	_, ticks, err := CreateInitialGame(&pb.CreateRequest{
+	_, frames, err := CreateInitialGame(&pb.CreateRequest{
 		Width:  20,
 		Height: 20,
 		Snakes: []*pb.SnakeOptions{
@@ -34,6 +34,6 @@ func TestCreateInitialGame_GeneratedSnakeID(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	require.Len(t, ticks, 1)
-	require.NotEmpty(t, ticks[0].Snakes[0].ID)
+	require.Len(t, frames, 1)
+	require.NotEmpty(t, frames[0].Snakes[0].ID)
 }

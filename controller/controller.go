@@ -47,21 +47,21 @@ func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, er
 	return &pb.PopResponse{ID: id, Token: token}, nil
 }
 
-// Status retrieves the game state including the last processed game tick.
+// Status retrieves the game state including the last processed game frame.
 func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusResponse, error) {
 	game, err := s.Store.GetGame(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
-	var lastTick *pb.GameFrame
-	ticks, err := s.Store.ListGameFrames(ctx, req.ID, 1, -1)
+	var lastFrame *pb.GameFrame
+	frames, err := s.Store.ListGameFrames(ctx, req.ID, 1, -1)
 	if err != nil {
 		return nil, err
 	}
-	if len(ticks) > 0 {
-		lastTick = ticks[0]
+	if len(frames) > 0 {
+		lastFrame = frames[0]
 	}
-	return &pb.StatusResponse{Game: game, LastTick: lastTick}, nil
+	return &pb.StatusResponse{Game: game, LastFrame: lastFrame}, nil
 }
 
 // Start starts the game running, and will make it ready to be picked up by a
@@ -76,11 +76,11 @@ func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResp
 
 // Create creates a new game, but doesn't start running frames.
 func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
-	game, ticks, err := rules.CreateInitialGame(req)
+	game, frames, err := rules.CreateInitialGame(req)
 	if err != nil {
 		return nil, err
 	}
-	err = s.Store.CreateGame(ctx, game, ticks)
+	err = s.Store.CreateGame(ctx, game, frames)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) 
 	token := pb.ContextGetLockToken(ctx)
 
 	if req.GameFrame == nil {
-		return nil, status.Error(codes.InvalidArgument, "controller: game tick must not be nil")
+		return nil, status.Error(codes.InvalidArgument, "controller: game frame must not be nil")
 	}
 
 	// Lock the game again, if this fails, the lock is not valid.
@@ -104,8 +104,8 @@ func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) 
 		return nil, err
 	}
 
-	// TODO: Need to check that game tick follows the sequence from the previous
-	// tick here.
+	// TODO: Need to check that game frame follows the sequence from the previous
+	// frame here.
 
 	err = s.Store.PushGameFrame(ctx, req.ID, req.GameFrame)
 	if err != nil {
@@ -120,7 +120,7 @@ func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) 
 	}, nil
 }
 
-// ListGameFrames will list all game ticks given a limit and offset.
+// ListGameFrames will list all game frames given a limit and offset.
 func (s *Server) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest) (*pb.ListGameFramesResponse, error) {
 	if req.Limit == 0 {
 		req.Limit = 50
@@ -128,13 +128,13 @@ func (s *Server) ListGameFrames(ctx context.Context, req *pb.ListGameFramesReque
 	if req.Limit > 50 {
 		req.Limit = 50
 	}
-	ticks, err := s.Store.ListGameFrames(ctx, req.ID, int(req.Limit), int(req.Offset))
+	frames, err := s.Store.ListGameFrames(ctx, req.ID, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, err
 	}
 	return &pb.ListGameFramesResponse{
-		Ticks: ticks,
-		Count: int32(len(ticks)),
+		Frames: frames,
+		Count:  int32(len(frames)),
 	}, nil
 }
 

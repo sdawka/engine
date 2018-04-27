@@ -39,7 +39,7 @@ type Store interface {
 	// SetGameStatus is used to set a specific game status. This operation
 	// should be atomic.
 	SetGameStatus(c context.Context, id, status string) error
-	// CreateGame will insert a game with the default game ticks.
+	// CreateGame will insert a game with the default game frames.
 	CreateGame(context.Context, *pb.Game, []*pb.GameFrame) error
 	// PushGameFrame will push a game frame onto the list of frames.
 	PushGameFrame(c context.Context, id string, t *pb.GameFrame) error
@@ -177,20 +177,20 @@ func (in *inmem) ListGameFrames(ctx context.Context, id string, limit, offset in
 	if _, ok := in.games[id]; !ok {
 		return nil, ErrNotFound
 	}
-	ticks := in.frames[id]
-	if len(ticks) == 0 {
+	frames := in.frames[id]
+	if len(frames) == 0 {
 		return nil, nil
 	}
 	if offset < 0 {
-		offset = len(ticks) + offset
+		offset = len(frames) + offset
 	}
-	if offset >= len(ticks) {
+	if offset >= len(frames) {
 		return nil, nil
 	}
-	if offset+limit >= len(ticks) {
-		limit = len(ticks) - offset
+	if offset+limit >= len(frames) {
+		limit = len(frames) - offset
 	}
-	return ticks[offset : offset+limit], nil
+	return frames[offset : offset+limit], nil
 }
 
 func (in *inmem) GetGame(ctx context.Context, id string) (*pb.Game, error) {

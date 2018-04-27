@@ -74,7 +74,7 @@ func TestWorker_Run(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	t.Run("PushGameTicks", func(t *testing.T) {
+	t.Run("PushGameFrames", func(t *testing.T) {
 		gameID := setup()
 		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {
 			if gameID != id {
@@ -99,7 +99,7 @@ func TestWorker_Run(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	t.Run("PushGameTickTimeout", func(t *testing.T) {
+	t.Run("PushGameFrameTimeout", func(t *testing.T) {
 		gameID := setup()
 		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {
 			if gameID != id {

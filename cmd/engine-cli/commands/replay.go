@@ -95,16 +95,16 @@ func loadFrames(offset int) ([]*pb.GameFrame, error) {
 	tr := &pb.ListGameFramesResponse{}
 	resp, err := client.Get(fmt.Sprintf("%s/games/%s/frames?offset=%d", apiAddr, gameID, offset))
 	if err != nil {
-		fmt.Println("error while getting ticks", err)
+		fmt.Println("error while getting frames", err)
 		return nil, err
 	}
 	err = json.NewDecoder(resp.Body).Decode(tr)
 	resp.Body.Close()
 	if err != nil {
-		fmt.Println("error while decoding ticks", err)
+		fmt.Println("error while decoding frames", err)
 		return nil, err
 	}
-	return tr.Ticks, nil
+	return tr.Frames, nil
 }
 
 func checkForMoreFrames(frameIndex, frameCount int) ([]*pb.GameFrame, error) {

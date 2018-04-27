@@ -15,7 +15,7 @@ option go_package = "pb";
 // 3. Pop is called by the worker, since the game is started and unlocked, the
 //    active game id is returned to the worker in this call. The game is also
 //    locked internally to the controller at this point.
-// 4. The worker initiates work and begins pushing game ticks through
+// 4. The worker initiates work and begins pushing game frames through
 //    AddGameFrame. If a game frame is not pushed within controller.LockInterval
 //    then the game will become available for other workers.
 // 5. Once work is finished, the worker will call EndGame which will unlock the
@@ -34,24 +34,24 @@ option go_package = "pb";
 // the store.
 //
 // GameLock:
-// However, only one worker is allowed to push a tick at one time, otherwise the
-// game ticks would be in a weird order.
+// However, only one worker is allowed to push a frame at one time, otherwise the
+// game frames would be in a weird order.
 service Controller {
   // Pop should pop a game that is unlocked and unfinished from the queue, lock
   // the game and return it to the worker to begin processing. This call will
   // be polled by the workers.
   rpc Pop(PopRequest) returns (PopResponse);
-  // Status retrieves the game state including the last processed game tick.
+  // Status retrieves the game state including the last processed game frame.
   rpc Status(StatusRequest) returns (StatusResponse);
   // Start starts the game running, and will make it ready to be picked up by a
   // worker.
   rpc Start(StartRequest) returns (StartResponse);
   // Create creates a new game, but doesn't start running frames.
   rpc Create(CreateRequest) returns (CreateResponse);
-  // AddGameFrame adds a new game tick to the game. A lock must be held for this
+  // AddGameFrame adds a new game frame to the game. A lock must be held for this
   // call to succeed.
   rpc AddGameFrame(AddGameFrameRequest) returns (AddGameFrameResponse);
-  // ListGameFrames will list all game ticks given a limit and offset.
+  // ListGameFrames will list all game frames given a limit and offset.
   rpc ListGameFrames(ListGameFramesRequest) returns (ListGameFramesResponse);
   // EndGame sets the game status to complete. A lock must be held for this call
   // to succeed.
@@ -67,7 +67,7 @@ message PopResponse {
 message StatusRequest  { string ID = 1; }
 message StatusResponse {
   Game Game = 1;
-  GameFrame LastTick = 2;
+  GameFrame LastFrame = 2;
 }
 
 message StartRequest  { string ID = 1; }
@@ -95,7 +95,7 @@ message ListGameFramesRequest {
   int32 Offset = 3;
 }
 message ListGameFramesResponse {
-  repeated GameFrame Ticks = 1;
+  repeated GameFrame Frames = 1;
   int32 Count = 2;
 }
 

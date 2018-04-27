@@ -15,15 +15,15 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 	if err != nil {
 		return err
 	}
-	lastTick := resp.LastTick
+	lastFrame := resp.LastFrame
 
 	for {
-		if lastTick != nil && lastTick.Turn == 0 {
-			rules.NotifyGameStart(resp.Game, lastTick)
+		if lastFrame != nil && lastFrame.Turn == 0 {
+			rules.NotifyGameStart(resp.Game, lastFrame)
 		}
-		nextFrame, err := rules.GameTick(resp.Game, lastTick)
+		nextFrame, err := rules.GameTick(resp.Game, lastFrame)
 		if err != nil {
-			// This is a GameTick error, we can assume that this is a fatal
+			// This is a GameFrame error, we can assume that this is a fatal
 			// error and no more game processing can take place at this point.
 			log.WithError(err).
 				WithField("game", id).
@@ -38,7 +38,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 
 		log.WithField("game", id).
 			WithField("turn", nextFrame.Turn).
-			Info("adding game tick")
+			Info("adding game frame")
 		_, err = client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
 			ID:        resp.Game.ID,
 			GameFrame: nextFrame,
@@ -60,6 +60,6 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			return nil
 		}
 
-		lastTick = nextFrame
+		lastFrame = nextFrame
 	}
 }

@@ -74,8 +74,8 @@ func TestController_GameCRUD(t *testing.T) {
 		require.Equal(t, "running", game.Game.Status)
 		require.Equal(t, int64(1000), game.Game.SnakeTimeout)
 		require.Equal(t, "multi-player", game.Game.Mode)
-		require.NotNil(t, game.LastTick)
-		require.Equal(t, int64(0), game.LastTick.Turn)
+		require.NotNil(t, game.LastFrame)
+		require.Equal(t, int64(0), game.LastFrame.Turn)
 	})
 
 	t.Run("GetGame_NoGames", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestController_GameCRUD(t *testing.T) {
 	})
 }
 
-func TestController_Ticks(t *testing.T) {
+func TestController_Frames(t *testing.T) {
 	ctx := context.Background()
 
 	var gameID string
@@ -129,7 +129,7 @@ func TestController_Ticks(t *testing.T) {
 		token = resp.Token
 	})
 
-	t.Run("AddGameTick_NoGame", func(t *testing.T) {
+	t.Run("AddGameFrame_NoGame", func(t *testing.T) {
 		_, err := client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
 			ID:        "foo",
 			GameFrame: &pb.GameFrame{},
@@ -141,7 +141,7 @@ func TestController_Ticks(t *testing.T) {
 		)
 	})
 
-	t.Run("AddGameTick_NoLock", func(t *testing.T) {
+	t.Run("AddGameFrame_NoLock", func(t *testing.T) {
 		_, err := client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
 			ID:        gameID,
 			GameFrame: &pb.GameFrame{},
@@ -153,7 +153,7 @@ func TestController_Ticks(t *testing.T) {
 		)
 	})
 
-	t.Run("AddGameTick_Nil", func(t *testing.T) {
+	t.Run("AddGameFrame_Nil", func(t *testing.T) {
 		_, err := client.AddGameFrame(
 			pb.ContextWithLockToken(ctx, token),
 			&pb.AddGameFrameRequest{
@@ -167,7 +167,7 @@ func TestController_Ticks(t *testing.T) {
 		)
 	})
 
-	t.Run("AddGameTicks", func(t *testing.T) {
+	t.Run("AddGameFrames", func(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			resp, err := client.AddGameFrame(
 				pb.ContextWithLockToken(ctx, token), &pb.AddGameFrameRequest{
@@ -179,7 +179,7 @@ func TestController_Ticks(t *testing.T) {
 		}
 	})
 
-	t.Run("ListGameTicks_NoGame", func(t *testing.T) {
+	t.Run("ListGameFrames_NoGame", func(t *testing.T) {
 		_, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{ID: "foo"})
 		require.NotNil(t, err)
 		require.Equal(t,
@@ -188,30 +188,30 @@ func TestController_Ticks(t *testing.T) {
 		)
 	})
 
-	t.Run("ListGameTicks_BadOffset", func(t *testing.T) {
-		ticks, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
+	t.Run("ListGameFrames_BadOffset", func(t *testing.T) {
+		resp, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
 			ID: gameID, Offset: 1000000})
 		require.Nil(t, err)
-		require.Empty(t, ticks.Ticks)
+		require.Empty(t, resp.Frames)
 	})
 
-	t.Run("ListGameTicks", func(t *testing.T) {
-		ticks, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{ID: gameID})
+	t.Run("ListGameFrames", func(t *testing.T) {
+		resp, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{ID: gameID})
 		require.Nil(t, err)
 		// Returns max 50.
-		require.Equal(t, 50, len(ticks.Ticks))
-		require.Equal(t, 50, int(ticks.Count))
+		require.Equal(t, 50, len(resp.Frames))
+		require.Equal(t, 50, int(resp.Count))
 	})
 
-	t.Run("ListGameTicks_Min50", func(t *testing.T) {
-		ticks, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
+	t.Run("ListGameFrames_Min50", func(t *testing.T) {
+		resp, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
 			ID:    gameID,
 			Limit: 1000,
 		})
 		require.Nil(t, err)
 		// Returns max 50.
-		require.Equal(t, 50, len(ticks.Ticks))
-		require.Equal(t, 50, int(ticks.Count))
+		require.Equal(t, 50, len(resp.Frames))
+		require.Equal(t, 50, int(resp.Count))
 	})
 }
 

@@ -76,7 +76,7 @@ var lastFrame = &pb.GameFrame{
 	},
 }
 
-func TestGameTickSnakeEats(t *testing.T) {
+func TestGameFrameSnakeEats(t *testing.T) {
 	snake := &pb.Snake{
 		Health: 67,
 		Body: []*pb.Point{
