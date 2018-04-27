@@ -30,7 +30,7 @@ var replayCmd = &cobra.Command{
 	},
 }
 
-func moveFrameForwards(frameIndex int, frames []*pb.GameTick) (int, *pb.GameTick, bool) {
+func moveFrameForwards(frameIndex int, frames []*pb.GameFrame) (int, *pb.GameFrame, bool) {
 	frameIndex++
 	if frameIndex >= len(frames) {
 		return frameIndex, nil, true
@@ -38,7 +38,7 @@ func moveFrameForwards(frameIndex int, frames []*pb.GameTick) (int, *pb.GameTick
 	return frameIndex, frames[frameIndex], false
 }
 
-func moveFrameBackwards(frameIndex int, frames []*pb.GameTick) (int, *pb.GameTick) {
+func moveFrameBackwards(frameIndex int, frames []*pb.GameFrame) (int, *pb.GameFrame) {
 	frameIndex--
 	if frameIndex <= 0 {
 		frameIndex = 0
@@ -46,14 +46,14 @@ func moveFrameBackwards(frameIndex int, frames []*pb.GameTick) (int, *pb.GameTic
 	return frameIndex, frames[frameIndex]
 }
 
-func getCharacter(gameTick *pb.GameTick, x, y int64) string {
-	for _, f := range gameTick.Food {
+func getCharacter(frame *pb.GameFrame, x, y int64) string {
+	for _, f := range frame.Food {
 		if f.X == x && f.Y == y {
 			return "●"
 		}
 	}
 
-	for _, s := range gameTick.AliveSnakes() {
+	for _, s := range frame.AliveSnakes() {
 		for _, p := range s.Body {
 			if p.X == x && p.Y == y {
 				return "◼"
@@ -63,7 +63,7 @@ func getCharacter(gameTick *pb.GameTick, x, y int64) string {
 	return " "
 }
 
-func loadGame() (*pb.Game, []*pb.GameTick, error) {
+func loadGame() (*pb.Game, []*pb.GameFrame, error) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -81,35 +81,35 @@ func loadGame() (*pb.Game, []*pb.GameTick, error) {
 		return nil, nil, err
 	}
 
-	ticks, err := loadFrames(0)
+	frames, err := loadFrames(0)
 	if err != nil {
 		return nil, nil, err
 	}
-	return s.Game, ticks, nil
+	return s.Game, frames, nil
 }
 
-func loadFrames(offset int) ([]*pb.GameTick, error) {
+func loadFrames(offset int) ([]*pb.GameFrame, error) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	tr := &pb.ListGameTicksResponse{}
-	resp, err := client.Get(fmt.Sprintf("%s/games/%s/ticks?offset=%d", apiAddr, gameID, offset))
+	tr := &pb.ListGameFramesResponse{}
+	resp, err := client.Get(fmt.Sprintf("%s/games/%s/frames?offset=%d", apiAddr, gameID, offset))
 	if err != nil {
-		fmt.Println("error while getting ticks", err)
+		fmt.Println("error while getting frames", err)
 		return nil, err
 	}
 	err = json.NewDecoder(resp.Body).Decode(tr)
 	resp.Body.Close()
 	if err != nil {
-		fmt.Println("error while decoding ticks", err)
+		fmt.Println("error while decoding frames", err)
 		return nil, err
 	}
-	return tr.Ticks, nil
+	return tr.Frames, nil
 }
 
-func checkForMoreFrames(frameIndex, frameCount int) ([]*pb.GameTick, error) {
+func checkForMoreFrames(frameIndex, frameCount int) ([]*pb.GameFrame, error) {
 	if frameIndex > (frameCount - 10) {
-		return []*pb.GameTick{}, nil
+		return []*pb.GameFrame{}, nil
 	}
 
 	return loadFrames(frameCount)

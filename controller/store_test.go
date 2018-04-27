@@ -96,7 +96,7 @@ func testStoreGames(t *testing.T, s Store) {
 	require.NotNil(t, err)
 }
 
-func testStoreGameTicks(t *testing.T, s Store) {
+func testStoreGameFrames(t *testing.T, s Store) {
 	ctx := context.Background()
 
 	// Create and fetch a game.
@@ -106,34 +106,34 @@ func testStoreGameTicks(t *testing.T, s Store) {
 	require.Nil(t, err)
 	require.Equal(t, "test", g.ID)
 
-	// Read game ticks, too high offset.
-	ticks, err := s.ListGameTicks(ctx, "test", 10, 100)
+	// Read game frames, too high offset.
+	frames, err := s.ListGameFrames(ctx, "test", 10, 100)
 	require.Nil(t, err)
-	require.Equal(t, 0, len(ticks))
+	require.Equal(t, 0, len(frames))
 
-	// Read game ticks, 0 offset.
-	ticks, err = s.ListGameTicks(ctx, "test", 10, 0)
+	// Read game frames, 0 offset.
+	frames, err = s.ListGameFrames(ctx, "test", 10, 0)
 	require.Nil(t, err)
-	require.Equal(t, 0, len(ticks))
+	require.Equal(t, 0, len(frames))
 
-	// Push a game tick.
-	err = s.PushGameTick(ctx, "test", &pb.GameTick{})
+	// Push a game frame.
+	err = s.PushGameFrame(ctx, "test", &pb.GameFrame{})
 	require.Nil(t, err)
 
-	// Read the game ticks.
-	ticks, err = s.ListGameTicks(ctx, "test", 1, 0)
+	// Read the game frames.
+	frames, err = s.ListGameFrames(ctx, "test", 1, 0)
 	require.Nil(t, err)
-	require.Equal(t, 1, len(ticks))
+	require.Equal(t, 1, len(frames))
 
-	// Read game ticks that don't exist.
-	ticks, err = s.ListGameTicks(ctx, "test22", 1, 0)
+	// Read game frames that don't exist.
+	frames, err = s.ListGameFrames(ctx, "test22", 1, 0)
 	require.Equal(t, ErrNotFound, err)
-	require.Equal(t, 0, len(ticks))
+	require.Equal(t, 0, len(frames))
 
-	// Read the game ticks, too high offset.
-	ticks, err = s.ListGameTicks(ctx, "test", 10, 100)
+	// Read the game frames, too high offset.
+	frames, err = s.ListGameFrames(ctx, "test", 10, 100)
 	require.Nil(t, err)
-	require.Equal(t, 0, len(ticks))
+	require.Equal(t, 0, len(frames))
 }
 
 func testStoreConcurrentWriters(t *testing.T, s Store) {
@@ -168,5 +168,5 @@ func testStoreConcurrentWriters(t *testing.T, s Store) {
 func TestStore_InMem_Lock(t *testing.T)              { testStoreLock(t, InMemStore()) }
 func TestStore_InMem_LockExpiry(t *testing.T)        { testStoreLockExpiry(t, InMemStore()) }
 func TestStore_InMem_Games(t *testing.T)             { testStoreGames(t, InMemStore()) }
-func TestStore_InMem_GameTicks(t *testing.T)         { testStoreGameTicks(t, InMemStore()) }
+func TestStore_InMem_GameFrames(t *testing.T)        { testStoreGameFrames(t, InMemStore()) }
 func TestStore_InMem_ConcurrentWriters(t *testing.T) { testStoreConcurrentWriters(t, InMemStore()) }

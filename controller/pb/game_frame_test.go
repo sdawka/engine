@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGameTickAliveSnakes(t *testing.T) {
-	gt := &GameTick{
+func TestGameFrameAliveSnakes(t *testing.T) {
+	gt := &GameFrame{
 		Snakes: []*Snake{
 			&Snake{},
 			&Snake{
@@ -19,8 +19,8 @@ func TestGameTickAliveSnakes(t *testing.T) {
 	require.Len(t, snakes, 1)
 }
 
-func TestGameTickDeadSnakes(t *testing.T) {
-	gt := &GameTick{
+func TestGameFrameDeadSnakes(t *testing.T) {
+	gt := &GameFrame{
 		Snakes: []*Snake{
 			&Snake{},
 			&Snake{

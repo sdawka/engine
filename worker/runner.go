@@ -15,15 +15,15 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 	if err != nil {
 		return err
 	}
-	lastTick := resp.LastTick
+	lastFrame := resp.LastFrame
 
 	for {
-		if lastTick != nil && lastTick.Turn == 0 {
-			rules.NotifyGameStart(resp.Game, lastTick)
+		if lastFrame != nil && lastFrame.Turn == 0 {
+			rules.NotifyGameStart(resp.Game, lastFrame)
 		}
-		nextTick, err := rules.GameTick(resp.Game, lastTick)
+		nextFrame, err := rules.GameTick(resp.Game, lastFrame)
 		if err != nil {
-			// This is a GameTick error, we can assume that this is a fatal
+			// This is a GameFrame error, we can assume that this is a fatal
 			// error and no more game processing can take place at this point.
 			log.WithError(err).
 				WithField("game", id).
@@ -37,22 +37,22 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 		}
 
 		log.WithField("game", id).
-			WithField("turn", nextTick.Turn).
-			Info("adding game tick")
-		_, err = client.AddGameTick(ctx, &pb.AddGameTickRequest{
-			ID:       resp.Game.ID,
-			GameTick: nextTick,
+			WithField("turn", nextFrame.Turn).
+			Info("adding game frame")
+		_, err = client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
+			ID:        resp.Game.ID,
+			GameFrame: nextFrame,
 		})
 		if err != nil {
 			// This is likely a lock error, not to worry here, we can exit.
 			return err
 		}
 
-		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), nextTick) {
+		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), nextFrame) {
 			log.WithField("game", id).
-				WithField("turn", nextTick.Turn).
+				WithField("turn", nextFrame.Turn).
 				Info("ending game")
-			rules.NotifyGameEnd(resp.Game, nextTick)
+			rules.NotifyGameEnd(resp.Game, nextFrame)
 			_, err := client.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
 			if err != nil {
 				return err
@@ -60,6 +60,6 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			return nil
 		}
 
-		lastTick = nextTick
+		lastFrame = nextFrame
 	}
 }

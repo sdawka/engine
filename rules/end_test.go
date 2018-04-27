@@ -30,7 +30,7 @@ func TestNotifyGameEnd(t *testing.T) {
 		URL: "http://not.a.snake.com",
 	}
 
-	NotifyGameEnd(&pb.Game{}, &pb.GameTick{
+	NotifyGameEnd(&pb.Game{}, &pb.GameFrame{
 		Snakes: []*pb.Snake{snake},
 	})
 
@@ -48,7 +48,7 @@ func TestNotifyGameEndSilentlyHandlesError(t *testing.T) {
 		URL: "http://not.a.snake.com",
 	}
 
-	NotifyGameEnd(&pb.Game{}, &pb.GameTick{
+	NotifyGameEnd(&pb.Game{}, &pb.GameFrame{
 		Snakes: []*pb.Snake{snake},
 	})
 
