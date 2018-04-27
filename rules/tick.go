@@ -11,35 +11,35 @@ import (
 )
 
 // GameTick runs the game one tick and updates the state
-func GameTick(game *pb.Game, lastTick *pb.GameTick) (*pb.GameTick, error) {
-	if lastTick == nil {
+func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
+	if lastFrame == nil {
 		return nil, fmt.Errorf("rules: invalid state, previous tick is nil")
 	}
-	nextTick := &pb.GameTick{
-		Turn:   lastTick.Turn + 1,
-		Snakes: lastTick.Snakes,
-		Food:   lastTick.Food,
+	nextFrame := &pb.GameFrame{
+		Turn:   lastFrame.Turn + 1,
+		Snakes: lastFrame.Snakes,
+		Food:   lastFrame.Food,
 	}
 	duration := time.Duration(game.SnakeTimeout) * time.Millisecond
 	log.WithFields(log.Fields{
 		"GameID":  game.ID,
-		"Turn":    nextTick.Turn,
+		"Turn":    nextFrame.Turn,
 		"Timeout": duration,
 	}).Info("GatherSnakeMoves")
-	moves := GatherSnakeMoves(duration, game, lastTick)
+	moves := GatherSnakeMoves(duration, game, lastFrame)
 
 	// we have all the snake moves now
 	// 1. update snake coords
-	updateSnakes(game, nextTick, moves)
+	updateSnakes(game, nextFrame, moves)
 	// 2. check for death
 	// 	  a - starvation
 	//    b - wall collision
 	//    c - snake collision
 	log.WithFields(log.Fields{
 		"GameID": game.ID,
-		"Turn":   nextTick.Turn,
+		"Turn":   nextFrame.Turn,
 	}).Info("check for death")
-	deathUpdates := checkForDeath(game.Width, game.Height, nextTick)
+	deathUpdates := checkForDeath(game.Width, game.Height, nextFrame)
 	for _, du := range deathUpdates {
 		if du.Snake.Death == nil {
 			du.Snake.Death = du.Death
@@ -54,29 +54,29 @@ func GameTick(game *pb.Game, lastTick *pb.GameTick) (*pb.GameTick, error) {
 	//    f - replace eaten food
 	log.WithFields(log.Fields{
 		"GameID": game.ID,
-		"Turn":   nextTick.Turn,
+		"Turn":   nextFrame.Turn,
 	}).Info("reduce snake health")
-	for _, s := range nextTick.AliveSnakes() {
+	for _, s := range nextFrame.AliveSnakes() {
 		s.Health = s.Health - 1
 	}
 
 	log.WithFields(log.Fields{
 		"GameID": game.ID,
-		"Turn":   nextTick.Turn,
+		"Turn":   nextFrame.Turn,
 	}).Info("handle food")
 
-	foodToRemove := checkForSnakesEating(nextTick)
-	nextFood, err := updateFood(game.Width, game.Height, lastTick, foodToRemove)
+	foodToRemove := checkForSnakesEating(nextFrame)
+	nextFood, err := updateFood(game.Width, game.Height, lastFrame, foodToRemove)
 	if err != nil {
 		return nil, err
 	}
-	nextTick.Food = nextFood
-	return nextTick, nil
+	nextFrame.Food = nextFood
+	return nextFrame, nil
 }
 
-func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.Point) ([]*pb.Point, error) {
+func updateFood(width, height int64, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
 	food := []*pb.Point{}
-	for _, foodPos := range gameTick.Food {
+	for _, foodPos := range gameFrame.Food {
 		found := false
 		for _, r := range foodToRemove {
 			if foodPos.Equal(r) {
@@ -91,7 +91,7 @@ func updateFood(width, height int64, gameTick *pb.GameTick, foodToRemove []*pb.P
 	}
 
 	for range foodToRemove {
-		p, err := getUnoccupiedPoint(width, height, gameTick.Food, gameTick.AliveSnakes())
+		p, err := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
 		if err != nil {
 			return nil, err
 		}
@@ -129,14 +129,14 @@ func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snak
 	}
 }
 
-func updateSnakes(game *pb.Game, tick *pb.GameTick, moves []*SnakeUpdate) {
+func updateSnakes(game *pb.Game, frame *pb.GameFrame, moves []*SnakeUpdate) {
 	for _, update := range moves {
 		if update.Err != nil {
 			log.WithFields(log.Fields{
 				"GameID":  game.ID,
 				"SnakeID": update.Snake.ID,
 				"Name":    update.Snake.Name,
-				"Turn":    tick.Turn,
+				"Turn":    frame.Turn,
 			}).Info("Default move")
 			update.Snake.DefaultMove()
 		} else {
@@ -144,7 +144,7 @@ func updateSnakes(game *pb.Game, tick *pb.GameTick, moves []*SnakeUpdate) {
 				"GameID":  game.ID,
 				"SnakeID": update.Snake.ID,
 				"Name":    update.Snake.Name,
-				"Turn":    tick.Turn,
+				"Turn":    frame.Turn,
 				"Move":    update.Move,
 			}).Info("Move")
 			update.Snake.Move(update.Move)
@@ -152,11 +152,11 @@ func updateSnakes(game *pb.Game, tick *pb.GameTick, moves []*SnakeUpdate) {
 	}
 }
 
-func checkForSnakesEating(tick *pb.GameTick) []*pb.Point {
+func checkForSnakesEating(frame *pb.GameFrame) []*pb.Point {
 	foodToRemove := []*pb.Point{}
-	for _, snake := range tick.AliveSnakes() {
+	for _, snake := range frame.AliveSnakes() {
 		ate := false
-		for _, foodPos := range tick.Food {
+		for _, foodPos := range frame.Food {
 			if snake.Head().Equal(foodPos) {
 				snake.Health = 100
 				ate = true

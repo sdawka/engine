@@ -16,7 +16,7 @@ option go_package = "pb";
 //    active game id is returned to the worker in this call. The game is also
 //    locked internally to the controller at this point.
 // 4. The worker initiates work and begins pushing game ticks through
-//    AddGameTick. If a game tick is not pushed within controller.LockInterval
+//    AddGameFrame. If a game frame is not pushed within controller.LockInterval
 //    then the game will become available for other workers.
 // 5. Once work is finished, the worker will call EndGame which will unlock the
 //    game.
@@ -28,9 +28,9 @@ option go_package = "pb";
 // game. Timeouts and board size are stored on the game. If you need to change
 // board size clone the game and start a new one.
 //
-// GameTick:
-// Game ticks point to a game and effectively represent the history of a game.
-// Ticks are pushed continually by workers through the controller interface into
+// GameFrame:
+// Game frames point to a game and effectively represent the history of a game.
+// Frames are pushed continually by workers through the controller interface into
 // the store.
 //
 // GameLock:
@@ -48,11 +48,11 @@ service Controller {
   rpc Start(StartRequest) returns (StartResponse);
   // Create creates a new game, but doesn't start running frames.
   rpc Create(CreateRequest) returns (CreateResponse);
-  // AddGameTick adds a new game tick to the game. A lock must be held for this
+  // AddGameFrame adds a new game tick to the game. A lock must be held for this
   // call to succeed.
-  rpc AddGameTick(AddGameTickRequest) returns (AddGameTickResponse);
-  // ListGameTicks will list all game ticks given a limit and offset.
-  rpc ListGameTicks(ListGameTicksRequest) returns (ListGameTicksResponse);
+  rpc AddGameFrame(AddGameFrameRequest) returns (AddGameFrameResponse);
+  // ListGameFrames will list all game ticks given a limit and offset.
+  rpc ListGameFrames(ListGameFramesRequest) returns (ListGameFramesResponse);
   // EndGame sets the game status to complete. A lock must be held for this call
   // to succeed.
   rpc EndGame(EndGameRequest) returns (EndGameResponse);
@@ -67,7 +67,7 @@ message PopResponse {
 message StatusRequest  { string ID = 1; }
 message StatusResponse {
   Game Game = 1;
-  GameTick LastTick = 2;
+  GameFrame LastTick = 2;
 }
 
 message StartRequest  { string ID = 1; }
@@ -83,19 +83,19 @@ message CreateResponse {
   string ID = 1;
 }
 
-message AddGameTickRequest {
+message AddGameFrameRequest {
   string ID = 1;
-  GameTick GameTick = 2;
+  GameFrame GameFrame = 2;
 }
-message AddGameTickResponse { Game game = 1; }
+message AddGameFrameResponse { Game game = 1; }
 
-message ListGameTicksRequest {
+message ListGameFramesRequest {
   string ID = 1;
   int32 Limit = 2;
   int32 Offset = 3;
 }
-message ListGameTicksResponse {
-  repeated GameTick Ticks = 1;
+message ListGameFramesResponse {
+  repeated GameFrame Ticks = 1;
   int32 Count = 2;
 }
 
@@ -118,7 +118,7 @@ message Game {
   string Mode = 8;
 };
 
-message GameTick {
+message GameFrame {
   int64 Turn = 1;
   repeated Point Food = 2;
   repeated Snake Snakes = 3;

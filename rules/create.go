@@ -20,7 +20,7 @@ const (
 )
 
 // CreateInitialGame creates a new game based on the create request passed in
-func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameTick, error) {
+func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error) {
 
 	snakes, err := getSnakes(req)
 	if err != nil {
@@ -46,7 +46,7 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameTick, error) 
 		game.Mode = string(GameModeSinglePlayer)
 	}
 
-	ticks := []*pb.GameTick{
+	frames := []*pb.GameFrame{
 		{
 			Turn:   0,
 			Food:   food,
@@ -54,7 +54,7 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameTick, error) 
 		},
 	}
 
-	return game, ticks, nil
+	return game, frames, nil
 }
 
 func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {

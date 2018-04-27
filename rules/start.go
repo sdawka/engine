@@ -46,7 +46,7 @@ func getEffectiveColor(meta SnakeMetadata) string {
 
 // NotifyGameStart calls /start on every snake and then adds metadata from the
 // response to the pb.Snake object.
-func NotifyGameStart(game *pb.Game, startState *pb.GameTick) {
+func NotifyGameStart(game *pb.Game, startState *pb.GameFrame) {
 	// Be nice and give snake servers a long time to respond to /start in case
 	// it's a sleeping heroku dyno or something like that.
 	timeout := 5 * time.Second
@@ -57,12 +57,12 @@ func NotifyGameStart(game *pb.Game, startState *pb.GameTick) {
 	}
 }
 
-func gatherSnakeStartResponses(timeout time.Duration, game *pb.Game, startState *pb.GameTick) []SnakeMetadata {
+func gatherSnakeStartResponses(timeout time.Duration, game *pb.Game, startState *pb.GameFrame) []SnakeMetadata {
 	responses := gatherAllSnakeResponses(multiSnakeRequest{
 		url:     "start",
 		timeout: timeout,
 		game:    game,
-		tick:    startState,
+		frame:   startState,
 	})
 
 	ret := []SnakeMetadata{}

@@ -14,7 +14,7 @@ const (
 	snakeColor   = termbox.ColorGreen
 )
 
-func render(game *pb.Game, tick *pb.GameTick) error {
+func render(game *pb.Game, frame *pb.GameFrame) error {
 	termbox.Clear(defaultColor, defaultColor)
 
 	var (
@@ -27,10 +27,10 @@ func render(game *pb.Game, tick *pb.GameTick) error {
 
 	renderTitle(left, top)
 	renderBoard(game, top, bottom, left)
-	for _, s := range tick.Snakes {
+	for _, s := range frame.Snakes {
 		renderSnake(left, bottom, s)
 	}
-	renderFood(left, bottom, tick.Food)
+	renderFood(left, bottom, frame.Food)
 
 	return termbox.Flush()
 }

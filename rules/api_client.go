@@ -22,7 +22,7 @@ type multiSnakeRequest struct {
 	url     string
 	timeout time.Duration
 	game    *pb.Game
-	tick    *pb.GameTick
+	frame   *pb.GameFrame
 }
 
 type snakePostOptions struct {
@@ -37,15 +37,15 @@ type snakePostRequest struct {
 }
 
 func gatherAllSnakeResponses(multiReq multiSnakeRequest) []snakeResponse {
-	return gatherSnakeResponses(multiReq, multiReq.tick.Snakes)
+	return gatherSnakeResponses(multiReq, multiReq.frame.Snakes)
 }
 
 func gatherAliveSnakeResponses(multiReq multiSnakeRequest) []snakeResponse {
-	return gatherSnakeResponses(multiReq, multiReq.tick.AliveSnakes())
+	return gatherSnakeResponses(multiReq, multiReq.frame.AliveSnakes())
 }
 
 func gatherSnakeResponses(multiReq multiSnakeRequest, snakes []*pb.Snake) []snakeResponse {
-	respChan := make(chan snakeResponse, len(multiReq.tick.Snakes))
+	respChan := make(chan snakeResponse, len(multiReq.frame.Snakes))
 	wg := sync.WaitGroup{}
 
 	for _, snake := range snakes {
@@ -64,7 +64,7 @@ func gatherSnakeResponses(multiReq multiSnakeRequest, snakes []*pb.Snake) []snak
 				snake:   s,
 				timeout: multiReq.timeout,
 			}
-			getSnakeResponse(options, multiReq.game, multiReq.tick, respChan)
+			getSnakeResponse(options, multiReq.game, multiReq.frame, respChan)
 			wg.Done()
 		}(snake)
 	}
@@ -104,7 +104,7 @@ func postToSnakeServer(req snakePostRequest, resp chan<- snakeResponse) {
 	}
 }
 
-func getSnakeResponse(options snakePostOptions, game *pb.Game, frame *pb.GameTick, resp chan<- snakeResponse) {
+func getSnakeResponse(options snakePostOptions, game *pb.Game, frame *pb.GameFrame, resp chan<- snakeResponse) {
 	req := buildSnakeRequest(game, frame, options.snake.ID)
 	data, err := json.Marshal(req)
 

@@ -10,7 +10,7 @@ import (
 )
 
 // NotifyGameEnd sends the /end requests to all the snakes.
-func NotifyGameEnd(game *pb.Game, frame *pb.GameTick) {
+func NotifyGameEnd(game *pb.Game, frame *pb.GameFrame) {
 	netClient := createClient(200 * time.Millisecond)
 
 	for _, s := range frame.Snakes {

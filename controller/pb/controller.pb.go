@@ -16,15 +16,15 @@ It has these top-level messages:
 	StartResponse
 	CreateRequest
 	CreateResponse
-	AddGameTickRequest
-	AddGameTickResponse
-	ListGameTicksRequest
-	ListGameTicksResponse
+	AddGameFrameRequest
+	AddGameFrameResponse
+	ListGameFramesRequest
+	ListGameFramesResponse
 	EndGameRequest
 	EndGameResponse
 	SnakeOptions
 	Game
-	GameTick
+	GameFrame
 	Point
 	Snake
 	Death
@@ -99,8 +99,8 @@ func (m *StatusRequest) GetID() string {
 }
 
 type StatusResponse struct {
-	Game     *Game     `protobuf:"bytes,1,opt,name=Game" json:"Game,omitempty"`
-	LastTick *GameTick `protobuf:"bytes,2,opt,name=LastTick" json:"LastTick,omitempty"`
+	Game     *Game      `protobuf:"bytes,1,opt,name=Game" json:"Game,omitempty"`
+	LastTick *GameFrame `protobuf:"bytes,2,opt,name=LastTick" json:"LastTick,omitempty"`
 }
 
 func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
@@ -115,7 +115,7 @@ func (m *StatusResponse) GetGame() *Game {
 	return nil
 }
 
-func (m *StatusResponse) GetLastTick() *GameTick {
+func (m *StatusResponse) GetLastTick() *GameFrame {
 	if m != nil {
 		return m.LastTick
 	}
@@ -202,96 +202,98 @@ func (m *CreateResponse) GetID() string {
 	return ""
 }
 
-type AddGameTickRequest struct {
-	ID       string    `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	GameTick *GameTick `protobuf:"bytes,2,opt,name=GameTick" json:"GameTick,omitempty"`
+type AddGameFrameRequest struct {
+	ID        string     `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	GameFrame *GameFrame `protobuf:"bytes,2,opt,name=GameFrame" json:"GameFrame,omitempty"`
 }
 
-func (m *AddGameTickRequest) Reset()                    { *m = AddGameTickRequest{} }
-func (m *AddGameTickRequest) String() string            { return proto.CompactTextString(m) }
-func (*AddGameTickRequest) ProtoMessage()               {}
-func (*AddGameTickRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
+func (m *AddGameFrameRequest) Reset()                    { *m = AddGameFrameRequest{} }
+func (m *AddGameFrameRequest) String() string            { return proto.CompactTextString(m) }
+func (*AddGameFrameRequest) ProtoMessage()               {}
+func (*AddGameFrameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
 
-func (m *AddGameTickRequest) GetID() string {
+func (m *AddGameFrameRequest) GetID() string {
 	if m != nil {
 		return m.ID
 	}
 	return ""
 }
 
-func (m *AddGameTickRequest) GetGameTick() *GameTick {
+func (m *AddGameFrameRequest) GetGameFrame() *GameFrame {
 	if m != nil {
-		return m.GameTick
+		return m.GameFrame
 	}
 	return nil
 }
 
-type AddGameTickResponse struct {
+type AddGameFrameResponse struct {
 	Game *Game `protobuf:"bytes,1,opt,name=game" json:"game,omitempty"`
 }
 
-func (m *AddGameTickResponse) Reset()                    { *m = AddGameTickResponse{} }
-func (m *AddGameTickResponse) String() string            { return proto.CompactTextString(m) }
-func (*AddGameTickResponse) ProtoMessage()               {}
-func (*AddGameTickResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
+func (m *AddGameFrameResponse) Reset()                    { *m = AddGameFrameResponse{} }
+func (m *AddGameFrameResponse) String() string            { return proto.CompactTextString(m) }
+func (*AddGameFrameResponse) ProtoMessage()               {}
+func (*AddGameFrameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
 
-func (m *AddGameTickResponse) GetGame() *Game {
+func (m *AddGameFrameResponse) GetGame() *Game {
 	if m != nil {
 		return m.Game
 	}
 	return nil
 }
 
-type ListGameTicksRequest struct {
+type ListGameFramesRequest struct {
 	ID     string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	Limit  int32  `protobuf:"varint,2,opt,name=Limit,proto3" json:"Limit,omitempty"`
 	Offset int32  `protobuf:"varint,3,opt,name=Offset,proto3" json:"Offset,omitempty"`
 }
 
-func (m *ListGameTicksRequest) Reset()                    { *m = ListGameTicksRequest{} }
-func (m *ListGameTicksRequest) String() string            { return proto.CompactTextString(m) }
-func (*ListGameTicksRequest) ProtoMessage()               {}
-func (*ListGameTicksRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
+func (m *ListGameFramesRequest) Reset()                    { *m = ListGameFramesRequest{} }
+func (m *ListGameFramesRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListGameFramesRequest) ProtoMessage()               {}
+func (*ListGameFramesRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
 
-func (m *ListGameTicksRequest) GetID() string {
+func (m *ListGameFramesRequest) GetID() string {
 	if m != nil {
 		return m.ID
 	}
 	return ""
 }
 
-func (m *ListGameTicksRequest) GetLimit() int32 {
+func (m *ListGameFramesRequest) GetLimit() int32 {
 	if m != nil {
 		return m.Limit
 	}
 	return 0
 }
 
-func (m *ListGameTicksRequest) GetOffset() int32 {
+func (m *ListGameFramesRequest) GetOffset() int32 {
 	if m != nil {
 		return m.Offset
 	}
 	return 0
 }
 
-type ListGameTicksResponse struct {
-	Ticks []*GameTick `protobuf:"bytes,1,rep,name=Ticks" json:"Ticks,omitempty"`
-	Count int32       `protobuf:"varint,2,opt,name=Count,proto3" json:"Count,omitempty"`
+type ListGameFramesResponse struct {
+	Ticks []*GameFrame `protobuf:"bytes,1,rep,name=Ticks" json:"Ticks,omitempty"`
+	Count int32        `protobuf:"varint,2,opt,name=Count,proto3" json:"Count,omitempty"`
 }
 
-func (m *ListGameTicksResponse) Reset()                    { *m = ListGameTicksResponse{} }
-func (m *ListGameTicksResponse) String() string            { return proto.CompactTextString(m) }
-func (*ListGameTicksResponse) ProtoMessage()               {}
-func (*ListGameTicksResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
+func (m *ListGameFramesResponse) Reset()         { *m = ListGameFramesResponse{} }
+func (m *ListGameFramesResponse) String() string { return proto.CompactTextString(m) }
+func (*ListGameFramesResponse) ProtoMessage()    {}
+func (*ListGameFramesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptorController, []int{11}
+}
 
-func (m *ListGameTicksResponse) GetTicks() []*GameTick {
+func (m *ListGameFramesResponse) GetTicks() []*GameFrame {
 	if m != nil {
 		return m.Ticks
 	}
 	return nil
 }
 
-func (m *ListGameTicksResponse) GetCount() int32 {
+func (m *ListGameFramesResponse) GetCount() int32 {
 	if m != nil {
 		return m.Count
 	}
@@ -418,32 +420,32 @@ func (m *Game) GetMode() string {
 	return ""
 }
 
-type GameTick struct {
+type GameFrame struct {
 	Turn   int64    `protobuf:"varint,1,opt,name=Turn,proto3" json:"Turn,omitempty"`
 	Food   []*Point `protobuf:"bytes,2,rep,name=Food" json:"Food,omitempty"`
 	Snakes []*Snake `protobuf:"bytes,3,rep,name=Snakes" json:"Snakes,omitempty"`
 }
 
-func (m *GameTick) Reset()                    { *m = GameTick{} }
-func (m *GameTick) String() string            { return proto.CompactTextString(m) }
-func (*GameTick) ProtoMessage()               {}
-func (*GameTick) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
+func (m *GameFrame) Reset()                    { *m = GameFrame{} }
+func (m *GameFrame) String() string            { return proto.CompactTextString(m) }
+func (*GameFrame) ProtoMessage()               {}
+func (*GameFrame) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
 
-func (m *GameTick) GetTurn() int64 {
+func (m *GameFrame) GetTurn() int64 {
 	if m != nil {
 		return m.Turn
 	}
 	return 0
 }
 
-func (m *GameTick) GetFood() []*Point {
+func (m *GameFrame) GetFood() []*Point {
 	if m != nil {
 		return m.Food
 	}
 	return nil
 }
 
-func (m *GameTick) GetSnakes() []*Snake {
+func (m *GameFrame) GetSnakes() []*Snake {
 	if m != nil {
 		return m.Snakes
 	}
@@ -571,15 +573,15 @@ func init() {
 	proto.RegisterType((*StartResponse)(nil), "pb.StartResponse")
 	proto.RegisterType((*CreateRequest)(nil), "pb.CreateRequest")
 	proto.RegisterType((*CreateResponse)(nil), "pb.CreateResponse")
-	proto.RegisterType((*AddGameTickRequest)(nil), "pb.AddGameTickRequest")
-	proto.RegisterType((*AddGameTickResponse)(nil), "pb.AddGameTickResponse")
-	proto.RegisterType((*ListGameTicksRequest)(nil), "pb.ListGameTicksRequest")
-	proto.RegisterType((*ListGameTicksResponse)(nil), "pb.ListGameTicksResponse")
+	proto.RegisterType((*AddGameFrameRequest)(nil), "pb.AddGameFrameRequest")
+	proto.RegisterType((*AddGameFrameResponse)(nil), "pb.AddGameFrameResponse")
+	proto.RegisterType((*ListGameFramesRequest)(nil), "pb.ListGameFramesRequest")
+	proto.RegisterType((*ListGameFramesResponse)(nil), "pb.ListGameFramesResponse")
 	proto.RegisterType((*EndGameRequest)(nil), "pb.EndGameRequest")
 	proto.RegisterType((*EndGameResponse)(nil), "pb.EndGameResponse")
 	proto.RegisterType((*SnakeOptions)(nil), "pb.SnakeOptions")
 	proto.RegisterType((*Game)(nil), "pb.Game")
-	proto.RegisterType((*GameTick)(nil), "pb.GameTick")
+	proto.RegisterType((*GameFrame)(nil), "pb.GameFrame")
 	proto.RegisterType((*Point)(nil), "pb.Point")
 	proto.RegisterType((*Snake)(nil), "pb.Snake")
 	proto.RegisterType((*Death)(nil), "pb.Death")
@@ -790,14 +792,14 @@ func (this *CreateResponse) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *AddGameTickRequest) Equal(that interface{}) bool {
+func (this *AddGameFrameRequest) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AddGameTickRequest)
+	that1, ok := that.(*AddGameFrameRequest)
 	if !ok {
-		that2, ok := that.(AddGameTickRequest)
+		that2, ok := that.(AddGameFrameRequest)
 		if ok {
 			that1 = &that2
 		} else {
@@ -812,19 +814,19 @@ func (this *AddGameTickRequest) Equal(that interface{}) bool {
 	if this.ID != that1.ID {
 		return false
 	}
-	if !this.GameTick.Equal(that1.GameTick) {
+	if !this.GameFrame.Equal(that1.GameFrame) {
 		return false
 	}
 	return true
 }
-func (this *AddGameTickResponse) Equal(that interface{}) bool {
+func (this *AddGameFrameResponse) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AddGameTickResponse)
+	that1, ok := that.(*AddGameFrameResponse)
 	if !ok {
-		that2, ok := that.(AddGameTickResponse)
+		that2, ok := that.(AddGameFrameResponse)
 		if ok {
 			that1 = &that2
 		} else {
@@ -841,14 +843,14 @@ func (this *AddGameTickResponse) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *ListGameTicksRequest) Equal(that interface{}) bool {
+func (this *ListGameFramesRequest) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*ListGameTicksRequest)
+	that1, ok := that.(*ListGameFramesRequest)
 	if !ok {
-		that2, ok := that.(ListGameTicksRequest)
+		that2, ok := that.(ListGameFramesRequest)
 		if ok {
 			that1 = &that2
 		} else {
@@ -871,14 +873,14 @@ func (this *ListGameTicksRequest) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *ListGameTicksResponse) Equal(that interface{}) bool {
+func (this *ListGameFramesResponse) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*ListGameTicksResponse)
+	that1, ok := that.(*ListGameFramesResponse)
 	if !ok {
-		that2, ok := that.(ListGameTicksResponse)
+		that2, ok := that.(ListGameFramesResponse)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1020,14 +1022,14 @@ func (this *Game) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *GameTick) Equal(that interface{}) bool {
+func (this *GameFrame) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*GameTick)
+	that1, ok := that.(*GameFrame)
 	if !ok {
-		that2, ok := that.(GameTick)
+		that2, ok := that.(GameFrame)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1184,11 +1186,11 @@ type ControllerClient interface {
 	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (*StartResponse, error)
 	// Create creates a new game, but doesn't start running frames.
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
-	// AddGameTick adds a new game tick to the game. A lock must be held for this
+	// AddGameFrame adds a new game tick to the game. A lock must be held for this
 	// call to succeed.
-	AddGameTick(ctx context.Context, in *AddGameTickRequest, opts ...grpc.CallOption) (*AddGameTickResponse, error)
-	// ListGameTicks will list all game ticks given a limit and offset.
-	ListGameTicks(ctx context.Context, in *ListGameTicksRequest, opts ...grpc.CallOption) (*ListGameTicksResponse, error)
+	AddGameFrame(ctx context.Context, in *AddGameFrameRequest, opts ...grpc.CallOption) (*AddGameFrameResponse, error)
+	// ListGameFrames will list all game ticks given a limit and offset.
+	ListGameFrames(ctx context.Context, in *ListGameFramesRequest, opts ...grpc.CallOption) (*ListGameFramesResponse, error)
 	// EndGame sets the game status to complete. A lock must be held for this call
 	// to succeed.
 	EndGame(ctx context.Context, in *EndGameRequest, opts ...grpc.CallOption) (*EndGameResponse, error)
@@ -1238,18 +1240,18 @@ func (c *controllerClient) Create(ctx context.Context, in *CreateRequest, opts .
 	return out, nil
 }
 
-func (c *controllerClient) AddGameTick(ctx context.Context, in *AddGameTickRequest, opts ...grpc.CallOption) (*AddGameTickResponse, error) {
-	out := new(AddGameTickResponse)
-	err := grpc.Invoke(ctx, "/pb.Controller/AddGameTick", in, out, c.cc, opts...)
+func (c *controllerClient) AddGameFrame(ctx context.Context, in *AddGameFrameRequest, opts ...grpc.CallOption) (*AddGameFrameResponse, error) {
+	out := new(AddGameFrameResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/AddGameFrame", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *controllerClient) ListGameTicks(ctx context.Context, in *ListGameTicksRequest, opts ...grpc.CallOption) (*ListGameTicksResponse, error) {
-	out := new(ListGameTicksResponse)
-	err := grpc.Invoke(ctx, "/pb.Controller/ListGameTicks", in, out, c.cc, opts...)
+func (c *controllerClient) ListGameFrames(ctx context.Context, in *ListGameFramesRequest, opts ...grpc.CallOption) (*ListGameFramesResponse, error) {
+	out := new(ListGameFramesResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/ListGameFrames", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1279,11 +1281,11 @@ type ControllerServer interface {
 	Start(context.Context, *StartRequest) (*StartResponse, error)
 	// Create creates a new game, but doesn't start running frames.
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
-	// AddGameTick adds a new game tick to the game. A lock must be held for this
+	// AddGameFrame adds a new game tick to the game. A lock must be held for this
 	// call to succeed.
-	AddGameTick(context.Context, *AddGameTickRequest) (*AddGameTickResponse, error)
-	// ListGameTicks will list all game ticks given a limit and offset.
-	ListGameTicks(context.Context, *ListGameTicksRequest) (*ListGameTicksResponse, error)
+	AddGameFrame(context.Context, *AddGameFrameRequest) (*AddGameFrameResponse, error)
+	// ListGameFrames will list all game ticks given a limit and offset.
+	ListGameFrames(context.Context, *ListGameFramesRequest) (*ListGameFramesResponse, error)
 	// EndGame sets the game status to complete. A lock must be held for this call
 	// to succeed.
 	EndGame(context.Context, *EndGameRequest) (*EndGameResponse, error)
@@ -1365,38 +1367,38 @@ func _Controller_Create_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Controller_AddGameTick_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddGameTickRequest)
+func _Controller_AddGameFrame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddGameFrameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ControllerServer).AddGameTick(ctx, in)
+		return srv.(ControllerServer).AddGameFrame(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.Controller/AddGameTick",
+		FullMethod: "/pb.Controller/AddGameFrame",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ControllerServer).AddGameTick(ctx, req.(*AddGameTickRequest))
+		return srv.(ControllerServer).AddGameFrame(ctx, req.(*AddGameFrameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Controller_ListGameTicks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListGameTicksRequest)
+func _Controller_ListGameFrames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListGameFramesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ControllerServer).ListGameTicks(ctx, in)
+		return srv.(ControllerServer).ListGameFrames(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pb.Controller/ListGameTicks",
+		FullMethod: "/pb.Controller/ListGameFrames",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ControllerServer).ListGameTicks(ctx, req.(*ListGameTicksRequest))
+		return srv.(ControllerServer).ListGameFrames(ctx, req.(*ListGameFramesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1440,12 +1442,12 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Controller_Create_Handler,
 		},
 		{
-			MethodName: "AddGameTick",
-			Handler:    _Controller_AddGameTick_Handler,
+			MethodName: "AddGameFrame",
+			Handler:    _Controller_AddGameFrame_Handler,
 		},
 		{
-			MethodName: "ListGameTicks",
-			Handler:    _Controller_ListGameTicks_Handler,
+			MethodName: "ListGameFrames",
+			Handler:    _Controller_ListGameFrames_Handler,
 		},
 		{
 			MethodName: "EndGame",
@@ -1486,7 +1488,7 @@ func NewPopulatedStatusResponse(r randyController, easy bool) *StatusResponse {
 		this.Game = NewPopulatedGame(r, easy)
 	}
 	if r.Intn(10) != 0 {
-		this.LastTick = NewPopulatedGameTick(r, easy)
+		this.LastTick = NewPopulatedGameFrame(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
 	}
@@ -1542,19 +1544,19 @@ func NewPopulatedCreateResponse(r randyController, easy bool) *CreateResponse {
 	return this
 }
 
-func NewPopulatedAddGameTickRequest(r randyController, easy bool) *AddGameTickRequest {
-	this := &AddGameTickRequest{}
+func NewPopulatedAddGameFrameRequest(r randyController, easy bool) *AddGameFrameRequest {
+	this := &AddGameFrameRequest{}
 	this.ID = string(randStringController(r))
 	if r.Intn(10) != 0 {
-		this.GameTick = NewPopulatedGameTick(r, easy)
+		this.GameFrame = NewPopulatedGameFrame(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
 	}
 	return this
 }
 
-func NewPopulatedAddGameTickResponse(r randyController, easy bool) *AddGameTickResponse {
-	this := &AddGameTickResponse{}
+func NewPopulatedAddGameFrameResponse(r randyController, easy bool) *AddGameFrameResponse {
+	this := &AddGameFrameResponse{}
 	if r.Intn(10) != 0 {
 		this.Game = NewPopulatedGame(r, easy)
 	}
@@ -1563,8 +1565,8 @@ func NewPopulatedAddGameTickResponse(r randyController, easy bool) *AddGameTickR
 	return this
 }
 
-func NewPopulatedListGameTicksRequest(r randyController, easy bool) *ListGameTicksRequest {
-	this := &ListGameTicksRequest{}
+func NewPopulatedListGameFramesRequest(r randyController, easy bool) *ListGameFramesRequest {
+	this := &ListGameFramesRequest{}
 	this.ID = string(randStringController(r))
 	this.Limit = int32(r.Int31())
 	if r.Intn(2) == 0 {
@@ -1579,13 +1581,13 @@ func NewPopulatedListGameTicksRequest(r randyController, easy bool) *ListGameTic
 	return this
 }
 
-func NewPopulatedListGameTicksResponse(r randyController, easy bool) *ListGameTicksResponse {
-	this := &ListGameTicksResponse{}
+func NewPopulatedListGameFramesResponse(r randyController, easy bool) *ListGameFramesResponse {
+	this := &ListGameFramesResponse{}
 	if r.Intn(10) != 0 {
 		v2 := r.Intn(5)
-		this.Ticks = make([]*GameTick, v2)
+		this.Ticks = make([]*GameFrame, v2)
 		for i := 0; i < v2; i++ {
-			this.Ticks[i] = NewPopulatedGameTick(r, easy)
+			this.Ticks[i] = NewPopulatedGameFrame(r, easy)
 		}
 	}
 	this.Count = int32(r.Int31())
@@ -1648,8 +1650,8 @@ func NewPopulatedGame(r randyController, easy bool) *Game {
 	return this
 }
 
-func NewPopulatedGameTick(r randyController, easy bool) *GameTick {
-	this := &GameTick{}
+func NewPopulatedGameFrame(r randyController, easy bool) *GameFrame {
+	this := &GameFrame{}
 	this.Turn = int64(r.Int63())
 	if r.Intn(2) == 0 {
 		this.Turn *= -1
@@ -1801,53 +1803,54 @@ func encodeVarintPopulateController(dAtA []byte, v uint64) []byte {
 func init() { proto.RegisterFile("controller.proto", fileDescriptorController) }
 
 var fileDescriptorController = []byte{
-	// 768 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x74, 0x55, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0x96, 0xe3, 0x24, 0x6d, 0x26, 0x69, 0x9a, 0x6e, 0x4b, 0x09, 0x11, 0xb4, 0x61, 0x91, 0x50,
-	0x0f, 0x90, 0x8a, 0xf4, 0x8e, 0x44, 0x1b, 0xfe, 0xa4, 0xd0, 0x16, 0x37, 0x88, 0x96, 0x13, 0x49,
-	0xe3, 0x26, 0x56, 0x13, 0x6f, 0xb0, 0xd7, 0x07, 0xc4, 0x0b, 0x21, 0x71, 0x47, 0xbc, 0x0e, 0x3c,
-	0x05, 0x27, 0xc4, 0xee, 0xec, 0xae, 0x7f, 0x1a, 0xf7, 0x60, 0x69, 0xe7, 0x77, 0x67, 0xbe, 0xf9,
-	0x76, 0x0c, 0x8d, 0x4b, 0xe6, 0xf3, 0x80, 0xcd, 0x66, 0x6e, 0xd0, 0x59, 0x04, 0x8c, 0x33, 0x52,
-	0x58, 0x8c, 0x5a, 0x4f, 0x27, 0x1e, 0x9f, 0x46, 0xa3, 0xce, 0x25, 0x9b, 0xef, 0x4f, 0xd8, 0x84,
-	0xed, 0xa3, 0x69, 0x14, 0x5d, 0xa1, 0x84, 0x02, 0x9e, 0x54, 0x08, 0xad, 0x01, 0x9c, 0xb2, 0x85,
-	0xe3, 0x7e, 0x89, 0xdc, 0x90, 0xd3, 0x03, 0xa8, 0xa2, 0x14, 0x2e, 0x98, 0x1f, 0xba, 0xa4, 0x0e,
-	0x85, 0xb7, 0xbd, 0xa6, 0xd5, 0xb6, 0xf6, 0x2a, 0x8e, 0x38, 0x91, 0x2d, 0x28, 0x0d, 0xd8, 0xb5,
-	0xeb, 0x37, 0x0b, 0xa8, 0x52, 0x02, 0xdd, 0x85, 0xb5, 0x33, 0x3e, 0xe4, 0x51, 0xa8, 0xb3, 0xdc,
-	0x0c, 0xa3, 0xe7, 0x50, 0x37, 0x0e, 0x3a, 0xf1, 0x7d, 0x28, 0xbe, 0x1e, 0xce, 0x5d, 0xf4, 0xa9,
-	0x76, 0x57, 0x3b, 0x8b, 0x51, 0x47, 0xca, 0x0e, 0x6a, 0xc9, 0x1e, 0xac, 0xf6, 0x87, 0x21, 0x1f,
-	0x78, 0x97, 0xd7, 0x78, 0x53, 0xb5, 0x5b, 0x33, 0x1e, 0x52, 0xe7, 0xc4, 0x56, 0xba, 0x03, 0x35,
-	0x91, 0x39, 0xe0, 0xb7, 0xdd, 0xbc, 0x8e, 0xa5, 0x49, 0xbb, 0xba, 0x98, 0x7e, 0x83, 0xb5, 0xa3,
-	0xc0, 0x1d, 0x72, 0xd7, 0x44, 0x88, 0x96, 0x3e, 0x7a, 0x63, 0x3e, 0xc5, 0x20, 0xdb, 0x51, 0x02,
-	0xd9, 0x86, 0xf2, 0x1b, 0xd7, 0x9b, 0x4c, 0x39, 0xde, 0x6f, 0x3b, 0x5a, 0x22, 0x04, 0x8a, 0xaf,
-	0x18, 0x1b, 0x37, 0x6d, 0xd4, 0xe2, 0x59, 0x54, 0x5b, 0x3e, 0xf3, 0x87, 0xd7, 0x6e, 0xd8, 0x2c,
-	0xb6, 0x6d, 0x51, 0x6b, 0x43, 0xd6, 0x8a, 0x9a, 0x93, 0x05, 0xf7, 0xc4, 0xad, 0x8e, 0xb6, 0xd3,
-	0x36, 0xd4, 0xcd, 0xe5, 0xf9, 0x00, 0xd3, 0x63, 0x20, 0x2f, 0xc6, 0xe3, 0xb8, 0xd1, 0xfc, 0xae,
-	0x24, 0x3e, 0xc6, 0x25, 0x1f, 0x1f, 0x73, 0x12, 0xf3, 0xdc, 0xcc, 0xe4, 0x4b, 0xe0, 0x9f, 0xe4,
-	0xc2, 0x2f, 0xb5, 0x74, 0x00, 0x5b, 0x7d, 0x2f, 0xe4, 0x26, 0xea, 0xb6, 0xb1, 0x4a, 0xe8, 0xfa,
-	0xde, 0xdc, 0x53, 0x18, 0x95, 0x1c, 0x25, 0x48, 0xe8, 0x4e, 0xae, 0xae, 0x42, 0x97, 0x23, 0x48,
-	0x25, 0x47, 0x4b, 0xf4, 0x3d, 0xdc, 0xb9, 0x91, 0x55, 0x17, 0x43, 0x05, 0xa9, 0xa4, 0x42, 0x64,
-	0xb6, 0x97, 0x5a, 0x51, 0x26, 0x79, 0xd5, 0x11, 0x8b, 0xfc, 0xf8, 0x2a, 0x14, 0x24, 0x9e, 0x2f,
-	0x7d, 0xec, 0xee, 0xb6, 0xf9, 0x6f, 0xc0, 0x7a, 0xec, 0xa1, 0x19, 0xd0, 0x13, 0x94, 0x49, 0x0d,
-	0x47, 0x8e, 0xf4, 0xd8, 0x60, 0x51, 0x71, 0xf0, 0x4c, 0x1a, 0x60, 0x7f, 0x70, 0xfa, 0x9a, 0xe5,
-	0xf2, 0xa8, 0x13, 0xdb, 0x71, 0xe2, 0x9f, 0x96, 0x62, 0xf0, 0x12, 0x28, 0xa2, 0x7d, 0xc5, 0x75,
-	0x1d, 0xad, 0xa5, 0x84, 0x67, 0x76, 0x3e, 0xcf, 0x8a, 0x19, 0x9e, 0x51, 0x5d, 0xe4, 0xc0, 0x9b,
-	0xbb, 0x2c, 0xe2, 0xcd, 0x32, 0x5a, 0x33, 0x3a, 0xd2, 0x86, 0xea, 0x20, 0x0a, 0x7c, 0xe3, 0xb2,
-	0x82, 0x2e, 0x69, 0x95, 0x6c, 0xed, 0x1d, 0x1b, 0xbb, 0xcd, 0x55, 0xd5, 0x9a, 0x3c, 0xd3, 0xcf,
-	0x09, 0x77, 0xa4, 0x5d, 0xba, 0x6b, 0xea, 0xe3, 0x99, 0x3c, 0xd0, 0x0c, 0x2f, 0xe0, 0x30, 0x2a,
-	0x72, 0x18, 0xa7, 0xcc, 0xf3, 0xb9, 0x26, 0xfb, 0xc3, 0x98, 0xec, 0x76, 0xe2, 0x80, 0x9a, 0x98,
-	0xe5, 0x8f, 0xa0, 0x84, 0x11, 0xa4, 0x06, 0xd6, 0xb9, 0xce, 0x6d, 0x9d, 0x4b, 0xe9, 0x42, 0xbf,
-	0x26, 0xeb, 0x82, 0xfe, 0xb0, 0xa0, 0x84, 0xfe, 0x4b, 0x00, 0x9a, 0x79, 0x14, 0x96, 0xe7, 0x61,
-	0x27, 0xf3, 0x10, 0x65, 0x1e, 0xb2, 0xf1, 0x57, 0xfd, 0xe4, 0xd2, 0x65, 0x4a, 0xb5, 0xc2, 0x75,
-	0x38, 0x13, 0x70, 0x97, 0x0c, 0xae, 0x52, 0x22, 0xbb, 0x50, 0xea, 0x89, 0x07, 0x38, 0x45, 0x40,
-	0x75, 0x1c, 0x2a, 0x1c, 0xa5, 0x57, 0x44, 0x9b, 0xb1, 0x00, 0xe1, 0xac, 0x38, 0x4a, 0xa0, 0xcf,
-	0x20, 0x65, 0x1e, 0x46, 0xa1, 0x61, 0x8b, 0x12, 0x62, 0x1c, 0x0b, 0x09, 0x8e, 0xdd, 0x7f, 0x05,
-	0x80, 0xa3, 0x78, 0x3f, 0x93, 0xc7, 0x60, 0x8b, 0xc5, 0x4a, 0xea, 0xaa, 0x50, 0xb3, 0x6f, 0x5b,
-	0xeb, 0xb1, 0xac, 0x1f, 0xc3, 0xbe, 0xa1, 0x0f, 0xd9, 0x40, 0x64, 0xd3, 0x7b, 0xb5, 0x45, 0xd2,
-	0x2a, 0x1d, 0xf0, 0x44, 0xe0, 0x28, 0x37, 0x1c, 0x69, 0x68, 0x63, 0xbc, 0x0c, 0x5b, 0x1b, 0x29,
-	0x4d, 0x92, 0x5e, 0x6d, 0x20, 0x95, 0x3e, 0xb3, 0x0a, 0x55, 0xfa, 0x1b, 0x0b, 0xea, 0x39, 0x54,
-	0x53, 0x0b, 0x84, 0x6c, 0x4b, 0x97, 0xe5, 0x0d, 0xd5, 0xba, 0xbb, 0xa4, 0xd7, 0xf1, 0x3d, 0x58,
-	0xcb, 0xbc, 0x7a, 0xd2, 0x94, 0x9e, 0x79, 0xeb, 0xa5, 0x75, 0x2f, 0xc7, 0xa2, 0xb3, 0x74, 0x61,
-	0x45, 0x3f, 0x63, 0x82, 0x45, 0x66, 0x5f, 0x7d, 0x6b, 0x33, 0xa3, 0x53, 0x31, 0x87, 0x8d, 0xbf,
-	0xbf, 0x77, 0xac, 0xef, 0x7f, 0x76, 0xac, 0x5f, 0xe2, 0xfb, 0x24, 0xfe, 0x8c, 0xa3, 0x32, 0xfe,
-	0xf1, 0x0e, 0xfe, 0x07, 0x00, 0x00, 0xff, 0xff, 0x34, 0xb1, 0x85, 0x41, 0x38, 0x07, 0x00, 0x00,
+	// 774 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x74, 0x55, 0xdb, 0x6e, 0xd3, 0x4c,
+	0x10, 0x96, 0xe3, 0x24, 0x6d, 0x26, 0x69, 0x9a, 0x6e, 0xfb, 0xf7, 0x0f, 0x16, 0xb4, 0x61, 0x91,
+	0x50, 0x11, 0x90, 0x8a, 0x94, 0x17, 0xe8, 0x81, 0x16, 0xa4, 0x40, 0x2b, 0x37, 0x15, 0x2d, 0x77,
+	0x4e, 0xe3, 0x26, 0x56, 0x13, 0x6f, 0xb0, 0xd7, 0x17, 0x88, 0x5b, 0x1e, 0x06, 0x89, 0x7b, 0xc4,
+	0xeb, 0xc0, 0x53, 0x70, 0xc9, 0xee, 0xec, 0xfa, 0xd4, 0xb8, 0x17, 0x96, 0x76, 0x8e, 0x3b, 0xfb,
+	0xcd, 0x37, 0x63, 0x68, 0x5d, 0x33, 0x9f, 0x07, 0x6c, 0x3a, 0x75, 0x83, 0xee, 0x3c, 0x60, 0x9c,
+	0x91, 0xd2, 0x7c, 0x68, 0xbd, 0x1c, 0x7b, 0x7c, 0x12, 0x0d, 0xbb, 0xd7, 0x6c, 0xb6, 0x3b, 0x66,
+	0x63, 0xb6, 0x8b, 0xa6, 0x61, 0x74, 0x83, 0x12, 0x0a, 0x78, 0x52, 0x21, 0xb4, 0x01, 0x70, 0xc6,
+	0xe6, 0xb6, 0xfb, 0x39, 0x72, 0x43, 0x4e, 0xf7, 0xa0, 0x8e, 0x52, 0x38, 0x67, 0x7e, 0xe8, 0x92,
+	0x26, 0x94, 0xde, 0x1d, 0xb5, 0x8d, 0x8e, 0xb1, 0x53, 0xb3, 0xc5, 0x89, 0x6c, 0x40, 0x65, 0xc0,
+	0x6e, 0x5d, 0xbf, 0x5d, 0x42, 0x95, 0x12, 0xe8, 0x36, 0xac, 0x9c, 0x73, 0x87, 0x47, 0xa1, 0xce,
+	0x72, 0x37, 0x8c, 0x5e, 0x41, 0x33, 0x76, 0xd0, 0x89, 0x1f, 0x42, 0xf9, 0xc4, 0x99, 0xb9, 0xe8,
+	0x53, 0xef, 0x2d, 0x77, 0xe7, 0xc3, 0xae, 0x94, 0x6d, 0xd4, 0x92, 0x67, 0xb0, 0xdc, 0x77, 0x42,
+	0x3e, 0xf0, 0xae, 0x6f, 0xf1, 0xa6, 0x7a, 0x6f, 0x25, 0xf6, 0x38, 0x0e, 0xa4, 0x5b, 0x62, 0xa6,
+	0x5b, 0xd0, 0x10, 0xa9, 0x03, 0x7e, 0xdf, 0xd5, 0xab, 0x58, 0x9b, 0xb4, 0xab, 0x9b, 0xe9, 0x57,
+	0x58, 0x39, 0x0c, 0x5c, 0x87, 0xbb, 0x71, 0x84, 0x78, 0xd3, 0x47, 0x6f, 0xc4, 0x27, 0x18, 0x64,
+	0xda, 0x4a, 0x20, 0x9b, 0x50, 0x7d, 0xeb, 0x7a, 0xe3, 0x09, 0xc7, 0x02, 0x4c, 0x5b, 0x4b, 0x84,
+	0x40, 0xf9, 0x98, 0xb1, 0x51, 0xdb, 0x44, 0x2d, 0x9e, 0xc9, 0x0e, 0x54, 0xcf, 0x7d, 0xe7, 0xd6,
+	0x0d, 0xdb, 0xe5, 0x8e, 0x29, 0x8a, 0x6d, 0xc9, 0x62, 0x51, 0x73, 0x3a, 0xe7, 0x9e, 0xb8, 0xd5,
+	0xd6, 0x76, 0xda, 0x81, 0x66, 0x7c, 0x79, 0x31, 0xc2, 0xd4, 0x86, 0xf5, 0xfd, 0xd1, 0x28, 0x7d,
+	0x69, 0xf1, 0xb3, 0xc8, 0x73, 0xa8, 0x25, 0x3e, 0xc5, 0x10, 0xa5, 0x76, 0xfa, 0x1a, 0x36, 0xf2,
+	0x39, 0xd3, 0x26, 0x8c, 0x0b, 0x9b, 0x20, 0xb5, 0xf4, 0x02, 0xfe, 0xeb, 0x7b, 0x21, 0x4f, 0xc2,
+	0xee, 0xeb, 0xae, 0x04, 0xb0, 0xef, 0xcd, 0x3c, 0x85, 0x54, 0xc5, 0x56, 0x82, 0x04, 0xf0, 0xf4,
+	0xe6, 0x26, 0x74, 0x39, 0x42, 0x55, 0xb1, 0xb5, 0x44, 0xcf, 0x61, 0xf3, 0x6e, 0x5a, 0x5d, 0xce,
+	0x13, 0x41, 0x2e, 0xd1, 0xd2, 0x50, 0xa4, 0x36, 0x17, 0xdf, 0xa3, 0x6c, 0xf2, 0xb2, 0x43, 0x16,
+	0xf9, 0xc9, 0x65, 0x28, 0x48, 0x5c, 0xdf, 0xf8, 0xf8, 0xc2, 0xfb, 0x78, 0xb0, 0x06, 0xab, 0x89,
+	0x87, 0x66, 0xc2, 0x91, 0xa0, 0x4e, 0xa6, 0x49, 0xb2, 0xb5, 0x1f, 0x62, 0x38, 0x6a, 0x36, 0x9e,
+	0x49, 0x0b, 0xcc, 0x0b, 0xbb, 0xaf, 0xe9, 0x2e, 0x8f, 0x3a, 0xb1, 0x99, 0x24, 0xfe, 0x69, 0x28,
+	0x2a, 0x2f, 0xc0, 0x22, 0x00, 0x50, 0xa4, 0xd7, 0xd1, 0x5a, 0x4a, 0xf9, 0x66, 0x16, 0xf3, 0xad,
+	0x9c, 0xe3, 0x1b, 0xd5, 0x45, 0x0e, 0xbc, 0x99, 0xcb, 0x22, 0xde, 0xae, 0xa2, 0x35, 0xa7, 0x23,
+	0x1d, 0xa8, 0x0f, 0xa2, 0xc0, 0x8f, 0x5d, 0x96, 0xd0, 0x25, 0xab, 0x92, 0x4f, 0x7b, 0xcf, 0x46,
+	0x6e, 0x7b, 0x59, 0x3d, 0x4d, 0x9e, 0xa9, 0x93, 0xa1, 0x90, 0x74, 0x90, 0xfe, 0x7a, 0x06, 0xf0,
+	0x4c, 0x1e, 0x69, 0xaa, 0x97, 0xb0, 0x1d, 0x35, 0xd9, 0x8e, 0x33, 0xe6, 0xf9, 0x5c, 0xb3, 0xfe,
+	0x71, 0xc2, 0x7a, 0x33, 0x75, 0x40, 0x4d, 0x42, 0x77, 0xd1, 0x51, 0x8c, 0x20, 0x0d, 0x30, 0x2e,
+	0x75, 0x6e, 0xe3, 0x52, 0x4a, 0x57, 0x7a, 0xac, 0x8c, 0x2b, 0xfa, 0xc3, 0x80, 0x0a, 0xfa, 0x2f,
+	0x20, 0x18, 0x37, 0xa4, 0xb4, 0xd8, 0x10, 0x33, 0x6d, 0x88, 0x28, 0xf3, 0x80, 0x8d, 0xbe, 0xe8,
+	0xd9, 0xcb, 0x96, 0x29, 0xd5, 0x0a, 0x58, 0x67, 0x2a, 0xf0, 0xae, 0xc4, 0xc0, 0x4a, 0x89, 0x6c,
+	0x43, 0xe5, 0x48, 0x4c, 0xe2, 0x04, 0x11, 0xd5, 0x71, 0xa8, 0xb0, 0x95, 0x5e, 0x31, 0x6d, 0xca,
+	0x02, 0xc4, 0xb3, 0x66, 0x2b, 0x81, 0xbe, 0x82, 0x8c, 0xd9, 0x89, 0xc2, 0x98, 0x2e, 0x4a, 0x48,
+	0x70, 0x2c, 0xa5, 0x38, 0xf6, 0xbe, 0x99, 0x00, 0x87, 0xc9, 0xa6, 0x26, 0x4f, 0xc1, 0x14, 0x2b,
+	0x96, 0x34, 0x55, 0xa1, 0xf1, 0xe6, 0xb5, 0x56, 0x13, 0x59, 0x8f, 0xc3, 0x6e, 0xcc, 0x1f, 0xb2,
+	0x86, 0xc8, 0x66, 0x37, 0xac, 0x45, 0xb2, 0x2a, 0x1d, 0xf0, 0x42, 0xe0, 0x28, 0x57, 0x1d, 0x69,
+	0x69, 0x63, 0xb2, 0x15, 0xad, 0xb5, 0x8c, 0x26, 0x4d, 0xaf, 0x56, 0x91, 0x4a, 0x9f, 0xdb, 0x89,
+	0x2a, 0xfd, 0x9d, 0x4d, 0xb5, 0x0f, 0x8d, 0xec, 0x16, 0x21, 0xff, 0x4b, 0x9f, 0x82, 0x5d, 0x65,
+	0xb5, 0x17, 0x0d, 0x3a, 0xc5, 0x09, 0x34, 0xf3, 0xb3, 0x4f, 0x1e, 0x48, 0xdf, 0xc2, 0x35, 0x63,
+	0x59, 0x45, 0x26, 0x9d, 0xa8, 0x07, 0x4b, 0x7a, 0x9a, 0x09, 0x96, 0x9a, 0x1f, 0x7e, 0x6b, 0x3d,
+	0xa7, 0x53, 0x31, 0x07, 0xad, 0xbf, 0xbf, 0xb7, 0x8c, 0xef, 0x7f, 0xb6, 0x8c, 0x5f, 0xe2, 0xfb,
+	0x24, 0xfe, 0x94, 0xc3, 0x2a, 0xfe, 0x01, 0xf7, 0xfe, 0x05, 0x00, 0x00, 0xff, 0xff, 0x53, 0x97,
+	0x5f, 0x25, 0x48, 0x07, 0x00, 0x00,
 }

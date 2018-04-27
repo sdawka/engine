@@ -37,12 +37,12 @@ func toSnakeUpdate(resp snakeResponse) *SnakeUpdate {
 }
 
 // GatherSnakeMoves goes and queries each snake for the snake move
-func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameTick *pb.GameTick) []*SnakeUpdate {
+func GatherSnakeMoves(timeout time.Duration, game *pb.Game, gameFrame *pb.GameFrame) []*SnakeUpdate {
 	responses := gatherAliveSnakeResponses(multiSnakeRequest{
 		url:     "move",
 		timeout: timeout,
 		game:    game,
-		tick:    gameTick,
+		frame:   gameFrame,
 	})
 
 	ret := []*SnakeUpdate{}

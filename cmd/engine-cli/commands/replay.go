@@ -30,12 +30,12 @@ var replayCmd = &cobra.Command{
 			Timeout: 5 * time.Second,
 		}
 
-		tr := &pb.ListGameTicksResponse{}
+		tr := &pb.ListGameFramesResponse{}
 		var game *pb.Game
 		{
-			resp, err := client.Get(fmt.Sprintf("%s/games/%s/ticks", apiAddr, gameID))
+			resp, err := client.Get(fmt.Sprintf("%s/games/%s/frames", apiAddr, gameID))
 			if err != nil {
-				fmt.Println("error while getting ticks", err)
+				fmt.Println("error while getting frames", err)
 				return
 			}
 			err = json.NewDecoder(resp.Body).Decode(tr)
@@ -76,14 +76,14 @@ var replayCmd = &cobra.Command{
 	},
 }
 
-func getCharacter(gameTick *pb.GameTick, x, y int64) string {
-	for _, f := range gameTick.Food {
+func getCharacter(frame *pb.GameFrame, x, y int64) string {
+	for _, f := range frame.Food {
 		if f.X == x && f.Y == y {
 			return "●"
 		}
 	}
 
-	for _, s := range gameTick.AliveSnakes() {
+	for _, s := range frame.AliveSnakes() {
 		for _, p := range s.Body {
 			if p.X == x && p.Y == y {
 				return "◼"

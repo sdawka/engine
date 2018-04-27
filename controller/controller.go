@@ -53,7 +53,7 @@ func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 	if err != nil {
 		return nil, err
 	}
-	var lastTick *pb.GameTick
+	var lastTick *pb.GameFrame
 	ticks, err := s.Store.ListGameTicks(ctx, req.ID, 1, -1)
 	if err != nil {
 		return nil, err
@@ -89,12 +89,12 @@ func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	}, nil
 }
 
-// AddGameTick adds a new game tick to the game. A lock must be held for this
+// AddGameFrame adds a new game frame to the game. A lock must be held for this
 // call to succeed.
-func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*pb.AddGameTickResponse, error) {
+func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) (*pb.AddGameFrameResponse, error) {
 	token := pb.ContextGetLockToken(ctx)
 
-	if req.GameTick == nil {
+	if req.GameFrame == nil {
 		return nil, status.Error(codes.InvalidArgument, "controller: game tick must not be nil")
 	}
 
@@ -107,7 +107,7 @@ func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*
 	// TODO: Need to check that game tick follows the sequence from the previous
 	// tick here.
 
-	err = s.Store.PushGameTick(ctx, req.ID, req.GameTick)
+	err = s.Store.PushGameTick(ctx, req.ID, req.GameFrame)
 	if err != nil {
 		return nil, err
 	}
@@ -115,13 +115,13 @@ func (s *Server) AddGameTick(ctx context.Context, req *pb.AddGameTickRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	return &pb.AddGameTickResponse{
+	return &pb.AddGameFrameResponse{
 		Game: game,
 	}, nil
 }
 
-// ListGameTicks will list all game ticks given a limit and offset.
-func (s *Server) ListGameTicks(ctx context.Context, req *pb.ListGameTicksRequest) (*pb.ListGameTicksResponse, error) {
+// ListGameFrames will list all game ticks given a limit and offset.
+func (s *Server) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest) (*pb.ListGameFramesResponse, error) {
 	if req.Limit == 0 {
 		req.Limit = 50
 	}
@@ -132,7 +132,7 @@ func (s *Server) ListGameTicks(ctx context.Context, req *pb.ListGameTicksRequest
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ListGameTicksResponse{
+	return &pb.ListGameFramesResponse{
 		Ticks: ticks,
 		Count: int32(len(ticks)),
 	}, nil
