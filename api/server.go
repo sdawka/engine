@@ -28,7 +28,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.POST("/games", newClientHandle(c, createGame))
 	router.POST("/games/:id/start", newClientHandle(c, startGame))
 	router.GET("/games/:id", newClientHandle(c, getStatus))
-	router.GET("/games/:id/ticks", newClientHandle(c, getTicks))
+	router.GET("/games/:id/frames", newClientHandle(c, getFrames))
 
 	return &Server{
 		hs: &http.Server{
@@ -128,20 +128,20 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	w.Write(j)
 }
 
-func getTicks(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
 	id := ps.ByName("id")
 	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 0)
 	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)
 	if limit == 0 {
 		limit = 100
 	}
-	req := &pb.ListGameTicksRequest{
+	req := &pb.ListGameFramesRequest{
 		ID:     id,
 		Offset: int32(offset),
 		Limit:  int32(limit),
 	}
 	// TODO: use a context with timeout
-	resp, err := c.ListGameTicks(r.Context(), req)
+	resp, err := c.ListGameFrames(r.Context(), req)
 	if err != nil {
 		log.WithError(err).WithField("req", req).Error("Error while calling controller status")
 		w.WriteHeader(http.StatusInternalServerError)

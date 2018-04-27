@@ -39,13 +39,13 @@ type Store interface {
 	// SetGameStatus is used to set a specific game status. This operation
 	// should be atomic.
 	SetGameStatus(c context.Context, id, status string) error
-	// CreateGame will insert a game with the default game ticks.
-	CreateGame(context.Context, *pb.Game, []*pb.GameTick) error
-	// PushGameTick will push a game tick onto the list of ticks.
-	PushGameTick(c context.Context, id string, t *pb.GameTick) error
-	// ListGameTicks will list ticks by an offset and limit, it supports
+	// CreateGame will insert a game with the default game frames.
+	CreateGame(context.Context, *pb.Game, []*pb.GameFrame) error
+	// PushGameFrame will push a game frame onto the list of frames.
+	PushGameFrame(c context.Context, id string, t *pb.GameFrame) error
+	// ListGameFrames will list frames by an offset and limit, it supports
 	// negative offset.
-	ListGameTicks(c context.Context, id string, limit, offset int) ([]*pb.GameTick, error)
+	ListGameFrames(c context.Context, id string, limit, offset int) ([]*pb.GameFrame, error)
 	// GetGame will fetch the game.
 	GetGame(context.Context, string) (*pb.Game, error)
 }
@@ -53,9 +53,9 @@ type Store interface {
 // InMemStore returns an in memory implementation of the Store interface.
 func InMemStore() Store {
 	return &inmem{
-		games: map[string]*pb.Game{},
-		ticks: map[string][]*pb.GameTick{},
-		locks: map[string]*lock{},
+		games:  map[string]*pb.Game{},
+		frames: map[string][]*pb.GameFrame{},
+		locks:  map[string]*lock{},
 	}
 }
 
@@ -65,10 +65,10 @@ type lock struct {
 }
 
 type inmem struct {
-	games map[string]*pb.Game
-	ticks map[string][]*pb.GameTick
-	locks map[string]*lock
-	lock  sync.Mutex
+	games  map[string]*pb.Game
+	frames map[string][]*pb.GameFrame
+	locks  map[string]*lock
+	lock   sync.Mutex
 }
 
 func (in *inmem) Lock(ctx context.Context, key, token string) (string, error) {
@@ -146,11 +146,11 @@ func (in *inmem) PopGameID(ctx context.Context) (string, error) {
 	return "", ErrNotFound
 }
 
-func (in *inmem) CreateGame(ctx context.Context, g *pb.Game, ticks []*pb.GameTick) error {
+func (in *inmem) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.GameFrame) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 	in.games[g.ID] = g
-	in.ticks[g.ID] = ticks
+	in.frames[g.ID] = frames
 	return nil
 }
 
@@ -164,33 +164,33 @@ func (in *inmem) SetGameStatus(ctx context.Context, id, status string) error {
 	return ErrNotFound
 }
 
-func (in *inmem) PushGameTick(ctx context.Context, id string, g *pb.GameTick) error {
+func (in *inmem) PushGameFrame(ctx context.Context, id string, g *pb.GameFrame) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
-	in.ticks[id] = append(in.ticks[id], g)
+	in.frames[id] = append(in.frames[id], g)
 	return nil
 }
 
-func (in *inmem) ListGameTicks(ctx context.Context, id string, limit, offset int) ([]*pb.GameTick, error) {
+func (in *inmem) ListGameFrames(ctx context.Context, id string, limit, offset int) ([]*pb.GameFrame, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 	if _, ok := in.games[id]; !ok {
 		return nil, ErrNotFound
 	}
-	ticks := in.ticks[id]
-	if len(ticks) == 0 {
+	frames := in.frames[id]
+	if len(frames) == 0 {
 		return nil, nil
 	}
 	if offset < 0 {
-		offset = len(ticks) + offset
+		offset = len(frames) + offset
 	}
-	if offset >= len(ticks) {
+	if offset >= len(frames) {
 		return nil, nil
 	}
-	if offset+limit >= len(ticks) {
-		limit = len(ticks) - offset
+	if offset+limit >= len(frames) {
+		limit = len(frames) - offset
 	}
-	return ticks[offset : offset+limit], nil
+	return frames[offset : offset+limit], nil
 }
 
 func (in *inmem) GetGame(ctx context.Context, id string) (*pb.Game, error) {

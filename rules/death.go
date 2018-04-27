@@ -10,14 +10,14 @@ type deathUpdate struct {
 // checkForDeath looks through the snakes with the updated coords and checks to see if any have died
 // possible death options are starvation (health has reached 0), wall collision, snake body collision
 // snake head collision (other snake is same size or greater)
-func checkForDeath(width, height int64, tick *pb.GameTick) []deathUpdate {
+func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 	updates := []deathUpdate{}
-	for _, s := range tick.AliveSnakes() {
+	for _, s := range frame.AliveSnakes() {
 		if s.Health == 0 {
 			updates = append(updates, deathUpdate{
 				Snake: s,
 				Death: &pb.Death{
-					Turn:  tick.Turn,
+					Turn:  frame.Turn,
 					Cause: DeathCauseStarvation,
 				},
 			})
@@ -31,14 +31,14 @@ func checkForDeath(width, height int64, tick *pb.GameTick) []deathUpdate {
 			updates = append(updates, deathUpdate{
 				Snake: s,
 				Death: &pb.Death{
-					Turn:  tick.Turn,
+					Turn:  frame.Turn,
 					Cause: DeathCauseWallCollision,
 				},
 			})
 			continue
 		}
 
-		for _, other := range tick.AliveSnakes() {
+		for _, other := range frame.AliveSnakes() {
 			if other.ID == s.ID {
 				continue
 			}
@@ -49,7 +49,7 @@ func checkForDeath(width, height int64, tick *pb.GameTick) []deathUpdate {
 						updates = append(updates, deathUpdate{
 							Snake: s,
 							Death: &pb.Death{
-								Turn:  tick.Turn,
+								Turn:  frame.Turn,
 								Cause: DeathCauseHeadToHeadCollision,
 							},
 						})
@@ -61,7 +61,7 @@ func checkForDeath(width, height int64, tick *pb.GameTick) []deathUpdate {
 					updates = append(updates, deathUpdate{
 						Snake: s,
 						Death: &pb.Death{
-							Turn:  tick.Turn,
+							Turn:  frame.Turn,
 							Cause: DeathCauseSnakeCollision,
 						},
 					})

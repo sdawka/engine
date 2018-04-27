@@ -9,7 +9,7 @@ import (
 )
 
 func TestUpdateFood(t *testing.T) {
-	updated, err := updateFood(20, 20, &pb.GameTick{
+	updated, err := updateFood(20, 20, &pb.GameFrame{
 		Food: []*pb.Point{
 			{X: 1, Y: 1},
 			{X: 1, Y: 2},
@@ -30,7 +30,7 @@ func TestUpdateFood(t *testing.T) {
 }
 
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
-	gt, err := GameTick(game, &pb.GameTick{Turn: 5})
+	gt, err := GameTick(game, &pb.GameFrame{Turn: 5})
 	require.NoError(t, err)
 	require.Equal(t, int64(6), gt.Turn)
 }
@@ -48,7 +48,7 @@ func TestGameTickUpdatesSnake(t *testing.T) {
 		Width:  20,
 		Height: 20,
 	}
-	gt, err := GameTick(game, &pb.GameTick{
+	gt, err := GameTick(game, &pb.GameFrame{
 		Turn: 5,
 		Snakes: []*pb.Snake{
 			snake,
@@ -68,7 +68,7 @@ var game = &pb.Game{
 	Width:  20,
 	Height: 20,
 }
-var lastTick = &pb.GameTick{
+var lastFrame = &pb.GameFrame{
 	Turn:   5,
 	Snakes: []*pb.Snake{},
 	Food: []*pb.Point{
@@ -76,7 +76,7 @@ var lastTick = &pb.GameTick{
 	},
 }
 
-func TestGameTickSnakeEats(t *testing.T) {
+func TestGameFrameSnakeEats(t *testing.T) {
 	snake := &pb.Snake{
 		Health: 67,
 		Body: []*pb.Point{
@@ -86,9 +86,9 @@ func TestGameTickSnakeEats(t *testing.T) {
 		},
 	}
 
-	lastTick.Snakes = []*pb.Snake{snake}
+	lastFrame.Snakes = []*pb.Snake{snake}
 
-	gt, err := GameTick(game, lastTick)
+	gt, err := GameTick(game, lastFrame)
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
@@ -110,9 +110,9 @@ func TestGameTickDeadSnakeDoNotUpdate(t *testing.T) {
 		},
 	}
 
-	lastTick.Snakes = []*pb.Snake{snake}
+	lastFrame.Snakes = []*pb.Snake{snake}
 
-	gt, err := GameTick(game, lastTick)
+	gt, err := GameTick(game, lastFrame)
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
@@ -133,9 +133,9 @@ func TestGameTickUpdatesDeath(t *testing.T) {
 		},
 	}
 
-	lastTick.Snakes = []*pb.Snake{snake}
+	lastFrame.Snakes = []*pb.Snake{snake}
 
-	gt, err := GameTick(game, lastTick)
+	gt, err := GameTick(game, lastFrame)
 	require.NoError(t, err)
 	require.NotNil(t, gt.Snakes[0].Death)
 }
@@ -152,7 +152,7 @@ func TestUpdateSnakes(t *testing.T) {
 			Err:   errors.New("some error"),
 		},
 	}
-	updateSnakes(&pb.Game{}, &pb.GameTick{
+	updateSnakes(&pb.Game{}, &pb.GameFrame{
 		Snakes: []*pb.Snake{snake},
 	}, moves)
 	require.Equal(t, &pb.Point{X: 1, Y: 0}, snake.Head(), "snake did not move up")
@@ -163,7 +163,7 @@ func TestUpdateSnakes(t *testing.T) {
 			Move:  "left",
 		},
 	}
-	updateSnakes(&pb.Game{}, &pb.GameTick{
+	updateSnakes(&pb.Game{}, &pb.GameFrame{
 		Snakes: []*pb.Snake{snake},
 	}, moves)
 	require.Equal(t, &pb.Point{X: 0, Y: 0}, snake.Head(), "snake did not move left")

@@ -1,7 +1,7 @@
 package pb
 
 // AliveSnakes returns all the alive snakes
-func (gt *GameTick) AliveSnakes() []*Snake {
+func (gt *GameFrame) AliveSnakes() []*Snake {
 	snakes := []*Snake{}
 
 	for _, s := range gt.Snakes {
@@ -14,7 +14,7 @@ func (gt *GameTick) AliveSnakes() []*Snake {
 }
 
 // DeadSnakes returns all the dead snakes
-func (gt *GameTick) DeadSnakes() []*Snake {
+func (gt *GameFrame) DeadSnakes() []*Snake {
 	snakes := []*Snake{}
 
 	for _, s := range gt.Snakes {

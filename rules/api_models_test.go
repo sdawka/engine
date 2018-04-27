@@ -10,7 +10,7 @@ import (
 func TestBuildSnakeRequest(t *testing.T) {
 	req := buildSnakeRequest(&pb.Game{
 		ID: "game_123",
-	}, &pb.GameTick{
+	}, &pb.GameFrame{
 		Snakes: []*pb.Snake{
 			{
 				ID: "snake_123",

@@ -49,9 +49,9 @@ type Coords struct {
 	Y int64 `json:"y"`
 }
 
-func buildSnakeRequest(game *pb.Game, tick *pb.GameTick, snakeID string) SnakeRequest {
+func buildSnakeRequest(game *pb.Game, frame *pb.GameFrame, snakeID string) SnakeRequest {
 	var you *pb.Snake
-	for _, s := range tick.Snakes {
+	for _, s := range frame.Snakes {
 		if s.ID == snakeID {
 			you = s
 			break
@@ -59,12 +59,12 @@ func buildSnakeRequest(game *pb.Game, tick *pb.GameTick, snakeID string) SnakeRe
 	}
 	return SnakeRequest{
 		Game: Game{ID: game.ID},
-		Turn: tick.Turn,
+		Turn: frame.Turn,
 		Board: Board{
 			Height: game.Height,
 			Width:  game.Width,
-			Food:   convertPoints(tick.Food),
-			Snakes: convertSnakes(tick.Snakes),
+			Food:   convertPoints(frame.Food),
+			Snakes: convertSnakes(frame.Snakes),
 		},
 		You: convertSnake(you),
 	}
