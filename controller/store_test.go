@@ -107,31 +107,31 @@ func testStoreGameTicks(t *testing.T, s Store) {
 	require.Equal(t, "test", g.ID)
 
 	// Read game ticks, too high offset.
-	ticks, err := s.ListGameTicks(ctx, "test", 10, 100)
+	ticks, err := s.ListGameFrames(ctx, "test", 10, 100)
 	require.Nil(t, err)
 	require.Equal(t, 0, len(ticks))
 
 	// Read game ticks, 0 offset.
-	ticks, err = s.ListGameTicks(ctx, "test", 10, 0)
+	ticks, err = s.ListGameFrames(ctx, "test", 10, 0)
 	require.Nil(t, err)
 	require.Equal(t, 0, len(ticks))
 
 	// Push a game tick.
-	err = s.PushGameTick(ctx, "test", &pb.GameTick{})
+	err = s.PushGameFrame(ctx, "test", &pb.GameFrame{})
 	require.Nil(t, err)
 
 	// Read the game ticks.
-	ticks, err = s.ListGameTicks(ctx, "test", 1, 0)
+	ticks, err = s.ListGameFrames(ctx, "test", 1, 0)
 	require.Nil(t, err)
 	require.Equal(t, 1, len(ticks))
 
 	// Read game ticks that don't exist.
-	ticks, err = s.ListGameTicks(ctx, "test22", 1, 0)
+	ticks, err = s.ListGameFrames(ctx, "test22", 1, 0)
 	require.Equal(t, ErrNotFound, err)
 	require.Equal(t, 0, len(ticks))
 
 	// Read the game ticks, too high offset.
-	ticks, err = s.ListGameTicks(ctx, "test", 10, 100)
+	ticks, err = s.ListGameFrames(ctx, "test", 10, 100)
 	require.Nil(t, err)
 	require.Equal(t, 0, len(ticks))
 }

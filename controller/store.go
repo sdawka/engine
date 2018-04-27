@@ -41,11 +41,11 @@ type Store interface {
 	SetGameStatus(c context.Context, id, status string) error
 	// CreateGame will insert a game with the default game ticks.
 	CreateGame(context.Context, *pb.Game, []*pb.GameFrame) error
-	// PushGameTick will push a game tick onto the list of ticks.
-	PushGameTick(c context.Context, id string, t *pb.GameFrame) error
-	// ListGameTicks will list ticks by an offset and limit, it supports
+	// PushGameFrame will push a game frame onto the list of frames.
+	PushGameFrame(c context.Context, id string, t *pb.GameFrame) error
+	// ListGameFrames will list frames by an offset and limit, it supports
 	// negative offset.
-	ListGameTicks(c context.Context, id string, limit, offset int) ([]*pb.GameFrame, error)
+	ListGameFrames(c context.Context, id string, limit, offset int) ([]*pb.GameFrame, error)
 	// GetGame will fetch the game.
 	GetGame(context.Context, string) (*pb.Game, error)
 }
@@ -164,14 +164,14 @@ func (in *inmem) SetGameStatus(ctx context.Context, id, status string) error {
 	return ErrNotFound
 }
 
-func (in *inmem) PushGameTick(ctx context.Context, id string, g *pb.GameFrame) error {
+func (in *inmem) PushGameFrame(ctx context.Context, id string, g *pb.GameFrame) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 	in.frames[id] = append(in.frames[id], g)
 	return nil
 }
 
-func (in *inmem) ListGameTicks(ctx context.Context, id string, limit, offset int) ([]*pb.GameFrame, error) {
+func (in *inmem) ListGameFrames(ctx context.Context, id string, limit, offset int) ([]*pb.GameFrame, error) {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 	if _, ok := in.games[id]; !ok {

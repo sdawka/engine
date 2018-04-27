@@ -55,7 +55,7 @@ func TestWorker_RunnerErrors(t *testing.T) {
 	t.Run("GameTickLocked", func(t *testing.T) {
 		store.CreateGame(ctx,
 			&pb.Game{ID: "2", Status: rules.GameStatusRunning},
-			[]*pb.GameTick{{}},
+			[]*pb.GameFrame{{}},
 		)
 		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {
 			md, _ := metadata.FromOutgoingContext(c)

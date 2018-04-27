@@ -54,7 +54,7 @@ func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 		return nil, err
 	}
 	var lastTick *pb.GameFrame
-	ticks, err := s.Store.ListGameTicks(ctx, req.ID, 1, -1)
+	ticks, err := s.Store.ListGameFrames(ctx, req.ID, 1, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) 
 	// TODO: Need to check that game tick follows the sequence from the previous
 	// tick here.
 
-	err = s.Store.PushGameTick(ctx, req.ID, req.GameFrame)
+	err = s.Store.PushGameFrame(ctx, req.ID, req.GameFrame)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (s *Server) ListGameFrames(ctx context.Context, req *pb.ListGameFramesReque
 	if req.Limit > 50 {
 		req.Limit = 50
 	}
-	ticks, err := s.Store.ListGameTicks(ctx, req.ID, int(req.Limit), int(req.Offset))
+	ticks, err := s.Store.ListGameFrames(ctx, req.ID, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, err
 	}

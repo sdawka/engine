@@ -10,15 +10,15 @@ import (
 
 func TestCheckForGameOver_SinglePlayer(t *testing.T) {
 
-	gameTick := &pb.GameTick{
+	gameFrame := &pb.GameFrame{
 		Snakes: []*pb.Snake{
 			{Death: &pb.Death{}},
 		},
 	}
-	res := CheckForGameOver(GameModeSinglePlayer, gameTick)
+	res := CheckForGameOver(GameModeSinglePlayer, gameFrame)
 	require.True(t, res)
 
-	gameTick.Snakes[0].Death = nil
-	res = CheckForGameOver(GameModeSinglePlayer, gameTick)
+	gameFrame.Snakes[0].Death = nil
+	res = CheckForGameOver(GameModeSinglePlayer, gameFrame)
 	require.False(t, res)
 }

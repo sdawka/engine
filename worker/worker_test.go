@@ -81,9 +81,9 @@ func TestWorker_Run(t *testing.T) {
 				return fmt.Errorf("game expected %s found %s", gameID, id)
 			}
 			for i := 0; i < 5; i++ {
-				_, err := cl.AddGameTick(c, &pb.AddGameTickRequest{
-					ID:       id,
-					GameTick: &pb.GameTick{},
+				_, err := cl.AddGameFrame(c, &pb.AddGameFrameRequest{
+					ID:        id,
+					GameFrame: &pb.GameFrame{},
 				})
 				if err != nil {
 					return err
@@ -110,10 +110,10 @@ func TestWorker_Run(t *testing.T) {
 			store.Unlock(c, id, md[pb.TokenKey][0])
 			// Lock the game
 			client.Pop(ctx, &pb.PopRequest{})
-			// Push game tick.
-			_, err := cl.AddGameTick(c, &pb.AddGameTickRequest{
-				ID:       id,
-				GameTick: &pb.GameTick{},
+			// Push game frame.
+			_, err := cl.AddGameFrame(c, &pb.AddGameFrameRequest{
+				ID:        id,
+				GameFrame: &pb.GameFrame{},
 			})
 			return err
 		}
@@ -134,9 +134,9 @@ func TestWorker_RunLoop(t *testing.T) {
 		PollInterval:     1 * time.Millisecond,
 		RunGame: func(c context.Context, cl pb.ControllerClient, id string) error {
 			for i := 0; i < 5; i++ {
-				_, err := cl.AddGameTick(c, &pb.AddGameTickRequest{
-					ID:       id,
-					GameTick: &pb.GameTick{},
+				_, err := cl.AddGameFrame(c, &pb.AddGameFrameRequest{
+					ID:        id,
+					GameFrame: &pb.GameFrame{},
 				})
 				if err != nil {
 					return err

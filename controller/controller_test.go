@@ -130,9 +130,9 @@ func TestController_Ticks(t *testing.T) {
 	})
 
 	t.Run("AddGameTick_NoGame", func(t *testing.T) {
-		_, err := client.AddGameTick(ctx, &pb.AddGameTickRequest{
-			ID:       "foo",
-			GameTick: &pb.GameTick{},
+		_, err := client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
+			ID:        "foo",
+			GameFrame: &pb.GameFrame{},
 		})
 		require.NotNil(t, err)
 		require.Equal(t,
@@ -142,9 +142,9 @@ func TestController_Ticks(t *testing.T) {
 	})
 
 	t.Run("AddGameTick_NoLock", func(t *testing.T) {
-		_, err := client.AddGameTick(ctx, &pb.AddGameTickRequest{
-			ID:       gameID,
-			GameTick: &pb.GameTick{},
+		_, err := client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
+			ID:        gameID,
+			GameFrame: &pb.GameFrame{},
 		})
 		require.NotNil(t, err)
 		require.Equal(t,
@@ -154,11 +154,11 @@ func TestController_Ticks(t *testing.T) {
 	})
 
 	t.Run("AddGameTick_Nil", func(t *testing.T) {
-		_, err := client.AddGameTick(
+		_, err := client.AddGameFrame(
 			pb.ContextWithLockToken(ctx, token),
-			&pb.AddGameTickRequest{
-				ID:       gameID,
-				GameTick: nil,
+			&pb.AddGameFrameRequest{
+				ID:        gameID,
+				GameFrame: nil,
 			})
 		require.NotNil(t, err)
 		require.Equal(t,
@@ -169,10 +169,10 @@ func TestController_Ticks(t *testing.T) {
 
 	t.Run("AddGameTicks", func(t *testing.T) {
 		for i := 0; i < 100; i++ {
-			resp, err := client.AddGameTick(
-				pb.ContextWithLockToken(ctx, token), &pb.AddGameTickRequest{
-					ID:       gameID,
-					GameTick: &pb.GameTick{},
+			resp, err := client.AddGameFrame(
+				pb.ContextWithLockToken(ctx, token), &pb.AddGameFrameRequest{
+					ID:        gameID,
+					GameFrame: &pb.GameFrame{},
 				})
 			require.Nil(t, err)
 			require.Equal(t, gameID, resp.Game.ID)
@@ -180,7 +180,7 @@ func TestController_Ticks(t *testing.T) {
 	})
 
 	t.Run("ListGameTicks_NoGame", func(t *testing.T) {
-		_, err := client.ListGameTicks(ctx, &pb.ListGameTicksRequest{ID: "foo"})
+		_, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{ID: "foo"})
 		require.NotNil(t, err)
 		require.Equal(t,
 			"rpc error: code = NotFound desc = controller: game not found",
@@ -189,14 +189,14 @@ func TestController_Ticks(t *testing.T) {
 	})
 
 	t.Run("ListGameTicks_BadOffset", func(t *testing.T) {
-		ticks, err := client.ListGameTicks(ctx, &pb.ListGameTicksRequest{
+		ticks, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
 			ID: gameID, Offset: 1000000})
 		require.Nil(t, err)
 		require.Empty(t, ticks.Ticks)
 	})
 
 	t.Run("ListGameTicks", func(t *testing.T) {
-		ticks, err := client.ListGameTicks(ctx, &pb.ListGameTicksRequest{ID: gameID})
+		ticks, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{ID: gameID})
 		require.Nil(t, err)
 		// Returns max 50.
 		require.Equal(t, 50, len(ticks.Ticks))
@@ -204,7 +204,7 @@ func TestController_Ticks(t *testing.T) {
 	})
 
 	t.Run("ListGameTicks_Min50", func(t *testing.T) {
-		ticks, err := client.ListGameTicks(ctx, &pb.ListGameTicksRequest{
+		ticks, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
 			ID:    gameID,
 			Limit: 1000,
 		})
