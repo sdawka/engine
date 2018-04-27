@@ -162,7 +162,7 @@ func TestController_Frames(t *testing.T) {
 			})
 		require.NotNil(t, err)
 		require.Equal(t,
-			"rpc error: code = InvalidArgument desc = controller: game tick must not be nil",
+			"rpc error: code = InvalidArgument desc = controller: game frame must not be nil",
 			err.Error(),
 		)
 	})

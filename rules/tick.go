@@ -13,7 +13,7 @@ import (
 // GameTick runs the game one tick and updates the state
 func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	if lastFrame == nil {
-		return nil, fmt.Errorf("rules: invalid state, previous tick is nil")
+		return nil, fmt.Errorf("rules: invalid state, previous frame is nil")
 	}
 	nextFrame := &pb.GameFrame{
 		Turn:   lastFrame.Turn + 1,
