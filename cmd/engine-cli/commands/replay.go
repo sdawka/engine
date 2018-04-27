@@ -26,54 +26,24 @@ var replayCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(*cobra.Command, []string) {
-		client := &http.Client{
-			Timeout: 5 * time.Second,
-		}
-
-		tr := &pb.ListGameFramesResponse{}
-		var game *pb.Game
-		{
-			resp, err := client.Get(fmt.Sprintf("%s/games/%s/frames", apiAddr, gameID))
-			if err != nil {
-				fmt.Println("error while getting frames", err)
-				return
-			}
-			err = json.NewDecoder(resp.Body).Decode(tr)
-			resp.Body.Close()
-			if err != nil {
-				fmt.Println("error while decoding ticks", err)
-				return
-			}
-		}
-		{
-			resp, err := client.Get(fmt.Sprintf("%s/games/%s", apiAddr, gameID))
-			if err != nil {
-				fmt.Println("error while getting status", err)
-				return
-			}
-			s := &pb.StatusResponse{}
-			err = json.NewDecoder(resp.Body).Decode(s)
-			resp.Body.Close()
-			if err != nil {
-				fmt.Println("error while getting status", err)
-				return
-			}
-			game = s.Game
-		}
-
-		if err := termbox.Init(); err != nil {
-			panic(err)
-		}
-		defer termbox.Close()
-
-		for _, gt := range tr.Ticks {
-			if err := render(game, gt); err != nil {
-				panic(err)
-			}
-
-			time.Sleep(200 * time.Millisecond)
-		}
+		replayGame()
 	},
+}
+
+func moveFrameForwards(frameIndex int, frames []*pb.GameFrame) (int, *pb.GameFrame, bool) {
+	frameIndex++
+	if frameIndex >= len(frames) {
+		return frameIndex, nil, true
+	}
+	return frameIndex, frames[frameIndex], false
+}
+
+func moveFrameBackwards(frameIndex int, frames []*pb.GameFrame) (int, *pb.GameFrame) {
+	frameIndex--
+	if frameIndex <= 0 {
+		frameIndex = 0
+	}
+	return frameIndex, frames[frameIndex]
 }
 
 func getCharacter(frame *pb.GameFrame, x, y int64) string {
@@ -91,4 +61,145 @@ func getCharacter(frame *pb.GameFrame, x, y int64) string {
 		}
 	}
 	return " "
+}
+
+func loadGame() (*pb.Game, []*pb.GameFrame, error) {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Get(fmt.Sprintf("%s/games/%s", apiAddr, gameID))
+	if err != nil {
+		fmt.Println("error while getting status", err)
+		return nil, nil, err
+	}
+	s := &pb.StatusResponse{}
+	err = json.NewDecoder(resp.Body).Decode(s)
+	resp.Body.Close()
+	if err != nil {
+		fmt.Println("error while getting status", err)
+		return nil, nil, err
+	}
+
+	frames, err := loadFrames(0)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s.Game, frames, nil
+}
+
+func loadFrames(offset int) ([]*pb.GameFrame, error) {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	tr := &pb.ListGameFramesResponse{}
+	resp, err := client.Get(fmt.Sprintf("%s/games/%s/frames?offset=%d", apiAddr, gameID, offset))
+	if err != nil {
+		fmt.Println("error while getting ticks", err)
+		return nil, err
+	}
+	err = json.NewDecoder(resp.Body).Decode(tr)
+	resp.Body.Close()
+	if err != nil {
+		fmt.Println("error while decoding ticks", err)
+		return nil, err
+	}
+	return tr.Ticks, nil
+}
+
+func checkForMoreFrames(frameIndex, frameCount int) ([]*pb.GameFrame, error) {
+	if frameIndex > (frameCount - 10) {
+		return []*pb.GameFrame{}, nil
+	}
+
+	return loadFrames(frameCount)
+}
+
+func replayGame() {
+	game, frames, err := loadGame()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := termbox.Init(); err != nil {
+		panic(err)
+	}
+	defer termbox.Close()
+
+	eventQueue := make(chan termbox.Event)
+	go func(ev chan<- termbox.Event) {
+		for {
+			ev <- termbox.PollEvent()
+		}
+	}(eventQueue)
+
+	cycle := time.NewTicker(200 * time.Millisecond)
+	if len(frames) == 0 {
+		return
+	}
+	currentFrame := frames[0]
+	frameIndex := 0
+	paused := false
+	done := false
+
+	for {
+		if done {
+			break
+		}
+
+		newFrames, err := checkForMoreFrames(frameIndex, len(frames))
+		if err != nil {
+			panic(err)
+		}
+
+		for _, f := range newFrames {
+			frames = append(frames, f)
+		}
+
+		select {
+		case ev := <-eventQueue:
+			if ev.Type == termbox.EventKey {
+				switch ev.Key {
+				case termbox.KeyEsc:
+					done = true
+				case termbox.KeySpace:
+					paused = !paused
+					if paused {
+						cycle.Stop()
+					} else {
+						cycle = time.NewTicker(200 * time.Millisecond)
+					}
+
+				case termbox.KeyArrowLeft:
+					paused = true
+					frameIndex, currentFrame = moveFrameBackwards(frameIndex, frames)
+					if err := render(game, currentFrame); err != nil {
+						panic(err)
+					}
+				case termbox.KeyArrowRight:
+					paused = true
+					frameIndex, currentFrame, done = moveFrameForwards(frameIndex, frames)
+					if err := render(game, currentFrame); err != nil {
+						panic(err)
+					}
+				}
+
+			}
+		case <-cycle.C:
+			if paused {
+				continue
+			}
+			if err := render(game, currentFrame); err != nil {
+				panic(err)
+			}
+			frameIndex, currentFrame, done = moveFrameForwards(frameIndex, frames)
+
+		}
+	}
+
+	if frameIndex >= len(frames) {
+		tbprint(0, 0, defaultColor, defaultColor, "Press any key to exit...")
+		termbox.Flush()
+		termbox.PollEvent()
+	}
 }
