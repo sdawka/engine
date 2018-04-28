@@ -34,8 +34,8 @@ func (f *failReader) Close() error {
 	return errors.New("FAIL")
 }
 
-func fileOpener(files map[string]string) func(string) (reader, error) {
-	return func(id string) (reader, error) {
+func fileOpener(files map[string]string) func(string, string) (reader, error) {
+	return func(dir string, id string) (reader, error) {
 		text, ok := files[id]
 		if !ok {
 			return nil, errors.New("file not found")
@@ -115,19 +115,19 @@ func framesTestJSON() string {
 }
 
 func TestReadGameFramesBadReader(t *testing.T) {
-	openFileReader = func(id string) (reader, error) {
+	openFileReader = func(dir string, id string) (reader, error) {
 		return &failReader{}, nil
 	}
-	_, err := ReadGameFrames("myid")
+	_, err := ReadGameFrames("", "myid")
 
 	require.NotNil(t, err)
 }
 
 func TestReadGameFramesOpenReaderError(t *testing.T) {
-	openFileReader = func(id string) (reader, error) {
+	openFileReader = func(dir string, id string) (reader, error) {
 		return nil, errors.New("fail")
 	}
-	_, err := ReadGameFrames("myid")
+	_, err := ReadGameFrames("", "myid")
 
 	require.NotNil(t, err)
 }
@@ -138,7 +138,7 @@ func TestReadGameFramesWithoutHeader(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	frames, _ := ReadGameFrames("myid")
+	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 1, "first frame is in header spot and should be ignored")
 }
@@ -149,7 +149,7 @@ func TestReadGameFrames(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	frames, _ := ReadGameFrames("myid")
+	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 2)
 	require.Equal(t, int64(1), frames[0].Turn)
@@ -170,7 +170,7 @@ func testGarbageEnding(t *testing.T, garbage string) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	frames, _ := ReadGameFrames("myid")
+	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 2, "3rd frame is invalid and should be ignored")
 	require.Equal(t, int64(1), frames[0].Turn)
@@ -189,7 +189,7 @@ func TestReadGameFramesGarbageAfterHeader(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	frames, _ := ReadGameFrames("myid")
+	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 2, "garbage should be ignored")
 	require.Equal(t, int64(1), frames[0].Turn)
@@ -202,7 +202,7 @@ func TestReadGameFramesEmpty(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	frames, _ := ReadGameFrames("myid")
+	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 0)
 }
@@ -211,7 +211,7 @@ func TestReadGameFramesBlankFile(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": "",
 	})
-	frames, _ := ReadGameFrames("myid")
+	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 0)
 }
@@ -222,7 +222,7 @@ func TestReadGameInfoOneLine(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(infoJSON),
 	})
-	game, err := ReadGameInfo("myid")
+	game, err := ReadGameInfo("", "myid")
 
 	require.NoError(t, err)
 	require.Equal(t, "myid", game.ID)
@@ -236,7 +236,7 @@ func TestReadGameInfoManyLines(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	game, err := ReadGameInfo("myid")
+	game, err := ReadGameInfo("", "myid")
 
 	require.NoError(t, err)
 	require.Equal(t, "myid", game.ID)
@@ -248,7 +248,7 @@ func TestReadGameInfoManyLinesPlusGarbage(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
 	})
-	game, err := ReadGameInfo("myid")
+	game, err := ReadGameInfo("", "myid")
 
 	require.NoError(t, err, "garbage data after last frame should not break anything")
 	require.Equal(t, "myid", game.ID)
@@ -260,7 +260,7 @@ func TestReadGameInfoPlusGarbage(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(text),
 	})
-	game, err := ReadGameInfo("myid")
+	game, err := ReadGameInfo("", "myid")
 
 	require.NoError(t, err, "garbage data after header should not break anything")
 	require.Equal(t, "myid", game.ID)
@@ -272,7 +272,7 @@ func TestReadGameInfoCorruptJSON(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(text),
 	})
-	_, err := ReadGameInfo("myid")
+	_, err := ReadGameInfo("", "myid")
 
 	require.NotNil(t, err)
 }
@@ -283,7 +283,7 @@ func TestReadGameInfoMissingFile(t *testing.T) {
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(infoJSON),
 	})
-	_, err := ReadGameInfo("wrongid")
+	_, err := ReadGameInfo("", "wrongid")
 
 	require.NotNil(t, err)
 }

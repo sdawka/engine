@@ -113,12 +113,12 @@ func writeGameInfo(w writer, game *pb.Game, snakes []*pb.Snake) error {
 	return writeLine(w, &info)
 }
 
-func appendOnlyFileWriter(id string, mustCreate bool) (writer, error) {
+func appendOnlyFileWriter(dir string, id string, mustCreate bool) (writer, error) {
 	if err := requireSaveDir(); err != nil {
 		return nil, err
 	}
 
-	path := getFilePath(id)
+	path := getFilePath(dir, id)
 	flags := os.O_APPEND | os.O_WRONLY | os.O_CREATE
 	if mustCreate {
 		flags |= os.O_EXCL

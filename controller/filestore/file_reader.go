@@ -26,8 +26,8 @@ type fsReader struct {
 	*bufio.Reader
 }
 
-func fsOpenFileReader(id string) (reader, error) {
-	f, err := os.OpenFile(getFilePath(id), os.O_RDONLY, 0644)
+func fsOpenFileReader(dir string, id string) (reader, error) {
+	f, err := os.OpenFile(getFilePath(dir, id), os.O_RDONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +80,8 @@ func readFrame(r reader) (*frame, bool) {
 	}
 }
 
-func readArchiveHeader(id string) (gameInfo, error) {
-	r, err := openFileReader(id)
+func readArchiveHeader(dir string, id string) (gameInfo, error) {
+	r, err := openFileReader(dir, id)
 	if err != nil {
 		return gameInfo{}, err
 	}
@@ -100,8 +100,8 @@ func containsJSONObject(s string) bool {
 	return len(trimmed) > 1 && trimmed[0] == '{'
 }
 
-func readArchive(id string) (gameArchive, error) {
-	r, err := openFileReader(id)
+func readArchive(dir string, id string) (gameArchive, error) {
+	r, err := openFileReader(dir, id)
 	if err != nil {
 		return gameArchive{}, err
 	}
@@ -213,8 +213,8 @@ func toGameProto(info gameInfo) *pb.Game {
 }
 
 // ReadGameFrames loads all the game frames stored in given file.
-func ReadGameFrames(id string) ([]*pb.GameFrame, error) {
-	archive, err := readArchive(id)
+func ReadGameFrames(dir string, id string) ([]*pb.GameFrame, error) {
+	archive, err := readArchive(dir, id)
 	if err != nil {
 		return nil, err
 	}
@@ -225,8 +225,8 @@ func ReadGameFrames(id string) ([]*pb.GameFrame, error) {
 }
 
 // ReadGameInfo reads the header info from the given file.
-func ReadGameInfo(id string) (*pb.Game, error) {
-	info, err := readArchiveHeader(id)
+func ReadGameInfo(dir string, id string) (*pb.Game, error) {
+	info, err := readArchiveHeader(dir, id)
 	if err != nil {
 		return nil, err
 	}

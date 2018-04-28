@@ -15,33 +15,40 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var stores = map[string]func() controller.Store{
-	"memory": controller.InMemStore,
-	"file":   filestore.NewFileStore,
-}
-
 func init() { rand.Seed(time.Now().Unix()) }
+
+func createStore(storeName string, saveDir string) controller.Store {
+	stores := map[string]func() controller.Store{
+		"memory": controller.InMemStore,
+		"file": func() controller.Store {
+			return filestore.NewFileStore(saveDir)
+		},
+	}
+
+	newStore, ok := stores[storeName]
+	if !ok {
+		log.WithField("store", storeName).Fatal("Unknown storage option")
+	}
+
+	return newStore()
+}
 
 func main() {
 	var (
 		controllerAddr string
 		apiAddr        string
 		storeName      string
+		saveDir        string
 		workers        int
 	)
 	flag.StringVar(&controllerAddr, "controller listen", ":3004", "controller listen address.")
 	flag.StringVar(&apiAddr, "api listen", ":3005", "api listen address")
 	flag.StringVar(&storeName, "store", "memory", "game storage type (memory or file)")
+	flag.StringVar(&saveDir, "save-dir", "~/.battlesnake/games", "location to store game files when using --store file")
 	flag.IntVar(&workers, "workers", 10, "Worker count.")
 	flag.Parse()
 
-	newStore, ok := stores[storeName]
-	if !ok {
-		log.WithField("store", storeName).Fatal("Unknown storage option")
-		return
-	}
-
-	c := controller.New(newStore())
+	c := controller.New(createStore(storeName, saveDir))
 	go func() {
 		log.Infof("controller listening on %s", controllerAddr)
 		if err := c.Serve(controllerAddr); err != nil {

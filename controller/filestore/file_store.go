@@ -2,6 +2,7 @@ package filestore
 
 import (
 	"context"
+	"path"
 	"sync"
 	"time"
 
@@ -13,12 +14,13 @@ import (
 )
 
 // NewFileStore returns a CSV file based store implementation (1 file per game).
-func NewFileStore() controller.Store {
+func NewFileStore(directory string) controller.Store {
 	return &fileStore{
-		games:   map[string]*pb.Game{},
-		frames:  map[string][]*pb.GameFrame{},
-		writers: map[string]writer{},
-		locks:   map[string]*lock{},
+		games:     map[string]*pb.Game{},
+		frames:    map[string][]*pb.GameFrame{},
+		writers:   map[string]writer{},
+		locks:     map[string]*lock{},
+		directory: directory,
 	}
 }
 
@@ -28,11 +30,12 @@ type lock struct {
 }
 
 type fileStore struct {
-	games   map[string]*pb.Game
-	frames  map[string][]*pb.GameFrame
-	writers map[string]writer
-	locks   map[string]*lock
-	lock    sync.Mutex
+	games     map[string]*pb.Game
+	frames    map[string][]*pb.GameFrame
+	writers   map[string]writer
+	locks     map[string]*lock
+	lock      sync.Mutex
+	directory string
 }
 
 // closeGame removes the game from in-memory cache and closes the handle to its
@@ -205,7 +208,7 @@ func (fs *fileStore) requireHandle(id string, mustBeNew bool) (writer, error) {
 		return w, nil
 	}
 
-	handle, err := openFileWriter(id, mustBeNew)
+	handle, err := openFileWriter(fs.directory, id, mustBeNew)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +224,7 @@ func (fs *fileStore) requireGame(id string) (*pb.Game, error) {
 	}
 
 	// Load frames from file.
-	g, err := ReadGameInfo(id)
+	g, err := ReadGameInfo(fs.directory, id)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +240,7 @@ func (fs *fileStore) requireFrames(id string) ([]*pb.GameFrame, error) {
 	}
 
 	// Load frames from file.
-	frames, err := ReadGameFrames(id)
+	frames, err := ReadGameFrames(fs.directory, id)
 	if err != nil {
 		return nil, err
 	}
@@ -330,6 +333,6 @@ type death struct {
 	Turn  int64  `json:"turn"`
 }
 
-func getFilePath(id string) string {
-	return "/home/graeme/.battlesnake/games/" + id + ".bs"
+func getFilePath(directory string, id string) string {
+	return path.Join(directory, id) + ".bs"
 }

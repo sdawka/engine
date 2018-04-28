@@ -44,13 +44,13 @@ func TestCreateGameHandlesWriteError(t *testing.T) {
 }
 
 func TestCreateGameHandlesOpenFileError(t *testing.T) {
-	openFileWriter = func(id string, _ bool) (writer, error) {
+	openFileWriter = func(dir string, id string, _ bool) (writer, error) {
 		return nil, errors.New("fail")
 	}
-	openFileReader = func(id string) (reader, error) {
+	openFileReader = func(dir string, id string) (reader, error) {
 		return nil, errors.New("fail")
 	}
-	fs := NewFileStore()
+	fs := NewFileStore("")
 	frames := []*pb.GameFrame{basicFrames()[0]}
 	err := fs.CreateGame(context.Background(), basicGame(), frames)
 	require.NotNil(t, err)
@@ -178,11 +178,11 @@ func testFileStore() (controller.Store, *mockWriter) {
 	w := &mockWriter{
 		closed: false,
 	}
-	openFileWriter = func(id string, _ bool) (writer, error) {
+	openFileWriter = func(dir string, id string, _ bool) (writer, error) {
 		return w, nil
 	}
-	openFileReader = func(id string) (reader, error) {
+	openFileReader = func(dir string, id string) (reader, error) {
 		return newMockReader(w.text), nil
 	}
-	return NewFileStore(), w
+	return NewFileStore(""), w
 }
