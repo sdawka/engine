@@ -62,19 +62,19 @@ func toSnakeState(snake *pb.Snake) snakeState {
 	}
 }
 
-func toFrame(tick *pb.GameTick) frame {
+func toFrame(f *pb.GameFrame) frame {
 	snakes := []snakeState{}
-	for _, s := range tick.Snakes {
+	for _, s := range f.Snakes {
 		snakes = append(snakes, toSnakeState(s))
 	}
 
 	food := []point{}
-	for _, f := range tick.Food {
+	for _, f := range f.Food {
 		food = append(food, toPoint(f))
 	}
 
 	return frame{
-		Turn:   tick.Turn,
+		Turn:   f.Turn,
 		Snakes: snakes,
 		Food:   food,
 	}
@@ -103,8 +103,8 @@ func toGameInfo(game *pb.Game, snakes []*pb.Snake) gameInfo {
 	}
 }
 
-func writeTick(w writer, tick *pb.GameTick) error {
-	frame := toFrame(tick)
+func writeFrame(w writer, f *pb.GameFrame) error {
+	frame := toFrame(f)
 	return writeLine(w, &frame)
 }
 

@@ -76,20 +76,20 @@ var basicSnakes = []*pb.Snake{
 	},
 }
 
-var basicTicks = []*pb.GameTick{
-	&pb.GameTick{
+var basicFrames = []*pb.GameFrame{
+	&pb.GameFrame{
 		Turn:   1,
 		Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
 		Snakes: basicSnakes,
 	},
-	&pb.GameTick{
+	&pb.GameFrame{
 		Turn:   2,
 		Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
 		Snakes: basicSnakes,
 	},
 }
 
-var tickWithDeadSnake = &pb.GameTick{
+var frameWithDeadSnake = &pb.GameFrame{
 	Turn:   1,
 	Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
 	Snakes: []*pb.Snake{deadSnake},
@@ -154,29 +154,29 @@ func TestWriteGameInfoError(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-func TestWriteTick(t *testing.T) {
+func TestWriteFrame(t *testing.T) {
 	w := &mockWriter{
 		closed: false,
 	}
-	err := writeTick(w, basicTicks[0])
+	err := writeFrame(w, basicFrames[0])
 	require.NoError(t, err)
 	checkBasicFrameJSON(t, w.text, 1)
 }
 
-func TestWriteTickDeadSnake(t *testing.T) {
+func TestWriteFrameDeadSnake(t *testing.T) {
 	w := &mockWriter{
 		closed: false,
 	}
-	err := writeTick(w, tickWithDeadSnake)
+	err := writeFrame(w, frameWithDeadSnake)
 	require.NoError(t, err)
 	checkDeadSnakeFrameJSON(t, w.text)
 }
 
-func TestWriteTickError(t *testing.T) {
+func TestWriteFrameError(t *testing.T) {
 	w := &mockWriter{
 		err:    errors.New("fail"),
 		closed: false,
 	}
-	err := writeTick(w, basicTicks[0])
+	err := writeFrame(w, basicFrames[0])
 	require.NotNil(t, err)
 }

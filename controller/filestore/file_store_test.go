@@ -14,21 +14,21 @@ import (
 
 func TestFileStore(t *testing.T) {
 	fs, w := testFileStore()
-	ticks := []*pb.GameTick{basicTicks[0]}
-	err := fs.CreateGame(context.Background(), basicGame, ticks)
+	frames := []*pb.GameFrame{basicFrames[0]}
+	err := fs.CreateGame(context.Background(), basicGame, frames)
 	require.NoError(t, err)
 
 	game, err := fs.GetGame(context.Background(), "myid")
 	require.NoError(t, err)
 	require.Equal(t, basicGame, game)
 
-	err = fs.PushGameTick(context.Background(), "myid", basicTicks[1])
+	err = fs.PushGameFrame(context.Background(), "myid", basicFrames[1])
 	require.NoError(t, err)
 
-	newTicks, err := fs.ListGameTicks(context.Background(), "myid", 5, 0)
+	newFrames, err := fs.ListGameFrames(context.Background(), "myid", 5, 0)
 	require.NoError(t, err)
-	require.Len(t, newTicks, 2)
-	require.Equal(t, basicTicks, newTicks)
+	require.Len(t, newFrames, 2)
+	require.Equal(t, basicFrames, newFrames)
 
 	fs.SetGameStatus(context.Background(), "myid", rules.GameStatusComplete)
 	require.True(t, w.closed)
@@ -37,8 +37,8 @@ func TestFileStore(t *testing.T) {
 func TestCreateGameHandlesWriteError(t *testing.T) {
 	fs, w := testFileStore()
 	w.err = errors.New("fail")
-	ticks := []*pb.GameTick{basicTicks[0]}
-	err := fs.CreateGame(context.Background(), basicGame, ticks)
+	frames := []*pb.GameFrame{basicFrames[0]}
+	err := fs.CreateGame(context.Background(), basicGame, frames)
 	require.NotNil(t, err)
 }
 
@@ -50,8 +50,8 @@ func TestCreateGameHandlesOpenFileError(t *testing.T) {
 		return nil, errors.New("fail")
 	}
 	fs := NewFileStore()
-	ticks := []*pb.GameTick{basicTicks[0]}
-	err := fs.CreateGame(context.Background(), basicGame, ticks)
+	frames := []*pb.GameFrame{basicFrames[0]}
+	err := fs.CreateGame(context.Background(), basicGame, frames)
 	require.NotNil(t, err)
 }
 
@@ -62,17 +62,17 @@ func TestCreateGetGameFound(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-func TestPushGameTickInvalidGame(t *testing.T) {
+func TestPushGameFrameInvalidGame(t *testing.T) {
 	fs, _ := testFileStore()
 
-	err := fs.PushGameTick(context.Background(), "notfound", basicTicks[1])
+	err := fs.PushGameFrame(context.Background(), "notfound", basicFrames[1])
 	require.NotNil(t, err)
 }
 
-func TestListGameTicksInvalidGame(t *testing.T) {
+func TestListGameFramesInvalidGame(t *testing.T) {
 	fs, _ := testFileStore()
 
-	_, err := fs.ListGameTicks(context.Background(), "notfound", 5, 0)
+	_, err := fs.ListGameFrames(context.Background(), "notfound", 5, 0)
 	require.NotNil(t, err)
 }
 

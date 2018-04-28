@@ -16,7 +16,7 @@ import (
 func NewFileStore() controller.Store {
 	return &fileStore{
 		games:   map[string]*pb.Game{},
-		ticks:   map[string][]*pb.GameTick{},
+		frames:  map[string][]*pb.GameFrame{},
 		writers: map[string]writer{},
 		locks:   map[string]*lock{},
 	}
@@ -29,7 +29,7 @@ type lock struct {
 
 type fileStore struct {
 	games   map[string]*pb.Game
-	ticks   map[string][]*pb.GameTick
+	frames  map[string][]*pb.GameFrame
 	writers map[string]writer
 	locks   map[string]*lock
 	lock    sync.Mutex
@@ -42,7 +42,7 @@ func (fs *fileStore) closeGame(id string) {
 		w.Close()
 	}
 	delete(fs.games, id)
-	delete(fs.ticks, id)
+	delete(fs.frames, id)
 	delete(fs.writers, id)
 }
 
@@ -123,12 +123,12 @@ func (fs *fileStore) PopGameID(ctx context.Context) (string, error) {
 	return "", controller.ErrNotFound
 }
 
-func (fs *fileStore) CreateGame(ctx context.Context, g *pb.Game, ticks []*pb.GameTick) error {
+func (fs *fileStore) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.GameFrame) error {
 	fs.lock.Lock()
 	defer fs.lock.Unlock()
 
 	fs.games[g.ID] = g
-	return fs.appendTicks(g.ID, ticks)
+	return fs.appendFrames(g.ID, frames)
 }
 
 func (fs *fileStore) SetGameStatus(ctx context.Context, id, status string) error {
@@ -147,38 +147,38 @@ func (fs *fileStore) SetGameStatus(ctx context.Context, id, status string) error
 	return nil
 }
 
-func (fs *fileStore) PushGameTick(ctx context.Context, id string, g *pb.GameTick) error {
+func (fs *fileStore) PushGameFrame(ctx context.Context, id string, g *pb.GameFrame) error {
 	fs.lock.Lock()
 	defer fs.lock.Unlock()
 
-	return fs.appendTick(id, g)
+	return fs.appendFrame(id, g)
 }
 
-func (fs *fileStore) ListGameTicks(ctx context.Context, id string, limit, offset int) ([]*pb.GameTick, error) {
+func (fs *fileStore) ListGameFrames(ctx context.Context, id string, limit, offset int) ([]*pb.GameFrame, error) {
 	fs.lock.Lock()
 	defer fs.lock.Unlock()
 
 	if _, err := fs.requireGame(id); err != nil {
 		return nil, err
 	}
-	ticks, err := fs.requireTicks(id)
+	frames, err := fs.requireFrames(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(ticks) == 0 {
+	if len(frames) == 0 {
 		return nil, nil
 	}
 	if offset < 0 {
-		offset = len(ticks) + offset
+		offset = len(frames) + offset
 	}
-	if offset >= len(ticks) {
+	if offset >= len(frames) {
 		return nil, nil
 	}
-	if offset+limit >= len(ticks) {
-		limit = len(ticks) - offset
+	if offset+limit >= len(frames) {
+		limit = len(frames) - offset
 	}
-	return ticks[offset : offset+limit], nil
+	return frames[offset : offset+limit], nil
 }
 
 func (fs *fileStore) GetGame(ctx context.Context, id string) (*pb.Game, error) {
@@ -216,7 +216,7 @@ func (fs *fileStore) requireGame(id string) (*pb.Game, error) {
 		return g, nil
 	}
 
-	// Load ticks from file.
+	// Load frames from file.
 	g, err := ReadGameInfo(id)
 	if err != nil {
 		return nil, err
@@ -226,62 +226,62 @@ func (fs *fileStore) requireGame(id string) (*pb.Game, error) {
 	return g, nil
 }
 
-func (fs *fileStore) requireTicks(id string) ([]*pb.GameTick, error) {
-	// Do nothing if ticks already loaded.
-	if ticks, ok := fs.ticks[id]; ok {
-		return ticks, nil
+func (fs *fileStore) requireFrames(id string) ([]*pb.GameFrame, error) {
+	// Do nothing if frames already loaded.
+	if frames, ok := fs.frames[id]; ok {
+		return frames, nil
 	}
 
-	// Load ticks from file.
-	ticks, err := ReadGameFrames(id)
+	// Load frames from file.
+	frames, err := ReadGameFrames(id)
 	if err != nil {
 		return nil, err
 	}
 
-	fs.ticks[id] = ticks
-	return ticks, nil
+	fs.frames[id] = frames
+	return frames, nil
 }
 
-func (fs *fileStore) appendTick(id string, tick *pb.GameTick) error {
+func (fs *fileStore) appendFrame(id string, f *pb.GameFrame) error {
 	game, err := fs.requireGame(id)
 	if err != nil {
 		return err
 	}
 
-	alreadyHasTicks := fs.hasAnyTicks(id)
+	alreadyHasFrames := fs.hasAnyFrames(id)
 
-	handle, err := fs.requireHandle(id, !alreadyHasTicks)
+	handle, err := fs.requireHandle(id, !alreadyHasFrames)
 	if err != nil {
 		return err
 	}
 
-	// If this is the first tick, then first write the game info header.
-	if !alreadyHasTicks {
-		err := writeGameInfo(handle, game, tick.Snakes)
+	// If this is the first frame, then first write the game info header.
+	if !alreadyHasFrames {
+		err := writeGameInfo(handle, game, f.Snakes)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Add tick to in-memory cache
-	fs.ticks[id] = append(fs.ticks[id], tick)
+	// Add frame to in-memory cache
+	fs.frames[id] = append(fs.frames[id], f)
 
-	// Add tick to archive file
-	return writeTick(handle, tick)
+	// Add frame to archive file
+	return writeFrame(handle, f)
 }
 
-func (fs *fileStore) appendTicks(gameID string, ticks []*pb.GameTick) error {
-	for _, t := range ticks {
-		if err := fs.appendTick(gameID, t); err != nil {
+func (fs *fileStore) appendFrames(gameID string, frames []*pb.GameFrame) error {
+	for _, t := range frames {
+		if err := fs.appendFrame(gameID, t); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (fs *fileStore) hasAnyTicks(gameID string) bool {
-	ticks, ok := fs.ticks[gameID]
-	return ok && len(ticks) > 0
+func (fs *fileStore) hasAnyFrames(gameID string) bool {
+	frames, ok := fs.frames[gameID]
+	return ok && len(frames) > 0
 }
 
 type gameArchive struct {

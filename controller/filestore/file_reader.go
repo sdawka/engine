@@ -155,7 +155,7 @@ func toDeathProto(d *death) *pb.Death {
 	}
 }
 
-func toTickProto(f frame, infoMap map[string]snakeInfo) *pb.GameTick {
+func toFrameProto(f frame, infoMap map[string]snakeInfo) *pb.GameFrame {
 	food := []*pb.Point{}
 	for _, p := range f.Food {
 		food = append(food, toPointProto(p))
@@ -166,19 +166,19 @@ func toTickProto(f frame, infoMap map[string]snakeInfo) *pb.GameTick {
 		snakes = append(snakes, toSnakeProto(s, infoMap[s.ID]))
 	}
 
-	return &pb.GameTick{
+	return &pb.GameFrame{
 		Turn:   f.Turn,
 		Food:   food,
 		Snakes: snakes,
 	}
 }
 
-func toGameTickProtos(frames []frame, infoMap map[string]snakeInfo) []*pb.GameTick {
-	ticks := []*pb.GameTick{}
+func toGameFrameProtos(frames []frame, infoMap map[string]snakeInfo) []*pb.GameFrame {
+	protoFrames := []*pb.GameFrame{}
 	for _, f := range frames {
-		ticks = append(ticks, toTickProto(f, infoMap))
+		protoFrames = append(protoFrames, toFrameProto(f, infoMap))
 	}
-	return ticks
+	return protoFrames
 }
 
 func snakeInfoMap(info gameInfo) map[string]snakeInfo {
@@ -203,16 +203,16 @@ func toGameProto(info gameInfo) *pb.Game {
 	return &game
 }
 
-// ReadGameFrames loads all the game ticks stored in given file.
-func ReadGameFrames(id string) ([]*pb.GameTick, error) {
+// ReadGameFrames loads all the game frames stored in given file.
+func ReadGameFrames(id string) ([]*pb.GameFrame, error) {
 	archive, err := readArchive(id)
 	if err != nil {
 		return nil, err
 	}
 
 	infoMap := snakeInfoMap(archive.info)
-	ticks := toGameTickProtos(archive.frames, infoMap)
-	return ticks, nil
+	frames := toGameFrameProtos(archive.frames, infoMap)
+	return frames, nil
 }
 
 // ReadGameInfo reads the header info from the given file.
