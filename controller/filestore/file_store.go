@@ -128,6 +128,10 @@ func (fs *fileStore) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.Ga
 	defer fs.lock.Unlock()
 
 	fs.games[g.ID] = g
+	if frames == nil || len(frames) == 0 {
+		fs.frames[g.ID] = []*pb.GameFrame{}
+		return nil
+	}
 	return fs.appendFrames(g.ID, frames)
 }
 

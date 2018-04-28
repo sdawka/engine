@@ -15,7 +15,7 @@ import (
 
 func TestFileStore(t *testing.T) {
 	fs, w := testFileStore()
-	frames := []*pb.GameFrame{bafs.frames[sicFrames()[0]}
+	frames := []*pb.GameFrame{basicFrames()[0]}
 	err := fs.CreateGame(context.Background(), basicGame(), frames)
 	require.NoError(t, err)
 
