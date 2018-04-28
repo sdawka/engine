@@ -86,6 +86,7 @@ func framesTestJSON() string {
 				Death:  nil,
 			},
 		},
+		Food: []point{point{X: 6, Y: 6}},
 	}
 
 	f2 := frame{
@@ -101,9 +102,10 @@ func framesTestJSON() string {
 				ID:     "snake2",
 				Body:   []point{point{3, 2}, point{3, 3}},
 				Health: 99,
-				Death:  nil,
+				Death:  &death{Cause: "test", Turn: 2},
 			},
 		},
+		Food: []point{point{X: 6, Y: 6}},
 	}
 
 	j1, _ := json.Marshal(f1)
@@ -147,6 +149,10 @@ func TestReadGameFrames(t *testing.T) {
 	require.Equal(t, "snake2", frames[0].Snakes[1].ID)
 	require.Equal(t, "snake1", frames[1].Snakes[0].ID)
 	require.Equal(t, "snake2", frames[1].Snakes[1].ID)
+	require.Nil(t, frames[0].Snakes[0].Death)
+	require.Nil(t, frames[0].Snakes[1].Death)
+	require.Nil(t, frames[1].Snakes[0].Death)
+	require.NotNil(t, frames[1].Snakes[1].Death)
 }
 
 func TestReadGameFramesPlusGarbage(t *testing.T) {
