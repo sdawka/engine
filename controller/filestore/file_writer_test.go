@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/battlesnakeio/engine/rules"
+
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/stretchr/testify/require"
 )
@@ -29,70 +31,78 @@ func (w *mockWriter) Close() error {
 	return nil
 }
 
-var basicGame = &pb.Game{
-	ID:           "myid",
-	Status:       "asdf",
-	Width:        10,
-	Height:       15,
-	SnakeTimeout: 200,
-	TurnTimeout:  100,
-	Mode:         "multiplayer",
+func basicGame() *pb.Game {
+	return &pb.Game{
+		ID:           "myid",
+		Status:       rules.GameStatusRunning,
+		Width:        10,
+		Height:       15,
+		SnakeTimeout: 200,
+		TurnTimeout:  100,
+		Mode:         "multiplayer",
+	}
 }
 
-var deadSnake = &pb.Snake{
-	ID:   "snake1",
-	Name: "snake1",
-	URL:  "http://snake1",
-	Body: []*pb.Point{
-		&pb.Point{X: 4, Y: 4}, &pb.Point{X: 4, Y: 3},
-	},
-	Death: &pb.Death{
-		Cause: "death-cause",
-		Turn:  1,
-	},
-	Color: "red",
-}
-
-var basicSnakes = []*pb.Snake{
-	&pb.Snake{
+func deadSnake() *pb.Snake {
+	return &pb.Snake{
 		ID:   "snake1",
 		Name: "snake1",
 		URL:  "http://snake1",
 		Body: []*pb.Point{
 			&pb.Point{X: 4, Y: 4}, &pb.Point{X: 4, Y: 3},
 		},
-		Death: nil,
-		Color: "red",
-	},
-	&pb.Snake{
-		ID:   "snake2",
-		Name: "snake2",
-		URL:  "http://snake2",
-		Body: []*pb.Point{
-			&pb.Point{X: 6, Y: 4}, &pb.Point{X: 6, Y: 3},
+		Death: &pb.Death{
+			Cause: "death-cause",
+			Turn:  1,
 		},
-		Death: nil,
-		Color: "green",
-	},
+		Color: "red",
+	}
 }
 
-var basicFrames = []*pb.GameFrame{
-	&pb.GameFrame{
-		Turn:   1,
-		Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
-		Snakes: basicSnakes,
-	},
-	&pb.GameFrame{
-		Turn:   2,
-		Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
-		Snakes: basicSnakes,
-	},
+func basicSnakes() []*pb.Snake {
+	return []*pb.Snake{
+		&pb.Snake{
+			ID:   "snake1",
+			Name: "snake1",
+			URL:  "http://snake1",
+			Body: []*pb.Point{
+				&pb.Point{X: 4, Y: 4}, &pb.Point{X: 4, Y: 3},
+			},
+			Death: nil,
+			Color: "red",
+		},
+		&pb.Snake{
+			ID:   "snake2",
+			Name: "snake2",
+			URL:  "http://snake2",
+			Body: []*pb.Point{
+				&pb.Point{X: 6, Y: 4}, &pb.Point{X: 6, Y: 3},
+			},
+			Death: nil,
+			Color: "green",
+		},
+	}
+}
+
+func basicFrames() []*pb.GameFrame {
+	return []*pb.GameFrame{
+		&pb.GameFrame{
+			Turn:   1,
+			Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
+			Snakes: basicSnakes(),
+		},
+		&pb.GameFrame{
+			Turn:   2,
+			Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
+			Snakes: basicSnakes(),
+		},
+	}
 }
 
 var frameWithDeadSnake = &pb.GameFrame{
 	Turn:   1,
 	Food:   []*pb.Point{&pb.Point{X: 1, Y: 1}},
-	Snakes: []*pb.Snake{deadSnake},
+	Snakes: []*pb.Snake{deadSnake()},
 }
 
 func checkBasicGameJSON(t *testing.T, j string) {
@@ -140,7 +150,7 @@ func TestWriteGameInfo(t *testing.T) {
 	w := &mockWriter{
 		closed: false,
 	}
-	err := writeGameInfo(w, basicGame, basicSnakes)
+	err := writeGameInfo(w, basicGame(), basicSnakes())
 	require.NoError(t, err)
 	checkBasicGameJSON(t, w.text)
 }
@@ -150,7 +160,7 @@ func TestWriteGameInfoError(t *testing.T) {
 		err:    errors.New("fail"),
 		closed: false,
 	}
-	err := writeGameInfo(w, basicGame, basicSnakes)
+	err := writeGameInfo(w, basicGame(), basicSnakes())
 	require.NotNil(t, err)
 }
 
@@ -158,7 +168,7 @@ func TestWriteFrame(t *testing.T) {
 	w := &mockWriter{
 		closed: false,
 	}
-	err := writeFrame(w, basicFrames[0])
+	err := writeFrame(w, basicFrames()[0])
 	require.NoError(t, err)
 	checkBasicFrameJSON(t, w.text, 1)
 }
@@ -177,6 +187,6 @@ func TestWriteFrameError(t *testing.T) {
 		err:    errors.New("fail"),
 		closed: false,
 	}
-	err := writeFrame(w, basicFrames[0])
+	err := writeFrame(w, basicFrames()[0])
 	require.NotNil(t, err)
 }

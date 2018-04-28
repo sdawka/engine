@@ -63,10 +63,21 @@ func readGameInfo(r reader) (gameInfo, bool, error) {
 	return info, more, err
 }
 
-func readFrame(r reader) (frame, bool, error) {
-	f := frame{}
-	more, err := readLine(r, &f)
-	return f, more, err
+func readFrame(r reader) (*frame, bool) {
+	for {
+		f := frame{}
+		more, err := readLine(r, &f)
+
+		// It worked so return result
+		if err == nil {
+			return &f, more
+		}
+
+		// This line wasn't a frame and reached end of file
+		if !more {
+			return nil, false
+		}
+	}
 }
 
 func readArchiveHeader(id string) (gameInfo, error) {
@@ -105,13 +116,11 @@ func readArchive(id string) (gameArchive, error) {
 	// Read the actual frames
 	frames := []frame{}
 	for moreLines {
-		f, more, err := readFrame(r)
+		f, more := readFrame(r)
 		moreLines = more
-		if err != nil {
-			continue
+		if f != nil {
+			frames = append(frames, *f)
 		}
-
-		frames = append(frames, f)
 	}
 
 	return gameArchive{

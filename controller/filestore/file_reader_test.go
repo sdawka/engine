@@ -123,6 +123,15 @@ func TestReadGameFramesBadReader(t *testing.T) {
 	require.NotNil(t, err)
 }
 
+func TestReadGameFramesOpenReaderError(t *testing.T) {
+	openFileReader = func(id string) (reader, error) {
+		return nil, errors.New("fail")
+	}
+	_, err := ReadGameFrames("myid")
+
+	require.NotNil(t, err)
+}
+
 func TestReadGameFramesWithoutHeader(t *testing.T) {
 	j := framesTestJSON()
 
@@ -155,8 +164,8 @@ func TestReadGameFrames(t *testing.T) {
 	require.NotNil(t, frames[1].Snakes[1].Death)
 }
 
-func TestReadGameFramesPlusGarbage(t *testing.T) {
-	j := gameInfoTestJSON() + framesTestJSON() + "{"
+func testGarbageEnding(t *testing.T, garbage string) {
+	j := gameInfoTestJSON() + framesTestJSON() + garbage
 
 	openFileReader = fileOpener(map[string]string{
 		"myid": string(j),
@@ -166,6 +175,12 @@ func TestReadGameFramesPlusGarbage(t *testing.T) {
 	require.Len(t, frames, 2, "3rd frame is invalid and should be ignored")
 	require.Equal(t, int64(1), frames[0].Turn)
 	require.Equal(t, int64(2), frames[1].Turn)
+}
+
+func TestReadGameFramesPlusGarbage(t *testing.T) {
+	testGarbageEnding(t, "...")
+	testGarbageEnding(t, "{")
+	testGarbageEnding(t, "{ foo }")
 }
 
 func TestReadGameFramesGarbageAfterHeader(t *testing.T) {

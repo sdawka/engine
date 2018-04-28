@@ -271,8 +271,8 @@ func (fs *fileStore) appendFrame(id string, f *pb.GameFrame) error {
 }
 
 func (fs *fileStore) appendFrames(gameID string, frames []*pb.GameFrame) error {
-	for _, t := range frames {
-		if err := fs.appendFrame(gameID, t); err != nil {
+	for _, f := range frames {
+		if err := fs.appendFrame(gameID, f); err != nil {
 			return err
 		}
 	}

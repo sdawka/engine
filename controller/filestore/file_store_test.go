@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/rules"
@@ -14,21 +15,21 @@ import (
 
 func TestFileStore(t *testing.T) {
 	fs, w := testFileStore()
-	frames := []*pb.GameFrame{basicFrames[0]}
-	err := fs.CreateGame(context.Background(), basicGame, frames)
+	frames := []*pb.GameFrame{bafs.frames[sicFrames()[0]}
+	err := fs.CreateGame(context.Background(), basicGame(), frames)
 	require.NoError(t, err)
 
 	game, err := fs.GetGame(context.Background(), "myid")
 	require.NoError(t, err)
-	require.Equal(t, basicGame, game)
+	require.Equal(t, basicGame(), game)
 
-	err = fs.PushGameFrame(context.Background(), "myid", basicFrames[1])
+	err = fs.PushGameFrame(context.Background(), "myid", basicFrames()[1])
 	require.NoError(t, err)
 
 	newFrames, err := fs.ListGameFrames(context.Background(), "myid", 5, 0)
 	require.NoError(t, err)
 	require.Len(t, newFrames, 2)
-	require.Equal(t, basicFrames, newFrames)
+	require.Equal(t, basicFrames(), newFrames)
 
 	fs.SetGameStatus(context.Background(), "myid", rules.GameStatusComplete)
 	require.True(t, w.closed)
@@ -37,8 +38,8 @@ func TestFileStore(t *testing.T) {
 func TestCreateGameHandlesWriteError(t *testing.T) {
 	fs, w := testFileStore()
 	w.err = errors.New("fail")
-	frames := []*pb.GameFrame{basicFrames[0]}
-	err := fs.CreateGame(context.Background(), basicGame, frames)
+	frames := []*pb.GameFrame{basicFrames()[0]}
+	err := fs.CreateGame(context.Background(), basicGame(), frames)
 	require.NotNil(t, err)
 }
 
@@ -50,8 +51,8 @@ func TestCreateGameHandlesOpenFileError(t *testing.T) {
 		return nil, errors.New("fail")
 	}
 	fs := NewFileStore()
-	frames := []*pb.GameFrame{basicFrames[0]}
-	err := fs.CreateGame(context.Background(), basicGame, frames)
+	frames := []*pb.GameFrame{basicFrames()[0]}
+	err := fs.CreateGame(context.Background(), basicGame(), frames)
 	require.NotNil(t, err)
 }
 
@@ -65,7 +66,7 @@ func TestCreateGetGameFound(t *testing.T) {
 func TestPushGameFrameInvalidGame(t *testing.T) {
 	fs, _ := testFileStore()
 
-	err := fs.PushGameFrame(context.Background(), "notfound", basicFrames[1])
+	err := fs.PushGameFrame(context.Background(), "notfound", basicFrames()[1])
 	require.NotNil(t, err)
 }
 
@@ -74,6 +75,37 @@ func TestListGameFramesInvalidGame(t *testing.T) {
 
 	_, err := fs.ListGameFrames(context.Background(), "notfound", 5, 0)
 	require.NotNil(t, err)
+}
+
+func TestListGameFramesNegativeOffset(t *testing.T) {
+	fs, _ := testFileStore()
+	frames := []*pb.GameFrame{basicFrames()[0], basicFrames()[1]}
+	fs.CreateGame(context.Background(), basicGame(), frames)
+
+	newFrames, err := fs.ListGameFrames(context.Background(), "myid", 5, -1)
+	require.NoError(t, err)
+	require.Len(t, newFrames, 1)
+	require.Equal(t, frames[1], newFrames[0])
+}
+
+func TestListGameFramesOutOfRange(t *testing.T) {
+	fs, _ := testFileStore()
+	frames := []*pb.GameFrame{basicFrames()[0], basicFrames()[1]}
+	fs.CreateGame(context.Background(), basicGame(), frames)
+
+	newFrames, err := fs.ListGameFrames(context.Background(), "myid", 5, 3)
+	require.NoError(t, err)
+	require.Nil(t, newFrames)
+}
+
+func TestListGameFramesEmpty(t *testing.T) {
+	fs, _ := testFileStore()
+	frames := []*pb.GameFrame{}
+	fs.CreateGame(context.Background(), basicGame(), frames)
+
+	newFrames, err := fs.ListGameFrames(context.Background(), "myid", 5, 0)
+	require.NoError(t, err)
+	require.Nil(t, newFrames)
 }
 
 func TestSetGameStatusInvalidGame(t *testing.T) {
@@ -93,7 +125,50 @@ func TestLockUnlock(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestLockExpired(t *testing.T) {
+	fs, _ := testFileStore()
+	tempExpr := controller.LockExpiry
+	controller.LockExpiry = -1 * time.Second
+	defer func() {
+		controller.LockExpiry = tempExpr
+	}()
+
+	token, err := fs.Lock(context.Background(), "asdf", "")
+	require.NoError(t, err)
+	token, err = fs.Lock(context.Background(), "asdf", token)
+	require.NoError(t, err)
+}
+
+func TestLockBadToken(t *testing.T) {
+	fs, _ := testFileStore()
+	_, err := fs.Lock(context.Background(), "asdf", "")
+	require.NoError(t, err)
+	_, err = fs.Lock(context.Background(), "asdf", "badtoken")
+	require.NotNil(t, err)
+}
+
+func TestUnlockNothing(t *testing.T) {
+	fs, _ := testFileStore()
+	err := fs.Unlock(context.Background(), "wqer", "aaa")
+	require.NoError(t, err)
+}
+
+func TestUnlockBadToken(t *testing.T) {
+	fs, _ := testFileStore()
+	fs.Lock(context.Background(), "aaa", "")
+	err := fs.Unlock(context.Background(), "aaa", "wrong")
+	require.NotNil(t, err)
+}
+
 func TestPopGameID(t *testing.T) {
+	fs, _ := testFileStore()
+	frames := []*pb.GameFrame{basicFrames()[0]}
+	fs.CreateGame(context.Background(), basicGame(), frames)
+	_, err := fs.PopGameID(context.Background())
+	require.NoError(t, err)
+}
+
+func TestPopGameIDNotFound(t *testing.T) {
 	fs, _ := testFileStore()
 	_, err := fs.PopGameID(context.Background())
 	require.NotNil(t, err)
