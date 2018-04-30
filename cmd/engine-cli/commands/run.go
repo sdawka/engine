@@ -25,22 +25,26 @@ var runCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(*cobra.Command, []string) {
-		client := &http.Client{
-			Timeout: 5 * time.Second,
-		}
-
-		resp, err := client.Post(fmt.Sprintf("%s/games/%s/start", apiAddr, gameID), "application/json", &bytes.Buffer{})
-		if err != nil {
-			fmt.Println("error while posting to start endpoint", err)
-			return
-		}
-
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println("unable to read response body", err)
-			return
-		}
-
-		fmt.Println(string(data))
+		runGame(gameID)
 	},
+}
+
+func runGame(id string) string {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Post(fmt.Sprintf("%s/games/%s/start", apiAddr, id), "application/json", &bytes.Buffer{})
+	if err != nil {
+		fmt.Println("error while posting to start endpoint", err)
+		return ""
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("unable to read response body", err)
+		return ""
+	}
+
+	return string(data)
 }

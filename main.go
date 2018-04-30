@@ -4,7 +4,11 @@ import (
 	"context"
 	"flag"
 	"math/rand"
+	"os"
+	"os/signal"
+	"runtime/pprof"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/battlesnakeio/engine/api"
@@ -21,11 +25,34 @@ func main() {
 		controllerAddr string
 		apiAddr        string
 		workers        int
+		profileCPU     string
 	)
-	flag.StringVar(&controllerAddr, "controller listen", ":3004", "controller listen address.")
-	flag.StringVar(&apiAddr, "api listen", ":3005", "api listen address")
+	flag.StringVar(&controllerAddr, "controller", ":3004", "controller listen address.")
+	flag.StringVar(&apiAddr, "api", ":3005", "api listen address")
 	flag.IntVar(&workers, "workers", 10, "Worker count.")
+	flag.StringVar(&profileCPU, "cpu", "", "path for cpu profile dump")
 	flag.Parse()
+
+	if len(profileCPU) > 0 {
+		f, err := os.Create(profileCPU)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		c := make(chan os.Signal, 2)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-c
+			log.Info("Writing out cpu profile")
+			pprof.StopCPUProfile()
+			os.Exit(1)
+		}()
+
+		defer func() {
+			log.Info("Writing out cpu profile")
+			pprof.StopCPUProfile()
+		}()
+	}
 
 	c := controller.New(controller.InMemStore())
 	go func() {
