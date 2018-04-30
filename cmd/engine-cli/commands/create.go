@@ -27,30 +27,40 @@ var createCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(*cobra.Command, []string) {
-		client := &http.Client{
-			Timeout: 5 * time.Second,
-		}
-
-		data, err := json.Marshal(cr)
-		if err != nil {
-			fmt.Println("unable to marshal request", err)
-			return
-		}
-		buf := bytes.NewBuffer(data)
-		resp, err := client.Post(fmt.Sprintf("%s/games", apiAddr), "application/json", buf)
-		if err != nil {
-			fmt.Println("error while posting to create endpoint", err)
-			return
-		}
-
-		data, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println("unable to read response body", err)
-			return
-		}
-
-		fmt.Println(string(data))
+		cr := createGame()
+		fmt.Println(cr)
 	},
+}
+
+func createGame() *pb.CreateResponse {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	data, err := json.Marshal(cr)
+	if err != nil {
+		fmt.Println("unable to marshal request", err)
+		return nil
+	}
+	buf := bytes.NewBuffer(data)
+	resp, err := client.Post(fmt.Sprintf("%s/games", apiAddr), "application/json", buf)
+	if err != nil {
+		fmt.Println("error while posting to create endpoint", err)
+		return nil
+	}
+
+	data, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("unable to read response body", err)
+		return nil
+	}
+
+	cr := &pb.CreateResponse{}
+	err = json.Unmarshal(data, &cr)
+	if err != nil {
+		fmt.Println("Unable to unmarshal create response")
+	}
+	return cr
 }
 
 var (
