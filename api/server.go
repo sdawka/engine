@@ -10,6 +10,7 @@ import (
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,10 +31,12 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.GET("/games/:id", newClientHandle(c, getStatus))
 	router.GET("/games/:id/frames", newClientHandle(c, getFrames))
 
+	handler := cors.Default().Handler(router)
+
 	return &Server{
 		hs: &http.Server{
 			Addr:    addr,
-			Handler: router,
+			Handler: handler,
 		},
 	}
 }
