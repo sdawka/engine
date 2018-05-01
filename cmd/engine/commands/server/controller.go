@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -15,7 +15,7 @@ var (
 func init() {
 	controllerCmd.Flags().StringVarP(&controllerListen, "listen", "l", controllerListen, "address for the controller to bind to")
 	controllerCmd.Flags().StringVarP(&controllerBackend, "backend", "b", controllerBackend, "controller backend, as one of: [inmem]")
-	allCmd.Flags().AddFlagSet(controllerCmd.Flags())
+	RootCmd.Flags().AddFlagSet(controllerCmd.Flags())
 }
 
 var controllerCmd = &cobra.Command{
