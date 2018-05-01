@@ -6,7 +6,7 @@ run: install
 	engine server
 .PHONY: run
 
-make run-game:
+run-game: install
 	$(eval GAME_ID := $(shell engine create -c ~/snake-config.json | jq '.ID'))
 	engine run -g $(GAME_ID)
 .PHONY: run-game
