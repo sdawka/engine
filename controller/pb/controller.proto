@@ -56,6 +56,8 @@ service Controller {
   // EndGame sets the game status to complete. A lock must be held for this call
   // to succeed.
   rpc EndGame(EndGameRequest) returns (EndGameResponse);
+  // ping will ping the controller.
+  rpc Ping(PingRequest) returns (PingResponse);
 }
 
 message PopRequest  {}
@@ -101,6 +103,9 @@ message ListGameFramesResponse {
 
 message EndGameRequest  { string ID = 1; }
 message EndGameResponse {}
+
+message PingRequest {}
+message PingResponse { string Version = 1; }
 
 message SnakeOptions {
   string Name = 1;

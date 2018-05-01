@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -171,8 +172,10 @@ func TestController_Frames(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			resp, err := client.AddGameFrame(
 				pb.ContextWithLockToken(ctx, token), &pb.AddGameFrameRequest{
-					ID:        gameID,
-					GameFrame: &pb.GameFrame{},
+					ID: gameID,
+					GameFrame: &pb.GameFrame{
+						Turn: int64(i + 1),
+					},
 				})
 			require.Nil(t, err)
 			require.Equal(t, gameID, resp.Game.ID)
@@ -198,20 +201,18 @@ func TestController_Frames(t *testing.T) {
 	t.Run("ListGameFrames", func(t *testing.T) {
 		resp, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{ID: gameID})
 		require.Nil(t, err)
-		// Returns max 50.
-		require.Equal(t, 50, len(resp.Frames))
-		require.Equal(t, 50, int(resp.Count))
+		require.Equal(t, MaxTicks, len(resp.Frames))
+		require.Equal(t, MaxTicks, int(resp.Count))
 	})
 
-	t.Run("ListGameFrames_Min50", func(t *testing.T) {
+	t.Run("ListGameFramesAtMaxTicks", func(t *testing.T) {
 		resp, err := client.ListGameFrames(ctx, &pb.ListGameFramesRequest{
 			ID:    gameID,
 			Limit: 1000,
 		})
 		require.Nil(t, err)
-		// Returns max 50.
-		require.Equal(t, 50, len(resp.Frames))
-		require.Equal(t, 50, int(resp.Count))
+		require.Equal(t, MaxTicks, len(resp.Frames))
+		require.Equal(t, MaxTicks, int(resp.Count))
 	})
 }
 
@@ -244,4 +245,13 @@ func TestController_PopConcurrent(t *testing.T) {
 
 	wg.Wait()
 	require.Equal(t, uint32(1), ok)
+}
+
+func TestController_Ping(t *testing.T) {
+	ctx := context.Background()
+
+	res, err := client.Ping(ctx, &pb.PingRequest{})
+	require.Nil(t, err)
+
+	require.Equal(t, version.Version, res.Version)
 }

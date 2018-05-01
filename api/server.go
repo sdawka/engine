@@ -163,10 +163,4 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 }
 
 // WaitForExit starts up the server and blocks until the server shuts down.
-func (s *Server) WaitForExit() {
-	log.Infof("Battlesnake engine api listening on %s", s.hs.Addr)
-	err := s.hs.ListenAndServe()
-	if err != nil {
-		log.Errorf("Error while listening: %v", err)
-	}
-}
+func (s *Server) WaitForExit() error { return s.hs.ListenAndServe() }

@@ -2,3 +2,4 @@ ignore:
   - "**/*.pb.go"
   - "**/*pb_test.go"
   - "**/vendor/"
+  - '**/e2e/'

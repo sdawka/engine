@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -140,9 +139,7 @@ func TestWorker_Runner(t *testing.T) {
 	}
 
 	for key, game := range games {
-		t.Run(fmt.Sprintf("%s", key), func(t *testing.T) {
-			t.Parallel()
-
+		t.Run(key, func(t *testing.T) {
 			g, err := client.Create(ctx, game)
 			require.Nil(t, err)
 

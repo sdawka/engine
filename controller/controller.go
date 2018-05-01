@@ -9,10 +9,14 @@ import (
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
+	"github.com/battlesnakeio/engine/version"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+// MaxTicks is the maximum amount of ticks that can be returned.
+const MaxTicks = 100
 
 // New will initialize a new Server.
 func New(store Store) *Server {
@@ -104,9 +108,6 @@ func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) 
 		return nil, err
 	}
 
-	// TODO: Need to check that game frame follows the sequence from the previous
-	// frame here.
-
 	err = s.Store.PushGameFrame(ctx, req.ID, req.GameFrame)
 	if err != nil {
 		return nil, err
@@ -122,11 +123,8 @@ func (s *Server) AddGameFrame(ctx context.Context, req *pb.AddGameFrameRequest) 
 
 // ListGameFrames will list all game frames given a limit and offset.
 func (s *Server) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest) (*pb.ListGameFramesResponse, error) {
-	if req.Limit == 0 {
-		req.Limit = 50
-	}
-	if req.Limit > 50 {
-		req.Limit = 50
+	if req.Limit == 0 || req.Limit >= MaxTicks {
+		req.Limit = MaxTicks
 	}
 	frames, err := s.Store.ListGameFrames(ctx, req.ID, int(req.Limit), int(req.Offset))
 	if err != nil {
@@ -162,6 +160,11 @@ func (s *Server) EndGame(ctx context.Context, req *pb.EndGameRequest) (*pb.EndGa
 	}
 
 	return &pb.EndGameResponse{}, nil
+}
+
+// Ping returns the health and current version of the server.
+func (s *Server) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
+	return &pb.PingResponse{Version: version.Version}, nil
 }
 
 // Serve will intantiate a grpc server.

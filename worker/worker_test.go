@@ -82,8 +82,10 @@ func TestWorker_Run(t *testing.T) {
 			}
 			for i := 0; i < 5; i++ {
 				_, err := cl.AddGameFrame(c, &pb.AddGameFrameRequest{
-					ID:        id,
-					GameFrame: &pb.GameFrame{},
+					ID: id,
+					GameFrame: &pb.GameFrame{
+						Turn: int64(i + 1),
+					},
 				})
 				if err != nil {
 					return err
