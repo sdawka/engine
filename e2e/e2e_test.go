@@ -94,7 +94,7 @@ func TestMain(m *testing.M) {
 		return
 	}
 
-	proc := exec.Command("engine", "all", "--chaos")
+	proc := exec.Command("engine", "server", "--chaos")
 	proc.Stdout = os.Stdout
 	proc.Stderr = os.Stderr
 
