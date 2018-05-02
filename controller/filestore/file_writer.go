@@ -2,7 +2,6 @@ package filestore
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -16,7 +15,6 @@ type writer interface {
 }
 
 func requireSaveDir() error {
-	fmt.Println("requireSaveDir()")
 	path := "/home/graeme/.battlesnake/games"
 	return os.MkdirAll(path, 0775)
 }
