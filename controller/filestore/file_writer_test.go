@@ -106,20 +106,17 @@ var frameWithDeadSnake = &pb.GameFrame{
 }
 
 func checkBasicGameJSON(t *testing.T, j string) {
-	info := gameInfo{}
+	info := &pb.Game{}
 	err := json.Unmarshal([]byte(j), &info)
 	require.NoError(t, err)
 
 	require.Equal(t, "myid", info.ID)
 	require.Equal(t, int64(10), info.Width)
 	require.Equal(t, int64(15), info.Height)
-	require.Len(t, info.Snakes, 2)
-	require.Equal(t, "snake1", info.Snakes[0].ID)
-	require.Equal(t, "snake2", info.Snakes[1].ID)
 }
 
 func checkBasicFrameJSON(t *testing.T, j string, turn int64) {
-	f := frame{}
+	f := &pb.GameFrame{}
 	err := json.Unmarshal([]byte(j), &f)
 	require.NoError(t, err)
 
@@ -135,7 +132,7 @@ func checkBasicFrameJSON(t *testing.T, j string, turn int64) {
 }
 
 func checkDeadSnakeFrameJSON(t *testing.T, j string) {
-	f := frame{}
+	f := &pb.GameFrame{}
 	err := json.Unmarshal([]byte(j), &f)
 	require.NoError(t, err)
 

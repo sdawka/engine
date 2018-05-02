@@ -292,45 +292,8 @@ func (fs *fileStore) hasAnyFrames(gameID string) bool {
 }
 
 type gameArchive struct {
-	info   gameInfo
-	frames []frame
-}
-
-type gameInfo struct {
-	ID     string      `json:"id"`
-	Width  int64       `json:"width"`
-	Height int64       `json:"height"`
-	Snakes []snakeInfo `json:"snakes"`
-}
-
-type point struct {
-	X int64 `json:"x"`
-	Y int64 `json:"y"`
-}
-
-type snakeInfo struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
-	URL   string `json:"url"`
-}
-
-type frame struct {
-	Turn   int64        `json:"turn"`
-	Snakes []snakeState `json:"snakes"`
-	Food   []point      `json:"food"`
-}
-
-type snakeState struct {
-	ID     string  `json:"id"`
-	Body   []point `json:"body"`
-	Health int64   `json:"health"`
-	Death  *death  `json:"dead"`
-}
-
-type death struct {
-	Cause string `json:"cause"`
-	Turn  int64  `json:"turn"`
+	game   *pb.Game
+	frames []*pb.GameFrame
 }
 
 func getFilePath(directory string, id string) string {

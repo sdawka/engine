@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,24 +46,10 @@ func fileOpener(files map[string]string) func(string, string) (reader, error) {
 }
 
 func gameInfoTestJSON() string {
-	info := gameInfo{
+	info := &pb.Game{
 		ID:     "myid",
 		Width:  10,
 		Height: 12,
-		Snakes: []snakeInfo{
-			snakeInfo{
-				ID:    "snake1",
-				Name:  "snake1",
-				Color: "yellow",
-				URL:   "http://snake1",
-			},
-			snakeInfo{
-				ID:    "snake2",
-				Name:  "snake2",
-				Color: "green",
-				URL:   "http://snake2",
-			},
-		},
 	}
 
 	infoJSON, _ := json.Marshal(info)
@@ -70,42 +57,42 @@ func gameInfoTestJSON() string {
 }
 
 func framesTestJSON() string {
-	f1 := frame{
+	f1 := &pb.GameFrame{
 		Turn: 1,
-		Snakes: []snakeState{
-			snakeState{
+		Snakes: []*pb.Snake{
+			&pb.Snake{
 				ID:     "snake1",
-				Body:   []point{point{1, 1}, point{1, 2}},
+				Body:   []*pb.Point{&pb.Point{X: 1, Y: 1}, &pb.Point{X: 1, Y: 2}},
 				Health: 100,
 				Death:  nil,
 			},
-			snakeState{
+			&pb.Snake{
 				ID:     "snake2",
-				Body:   []point{point{3, 1}, point{3, 2}},
+				Body:   []*pb.Point{&pb.Point{X: 3, Y: 1}, &pb.Point{X: 3, Y: 2}},
 				Health: 100,
 				Death:  nil,
 			},
 		},
-		Food: []point{point{X: 6, Y: 6}},
+		Food: []*pb.Point{&pb.Point{X: 6, Y: 6}},
 	}
 
-	f2 := frame{
+	f2 := &pb.GameFrame{
 		Turn: 2,
-		Snakes: []snakeState{
-			snakeState{
+		Snakes: []*pb.Snake{
+			&pb.Snake{
 				ID:     "snake1",
-				Body:   []point{point{1, 2}, point{1, 3}},
-				Health: 99,
+				Body:   []*pb.Point{&pb.Point{X: 1, Y: 2}, &pb.Point{X: 1, Y: 3}},
+				Health: 100,
 				Death:  nil,
 			},
-			snakeState{
+			&pb.Snake{
 				ID:     "snake2",
-				Body:   []point{point{3, 2}, point{3, 3}},
-				Health: 99,
-				Death:  &death{Cause: "test", Turn: 2},
+				Body:   []*pb.Point{&pb.Point{X: 3, Y: 2}, &pb.Point{X: 3, Y: 3}},
+				Health: 100,
+				Death:  &pb.Death{Cause: "test", Turn: 2},
 			},
 		},
-		Food: []point{point{X: 6, Y: 6}},
+		Food: []*pb.Point{&pb.Point{X: 6, Y: 6}},
 	}
 
 	j1, _ := json.Marshal(f1)
