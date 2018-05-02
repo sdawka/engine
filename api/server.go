@@ -10,6 +10,7 @@ import (
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,10 +31,12 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.GET("/games/:id", newClientHandle(c, getStatus))
 	router.GET("/games/:id/frames", newClientHandle(c, getFrames))
 
+	handler := cors.Default().Handler(router)
+
 	return &Server{
 		hs: &http.Server{
 			Addr:    addr,
-			Handler: router,
+			Handler: handler,
 		},
 	}
 }
@@ -160,10 +163,4 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 }
 
 // WaitForExit starts up the server and blocks until the server shuts down.
-func (s *Server) WaitForExit() {
-	log.Infof("Battlesnake engine api listening on %s", s.hs.Addr)
-	err := s.hs.ListenAndServe()
-	if err != nil {
-		log.Errorf("Error while listening: %v", err)
-	}
-}
+func (s *Server) WaitForExit() error { return s.hs.ListenAndServe() }

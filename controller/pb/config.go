@@ -7,8 +7,9 @@ import (
 )
 
 // Dial will dial the controller client.
-func Dial(address string) (ControllerClient, error) {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+func Dial(address string, opts ...grpc.DialOption) (ControllerClient, error) {
+	opts = append(opts, grpc.WithInsecure())
+	conn, err := grpc.Dial(address, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -21,6 +21,9 @@ var (
 	ErrNotFound = status.Error(codes.NotFound, "controller: game not found")
 	// ErrIsLocked is returned when a game is locked.
 	ErrIsLocked = status.Error(codes.ResourceExhausted, "controller: game is locked")
+	// ErrInvalidSequence is returned when a game tick is written with an
+	// invalid sequence.
+	ErrInvalidSequence = status.Error(codes.ResourceExhausted, "controller: invalid game tick sequence")
 )
 
 // Store is the interface to the game store. It implements locking for workers
@@ -167,6 +170,17 @@ func (in *inmem) SetGameStatus(ctx context.Context, id, status string) error {
 func (in *inmem) PushGameFrame(ctx context.Context, id string, g *pb.GameFrame) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
+	frames := in.frames[id]
+	if len(frames) > 0 {
+		last := frames[len(frames)-1]
+		if last.Turn+1 != g.Turn {
+			return ErrInvalidSequence
+		}
+	} else {
+		if g.Turn != 0 {
+			return ErrInvalidSequence
+		}
+	}
 	in.frames[id] = append(in.frames[id], g)
 	return nil
 }
