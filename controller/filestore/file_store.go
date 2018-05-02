@@ -13,7 +13,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// NewFileStore returns a CSV file based store implementation (1 file per game).
+// NewFileStore returns a file based store implementation (1 file per game).
 func NewFileStore(directory string) controller.Store {
 	return &fileStore{
 		games:     map[string]*pb.Game{},
