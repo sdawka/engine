@@ -173,13 +173,11 @@ func (fs *fileStore) ListGameFrames(ctx context.Context, id string, limit, offse
 		return nil, err
 	}
 
-	if len(frames) == 0 {
-		return nil, nil
-	}
 	if offset < 0 {
 		offset = len(frames) + offset
 	}
-	if offset >= len(frames) {
+
+	if len(frames) == 0 || offset >= len(frames) {
 		return nil, nil
 	}
 	if offset+limit >= len(frames) {
