@@ -67,7 +67,18 @@ For more information about the engine-cli:
 
 `engline-cli [command] --help`
 
+## Backend configuration
 
+Storage options:
+
+* `inmem` - This is the default. All game data is erased when the engine restarts.
+* `file` - Stores one file per game. Games can be resumed or replayed after restart.
+
+### Examples:
+
+Save games as files in `~/battlesnake/`
+
+```engine all --backend file --backend-args ~/battlesnake```
 
 ---
 
