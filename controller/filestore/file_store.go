@@ -2,6 +2,7 @@ package filestore
 
 import (
 	"context"
+	"os/user"
 	"path"
 	"sync"
 	"time"
@@ -13,8 +14,24 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func defaultDir() string {
+	return path.Join(homeDir(), ".battlesnake/games")
+}
+
+func homeDir() string {
+	usr, err := user.Current()
+	if err != nil {
+		return "."
+	}
+	return usr.HomeDir
+}
+
 // NewFileStore returns a file based store implementation (1 file per game).
 func NewFileStore(directory string) controller.Store {
+	if directory == "" {
+		directory = defaultDir()
+	}
+
 	return &fileStore{
 		games:     map[string]*pb.Game{},
 		frames:    map[string][]*pb.GameFrame{},

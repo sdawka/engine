@@ -14,9 +14,8 @@ type writer interface {
 	Close() error
 }
 
-func requireSaveDir() error {
-	path := "/home/graeme/.battlesnake/games"
-	return os.MkdirAll(path, 0775)
+func requireSaveDir(dir string) error {
+	return os.MkdirAll(dir, 0775)
 }
 
 func writeLine(w writer, data interface{}) error {
@@ -37,7 +36,7 @@ func writeGameInfo(w writer, game *pb.Game, snakes []*pb.Snake) error {
 }
 
 func appendOnlyFileWriter(dir string, id string, mustCreate bool) (writer, error) {
-	if err := requireSaveDir(); err != nil {
+	if err := requireSaveDir(dir); err != nil {
 		return nil, err
 	}
 

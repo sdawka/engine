@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"os/user"
-	"path"
-
 	"github.com/battlesnakeio/engine/controller/filestore"
 	log "github.com/sirupsen/logrus"
 
@@ -12,23 +9,15 @@ import (
 )
 
 var (
-	controllerListen  = ":3004"
-	controllerBackend = "inmem"
-	controllerSaveDir = path.Join(homeDir(), ".battlesnake/games")
+	controllerListen      = ":3004"
+	controllerBackend     = "inmem"
+	controllerBackendArgs = ""
 )
-
-func homeDir() string {
-	usr, err := user.Current()
-	if err != nil {
-		return "."
-	}
-	return usr.HomeDir
-}
 
 func init() {
 	controllerCmd.Flags().StringVarP(&controllerListen, "listen", "l", controllerListen, "address for the controller to bind to")
 	controllerCmd.Flags().StringVarP(&controllerBackend, "backend", "b", controllerBackend, "controller backend, as one of: [inmem, file]")
-	controllerCmd.Flags().StringVarP(&controllerSaveDir, "savedir", "s", controllerSaveDir, "file store save location; requires --backed file")
+	controllerCmd.Flags().StringVarP(&controllerBackendArgs, "backend-args", "a", controllerBackendArgs, "options to pass to the backend being used")
 	allCmd.Flags().AddFlagSet(controllerCmd.Flags())
 }
 
@@ -41,7 +30,7 @@ var controllerCmd = &cobra.Command{
 		case "inmem":
 			store = controller.InMemStore()
 		case "file":
-			store = filestore.NewFileStore(controllerSaveDir)
+			store = filestore.NewFileStore(controllerBackendArgs)
 		default:
 			log.WithField("backend", controllerBackend).Fatal("invalid backend")
 		}
