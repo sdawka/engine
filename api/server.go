@@ -73,6 +73,10 @@ func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, 
 			break
 		}
 	}
+	err = ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	if err != nil {
+		log.WithError(err).Error("Problem closing websocket")
+	}
 }
 
 func gatherFrames(frames chan<- *pb.GameFrame, c pb.ControllerClient, id string) {

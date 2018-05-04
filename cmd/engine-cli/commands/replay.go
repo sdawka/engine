@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/gorilla/websocket"
 	termbox "github.com/nsf/termbox-go"
 	"github.com/spf13/cobra"
 )
@@ -30,40 +34,23 @@ var replayCmd = &cobra.Command{
 	},
 }
 
-func moveFrameForwards(frameIndex int, frames []*pb.GameFrame) (int, *pb.GameFrame, bool) {
+func moveFrameForwards(frameIndex int, frames *FrameHolder) (int, *pb.GameFrame, bool) {
 	frameIndex++
-	if frameIndex >= len(frames) {
+	if frameIndex >= frames.Count() {
 		return frameIndex, nil, true
 	}
-	return frameIndex, frames[frameIndex], false
+	return frameIndex, frames.Get(frameIndex), false
 }
 
-func moveFrameBackwards(frameIndex int, frames []*pb.GameFrame) (int, *pb.GameFrame) {
+func moveFrameBackwards(frameIndex int, frames *FrameHolder) (int, *pb.GameFrame) {
 	frameIndex--
 	if frameIndex <= 0 {
 		frameIndex = 0
 	}
-	return frameIndex, frames[frameIndex]
+	return frameIndex, frames.Get(frameIndex)
 }
 
-func getCharacter(frame *pb.GameFrame, x, y int64) string {
-	for _, f := range frame.Food {
-		if f.X == x && f.Y == y {
-			return "●"
-		}
-	}
-
-	for _, s := range frame.AliveSnakes() {
-		for _, p := range s.Body {
-			if p.X == x && p.Y == y {
-				return "◼"
-			}
-		}
-	}
-	return " "
-}
-
-func loadGame() (*pb.Game, []*pb.GameFrame, error) {
+func loadGame() (*pb.Game, *FrameHolder, error) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -81,38 +68,46 @@ func loadGame() (*pb.Game, []*pb.GameFrame, error) {
 		return nil, nil, err
 	}
 
-	frames, err := loadFrames(0)
+	frames := &FrameHolder{}
+
+	u := url.URL{Scheme: "ws", Host: strings.Replace(apiAddr, "http://", "", 1), Path: fmt.Sprintf("/socket/%s", gameID)}
+	log.Printf("connecting to %s", u.String())
+
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		return nil, nil, err
+		log.Fatal("dial:", err)
 	}
+
+	go func() {
+		defer c.Close()
+
+		for {
+			mt, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+
+			switch mt {
+			case websocket.TextMessage:
+				frame := &pb.GameFrame{}
+				err = json.Unmarshal(message, frame)
+				if err != nil {
+					log.Println("unmarshal frame:", err)
+					return
+				}
+
+				frames.Append(frame)
+			case websocket.CloseMessage:
+				return
+			default:
+				log.Println("unhandled message type:", mt)
+			}
+
+		}
+	}()
+
 	return s.Game, frames, nil
-}
-
-func loadFrames(offset int) ([]*pb.GameFrame, error) {
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-	tr := &pb.ListGameFramesResponse{}
-	resp, err := client.Get(fmt.Sprintf("%s/games/%s/frames?offset=%d", apiAddr, gameID, offset))
-	if err != nil {
-		fmt.Println("error while getting frames", err)
-		return nil, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(tr)
-	resp.Body.Close()
-	if err != nil {
-		fmt.Println("error while decoding frames", err)
-		return nil, err
-	}
-	return tr.Frames, nil
-}
-
-func checkForMoreFrames(frameIndex, frameCount int) ([]*pb.GameFrame, error) {
-	if frameIndex > (frameCount - 10) {
-		return []*pb.GameFrame{}, nil
-	}
-
-	return loadFrames(frameCount)
 }
 
 func replayGame() {
@@ -134,10 +129,7 @@ func replayGame() {
 	}(eventQueue)
 
 	cycle := time.NewTicker(200 * time.Millisecond)
-	if len(frames) == 0 {
-		return
-	}
-	currentFrame := frames[0]
+	currentFrame := frames.Get(0)
 	frameIndex := 0
 	paused := false
 	done := false
@@ -145,15 +137,6 @@ func replayGame() {
 	for {
 		if done {
 			break
-		}
-
-		newFrames, err := checkForMoreFrames(frameIndex, len(frames))
-		if err != nil {
-			panic(err)
-		}
-
-		for _, f := range newFrames {
-			frames = append(frames, f)
 		}
 
 		select {
@@ -197,7 +180,7 @@ func replayGame() {
 		}
 	}
 
-	if frameIndex >= len(frames) {
+	if frameIndex >= frames.Count() {
 		tbprint(0, 0, defaultColor, defaultColor, "Press any key to exit...")
 		termbox.Flush()
 		termbox.PollEvent()
