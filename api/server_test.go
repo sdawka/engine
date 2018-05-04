@@ -79,6 +79,23 @@ func TestCreateHandlesErrors(t *testing.T) {
 	basicCreateTest(t, "{}", http.StatusInternalServerError, errors.New("fail"))
 }
 
+type errorReader struct{}
+
+func (errorReader) Read([]byte) (int, error) {
+	return 0, errors.New("bad reader")
+}
+
+func TestCreateHandlesBadReader(t *testing.T) {
+	s, _ := createAPIServer()
+
+	badReader := errorReader{}
+	req, _ := http.NewRequest("POST", "/games", badReader)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
 func TestStart(t *testing.T) {
 	s, _ := createAPIServer()
 
@@ -87,6 +104,16 @@ func TestStart(t *testing.T) {
 
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestStartHandlesControllerError(t *testing.T) {
+	s, _ := createAPIServerWithError(errors.New("controller crashed!"))
+
+	req, _ := http.NewRequest("POST", "/games/abc_123/start", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
 func basicStatusTest(t *testing.T, id string, expectedStatusCode int, controllerError error) {
