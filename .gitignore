@@ -12,3 +12,4 @@ build
 *.tgz
 .DS_Store
 coverage.txt
+debug
