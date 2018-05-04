@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
+	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
@@ -30,6 +32,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.POST("/games/:id/start", newClientHandle(c, startGame))
 	router.GET("/games/:id", newClientHandle(c, getStatus))
 	router.GET("/games/:id/frames", newClientHandle(c, getFrames))
+	router.GET("/socket/:id", newClientHandle(c, framesSocket))
 
 	handler := cors.Default().Handler(router)
 
@@ -45,6 +48,72 @@ func newClientHandle(c pb.ControllerClient, innerHandle clientHandle) httprouter
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		innerHandle(w, r, p, c)
 	}
+}
+
+var upgrader = websocket.Upgrader{}
+
+func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+	id := ps.ByName("id")
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.WithError(err).Error("Unable to upgrade connection")
+		return
+	}
+	defer ws.Close()
+	frames := make(chan *pb.GameFrame)
+	go gatherFrames(frames, c, id)
+	for frame := range frames {
+		data, err := json.Marshal(frame)
+		if err != nil {
+			log.WithError(err).Error("Unable to serialize frame for websocket")
+		}
+		err = ws.WriteMessage(websocket.TextMessage, data)
+		if err != nil {
+			log.WithError(err).Error("Unable to write to websocket")
+			break
+		}
+	}
+}
+
+func gatherFrames(frames chan<- *pb.GameFrame, c pb.ControllerClient, id string) {
+	offset := int32(0)
+	for {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		resp, err := c.ListGameFrames(ctx, &pb.ListGameFramesRequest{
+			ID:     id,
+			Offset: offset,
+		})
+		if err != nil {
+			log.WithError(err).Error("Error while retrieving frames from controller")
+			cancel()
+			break
+		}
+
+		for _, f := range resp.Frames {
+			frames <- f
+		}
+
+		offset += int32(len(resp.Frames))
+
+		if len(resp.Frames) == 0 {
+			sg, err := c.Status(ctx, &pb.StatusRequest{
+				ID: id,
+			})
+			if err != nil {
+				log.WithError(err).Error("Error while retrieving game status from controller")
+				cancel()
+				break
+			}
+
+			if sg.Game.Status != rules.GameStatusRunning {
+				cancel()
+				break
+			}
+		}
+
+		cancel()
+	}
+	close(frames)
 }
 
 func createGame(w http.ResponseWriter, r *http.Request, _ httprouter.Params, c pb.ControllerClient) {
