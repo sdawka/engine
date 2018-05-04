@@ -6,19 +6,19 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 )
 
-type FrameHolder struct {
+type frameHolder struct {
 	sync.RWMutex
 	frames []*pb.GameFrame
 }
 
-func (fh *FrameHolder) Append(frame *pb.GameFrame) {
+func (fh *frameHolder) append(frame *pb.GameFrame) {
 	fh.Lock()
 	defer fh.Unlock()
 
 	fh.frames = append(fh.frames, frame)
 }
 
-func (fh *FrameHolder) Get(index int) *pb.GameFrame {
+func (fh *frameHolder) get(index int) *pb.GameFrame {
 	fh.RLock()
 	defer fh.RUnlock()
 
@@ -29,7 +29,7 @@ func (fh *FrameHolder) Get(index int) *pb.GameFrame {
 	return fh.frames[index]
 }
 
-func (fh *FrameHolder) Count() int {
+func (fh *frameHolder) count() int {
 	fh.RLock()
 	defer fh.RUnlock()
 

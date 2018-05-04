@@ -34,23 +34,23 @@ var replayCmd = &cobra.Command{
 	},
 }
 
-func moveFrameForwards(frameIndex int, frames *FrameHolder) (int, *pb.GameFrame, bool) {
+func moveFrameForwards(frameIndex int, frames *frameHolder) (int, *pb.GameFrame, bool) {
 	frameIndex++
-	if frameIndex >= frames.Count() {
+	if frameIndex >= frames.count() {
 		return frameIndex, nil, true
 	}
-	return frameIndex, frames.Get(frameIndex), false
+	return frameIndex, frames.get(frameIndex), false
 }
 
-func moveFrameBackwards(frameIndex int, frames *FrameHolder) (int, *pb.GameFrame) {
+func moveFrameBackwards(frameIndex int, frames *frameHolder) (int, *pb.GameFrame) {
 	frameIndex--
 	if frameIndex <= 0 {
 		frameIndex = 0
 	}
-	return frameIndex, frames.Get(frameIndex)
+	return frameIndex, frames.get(frameIndex)
 }
 
-func loadGame() (*pb.Game, *FrameHolder, error) {
+func loadGame() (*pb.Game, *frameHolder, error) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -68,7 +68,7 @@ func loadGame() (*pb.Game, *FrameHolder, error) {
 		return nil, nil, err
 	}
 
-	frames := &FrameHolder{}
+	frames := &frameHolder{}
 
 	u := url.URL{Scheme: "ws", Host: strings.Replace(apiAddr, "http://", "", 1), Path: fmt.Sprintf("/socket/%s", gameID)}
 	log.Printf("connecting to %s", u.String())
@@ -97,7 +97,7 @@ func loadGame() (*pb.Game, *FrameHolder, error) {
 					return
 				}
 
-				frames.Append(frame)
+				frames.append(frame)
 			case websocket.CloseMessage:
 				return
 			default:
@@ -129,7 +129,7 @@ func replayGame() {
 	}(eventQueue)
 
 	cycle := time.NewTicker(200 * time.Millisecond)
-	currentFrame := frames.Get(0)
+	currentFrame := frames.get(0)
 	frameIndex := 0
 	paused := false
 	done := false
