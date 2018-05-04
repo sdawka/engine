@@ -180,7 +180,7 @@ func replayGame() {
 		}
 	}
 
-	if frameIndex >= frames.Count() {
+	if frameIndex >= frames.count() {
 		tbprint(0, 0, defaultColor, defaultColor, "Press any key to exit...")
 		termbox.Flush()
 		termbox.PollEvent()
