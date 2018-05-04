@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+const pingRetryDelay = 1 * time.Second
+
 var (
 	workerThreads      = 10
 	workerPollInterval = 1 * time.Second
@@ -79,6 +81,7 @@ var workerCmd = &cobra.Command{
 					break
 				} else {
 					log.WithError(err).Warn("controller connection unhealthy")
+					time.Sleep(pingRetryDelay)
 				}
 			}
 		}()
