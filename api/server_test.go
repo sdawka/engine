@@ -107,7 +107,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestStartHandlesControllerError(t *testing.T) {
-	s, _ := createAPIServerWithError(errors.New("controller crashed!"))
+	s, _ := createAPIServerWithError(errors.New("controller crashed"))
 
 	req, _ := http.NewRequest("POST", "/games/abc_123/start", nil)
 	rr := httptest.NewRecorder()
