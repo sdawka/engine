@@ -50,7 +50,11 @@ func newClientHandle(c pb.ControllerClient, innerHandle clientHandle) httprouter
 	}
 }
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
 	id := ps.ByName("id")
