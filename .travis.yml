@@ -14,14 +14,10 @@ before_script:
 
 jobs:
   include:
-    - stage: lint
-      script:
-      - make lint
-    - stage: unit
-      script:
+    - script: make lint
+    - script:
       - make test
       - cp coverage.txt c.out
       - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
       - bash <(curl -s https://codecov.io/bash)
-    - stage: e2e
-      script: make test-e2e
+    - script: make test-e2e
