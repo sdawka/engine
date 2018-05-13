@@ -40,11 +40,3 @@ func nextColorIndex() int {
 func nextColor() string {
 	return palette[nextColorIndex()]
 }
-
-func resetPalette(colors []string) {
-	colorMutex.Lock()
-	defer colorMutex.Unlock()
-
-	palette = colors
-	colorIndex = 0
-}

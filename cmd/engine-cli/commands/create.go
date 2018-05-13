@@ -21,10 +21,7 @@ var createCmd = &cobra.Command{
 			return err
 		}
 		err = json.Unmarshal(data, cr)
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	},
 	Run: func(*cobra.Command, []string) {
 		cr := createGame()

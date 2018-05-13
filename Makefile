@@ -3,7 +3,7 @@ install:
 .PHONY: install
 
 run: install
-	engine
+	engine all
 .PHONY: run
 
 make run-game: install-cli

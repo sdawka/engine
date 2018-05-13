@@ -62,10 +62,14 @@ func loadGame() (*pb.Game, *frameHolder, error) {
 	}
 	s := &pb.StatusResponse{}
 	err = json.NewDecoder(resp.Body).Decode(s)
-	resp.Body.Close()
 	if err != nil {
 		fmt.Println("error while getting status", err)
 		return nil, nil, err
+	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		fmt.Println("error while closing body", err)
 	}
 
 	frames := &frameHolder{}
@@ -79,7 +83,12 @@ func loadGame() (*pb.Game, *frameHolder, error) {
 	}
 
 	go func() {
-		defer c.Close()
+		defer func() {
+			err := c.Close()
+			if err != nil {
+				log.Fatalf("failure to close websocket connection: %v", err)
+			}
+		}()
 
 		for {
 			mt, message, err := c.ReadMessage()
@@ -116,7 +125,7 @@ func replayGame() {
 		panic(err)
 	}
 
-	if err := termbox.Init(); err != nil {
+	if err = termbox.Init(); err != nil {
 		panic(err)
 	}
 	defer termbox.Close()
@@ -156,13 +165,13 @@ func replayGame() {
 				case termbox.KeyArrowLeft:
 					paused = true
 					frameIndex, currentFrame = moveFrameBackwards(frameIndex, frames)
-					if err := render(game, currentFrame); err != nil {
+					if err = render(game, currentFrame); err != nil {
 						panic(err)
 					}
 				case termbox.KeyArrowRight:
 					paused = true
 					frameIndex, currentFrame, done = moveFrameForwards(frameIndex, frames)
-					if err := render(game, currentFrame); err != nil {
+					if err = render(game, currentFrame); err != nil {
 						panic(err)
 					}
 				}
@@ -172,7 +181,7 @@ func replayGame() {
 			if paused {
 				continue
 			}
-			if err := render(game, currentFrame); err != nil {
+			if err = render(game, currentFrame); err != nil {
 				panic(err)
 			}
 			frameIndex, currentFrame, done = moveFrameForwards(frameIndex, frames)
@@ -182,7 +191,10 @@ func replayGame() {
 
 	if frameIndex >= frames.count() {
 		tbprint(0, 0, defaultColor, defaultColor, "Press any key to exit...")
-		termbox.Flush()
+		err = termbox.Flush()
+		if err != nil {
+			log.Fatalf("Error while flushing termbox: %v", err)
+		}
 		termbox.PollEvent()
 	}
 }

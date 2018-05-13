@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	log "github.com/sirupsen/logrus"
 )
 
 var openFileReader = fsOpenFileReader
@@ -24,7 +25,7 @@ type fsReader struct {
 }
 
 func fsOpenFileReader(dir string, id string) (reader, error) {
-	f, err := os.OpenFile(getFilePath(dir, id), os.O_RDONLY, 0644)
+	f, err := os.OpenFile(getFilePath(dir, id), os.O_RDONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,12 @@ func readArchiveHeader(dir string, id string) (*pb.Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
+	defer func() {
+		err = r.Close()
+		if err != nil {
+			log.WithError(err).Error("Error while closing file reader")
+		}
+	}()
 
 	info, _, err := readGameInfo(r)
 	if err != nil {
@@ -102,7 +108,12 @@ func readArchive(dir string, id string) (gameArchive, error) {
 	if err != nil {
 		return gameArchive{}, err
 	}
-	defer r.Close()
+	defer func() {
+		err = r.Close()
+		if err != nil {
+			log.WithError(err).Error("Error while closing reader")
+		}
+	}()
 
 	// Skip over game info line
 	game, moreLines, err := readGameInfo(r)

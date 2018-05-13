@@ -54,10 +54,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 				Info("ending game")
 			rules.NotifyGameEnd(resp.Game, nextFrame)
 			_, err := client.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
-			if err != nil {
-				return err
-			}
-			return nil
+			return err
 		}
 
 		lastFrame = nextFrame

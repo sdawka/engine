@@ -15,7 +15,7 @@ type writer interface {
 }
 
 func requireSaveDir(dir string) error {
-	return os.MkdirAll(dir, 0775)
+	return os.MkdirAll(dir, 0700)
 }
 
 func writeLine(w writer, data interface{}) error {
@@ -45,5 +45,5 @@ func appendOnlyFileWriter(dir string, id string, mustCreate bool) (writer, error
 	if mustCreate {
 		flags |= os.O_EXCL
 	}
-	return os.OpenFile(path, flags, 0644)
+	return os.OpenFile(path, flags, 0600)
 }

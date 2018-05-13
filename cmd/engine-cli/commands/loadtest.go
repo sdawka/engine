@@ -33,10 +33,7 @@ var loadTestCmd = &cobra.Command{
 			return err
 		}
 		err = json.Unmarshal(data, cr)
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	},
 	Run: func(*cobra.Command, []string) {
 		start := time.Now()
@@ -85,15 +82,12 @@ var updateFrequency = 300 * time.Millisecond
 
 func checkStatus(id string, updates chan<- statusUpdate) {
 	t := time.NewTicker(updateFrequency)
-	for {
-		select {
-		case <-t.C:
-			sr := getStatus(id)
-			updates <- statusUpdate{id: id, status: sr.Game.Status}
-			if sr.Game.Status == rules.GameStatusComplete || sr.Game.Status == rules.GameStatusError {
-				t.Stop()
-				return
-			}
+	for range t.C {
+		sr := getStatus(id)
+		updates <- statusUpdate{id: id, status: sr.Game.Status}
+		if sr.Game.Status == rules.GameStatusComplete || sr.Game.Status == rules.GameStatusError {
+			t.Stop()
+			return
 		}
 	}
 }
