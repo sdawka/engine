@@ -142,7 +142,7 @@ func writeError(w http.ResponseWriter, err error, statusCode int, msg string, fi
 func createGame(w http.ResponseWriter, r *http.Request, _ httprouter.Params, c pb.ControllerClient) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		writeError(w, err, http.StatusBadRequest, "Unable to read request body", log.Fields{})
+		writeError(w, err, http.StatusInternalServerError, "Unable to read request body", log.Fields{})
 		return
 	}
 	req := &pb.CreateRequest{}
