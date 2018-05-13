@@ -130,26 +130,26 @@ func gatherFrames(frames chan<- *pb.GameFrame, c pb.ControllerClient, id string)
 	close(frames)
 }
 
+func writeError(w http.ResponseWriter, err error, statusCode int, msg string, fields log.Fields) {
+	log.WithError(err).WithFields(fields).Error(msg)
+	w.WriteHeader(statusCode)
+	_, err = w.Write([]byte(msg + " " + err.Error()))
+	if err != nil {
+		log.WithError(err).Error("Unable to write error to stream")
+	}
+}
+
 func createGame(w http.ResponseWriter, r *http.Request, _ httprouter.Params, c pb.ControllerClient) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.WithError(err).Error("Unable to read request body")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusBadRequest, "Unable to read request body", log.Fields{})
 		return
 	}
 	req := &pb.CreateRequest{}
 
 	err = json.Unmarshal(body, req)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_, err = w.Write([]byte("Invalid JSON: " + err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusBadRequest, "Invalid JSON: ", log.Fields{})
 		return
 	}
 
@@ -158,23 +158,15 @@ func createGame(w http.ResponseWriter, r *http.Request, _ httprouter.Params, c p
 
 	resp, err := c.Create(ctx, req)
 	if err != nil {
-		log.WithError(err).Error("Error creating game")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error creating game", log.Fields{})
 		return
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		log.WithError(err).WithField("resp", resp).Error("Error serializing to JSON")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error serializing to JSON", log.Fields{
+			"resp": resp,
+		})
 		return
 	}
 	_, err = w.Write(j)
@@ -194,12 +186,9 @@ func startGame(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 	_, err := c.Start(ctx, req)
 	if err != nil {
-		log.WithError(err).WithField("req", req).Error("Error while calling controller start")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error while calling controller start", log.Fields{
+			"req": req,
+		})
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -216,23 +205,17 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 	resp, err := c.Status(ctx, req)
 	if err != nil {
-		log.WithError(err).WithField("req", req).Error("Error while calling controller status")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error while calling controller status", log.Fields{
+			"req": req,
+		})
 		return
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		log.WithError(err).WithField("resp", resp).Error("Error serializing response to JSON")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error serializing response to JSON", log.Fields{
+			"resp": resp,
+		})
 		return
 	}
 	_, err = w.Write(j)
@@ -256,23 +239,17 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	// TODO: use a context with timeout
 	resp, err := c.ListGameFrames(r.Context(), req)
 	if err != nil {
-		log.WithError(err).WithField("req", req).Error("Error while calling controller status")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error while calling controller status", log.Fields{
+			"resp": resp,
+		})
 		return
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		log.WithError(err).WithField("resp", resp).Error("Error serializing response to JSON")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(err.Error()))
-		if err != nil {
-			log.WithError(err).Error("Unable to write error to stream")
-		}
+		writeError(w, err, http.StatusInternalServerError, "Error serializing response to JSON", log.Fields{
+			"resp": resp,
+		})
 		return
 	}
 	_, err = w.Write(j)
