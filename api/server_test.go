@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )
@@ -16,10 +17,11 @@ import (
 type MockController struct {
 	pb.ControllerClient
 
-	Error          error
-	CreateResponse *pb.CreateResponse
-	StartResponse  *pb.StartResponse
-	StatusResponse *pb.StatusResponse
+	Error                  error
+	CreateResponse         *pb.CreateResponse
+	StartResponse          *pb.StartResponse
+	StatusResponse         *pb.StatusResponse
+	ListGameFramesResponse func() *pb.ListGameFramesResponse
 }
 
 func (mc *MockController) Create(ctx context.Context, req *pb.CreateRequest, opts ...grpc.CallOption) (*pb.CreateResponse, error) {
@@ -34,11 +36,18 @@ func (mc *MockController) Status(ctx context.Context, req *pb.StatusRequest, opt
 	return mc.StatusResponse, mc.Error
 }
 
+func (mc *MockController) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest, opts ...grpc.CallOption) (*pb.ListGameFramesResponse, error) {
+	return mc.ListGameFramesResponse(), mc.Error
+}
+
 func createAPIServer() (*Server, *MockController) {
 	var client = &MockController{
 		CreateResponse: &pb.CreateResponse{},
 		StartResponse:  &pb.StartResponse{},
 		StatusResponse: &pb.StatusResponse{},
+		ListGameFramesResponse: func() *pb.ListGameFramesResponse {
+			return &pb.ListGameFramesResponse{}
+		},
 	}
 	s := New(":1234", client)
 	return s, client
@@ -50,6 +59,9 @@ func createAPIServerWithError(err error) (*Server, *MockController) {
 		CreateResponse: &pb.CreateResponse{},
 		StartResponse:  &pb.StartResponse{},
 		StatusResponse: &pb.StatusResponse{},
+		ListGameFramesResponse: func() *pb.ListGameFramesResponse {
+			return &pb.ListGameFramesResponse{}
+		},
 	}
 	s := New(":1234", client)
 	return s, client
@@ -132,4 +144,52 @@ func TestStatus(t *testing.T) {
 
 func TestStatusHandlesErrors(t *testing.T) {
 	basicStatusTest(t, "12345", http.StatusInternalServerError, errors.New("fail"))
+}
+
+func TestGetFrames(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/games/abc_123/frames", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestGetFramesWithControllerError(t *testing.T) {
+	s, _ := createAPIServerWithError(errors.New("uh oh"))
+
+	req, _ := http.NewRequest("GET", "/games/abc_123/frames", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
+func TestGatherFrames(t *testing.T) {
+	_, mc := createAPIServer()
+	mc.StatusResponse = &pb.StatusResponse{
+		Game: &pb.Game{Status: rules.GameStatusComplete},
+	}
+	calls := 0
+	mc.ListGameFramesResponse = func() *pb.ListGameFramesResponse {
+		defer func() {
+			calls++
+		}()
+		if calls == 0 {
+			return &pb.ListGameFramesResponse{
+				Frames: []*pb.GameFrame{
+					&pb.GameFrame{},
+				},
+			}
+		}
+		return &pb.ListGameFramesResponse{}
+	}
+	frames := make(chan *pb.GameFrame)
+	go gatherFrames(frames, mc, "fake-id")
+	frameCount := 0
+	for range frames {
+		frameCount++
+	}
+	require.Equal(t, 1, frameCount)
 }
