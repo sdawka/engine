@@ -1,0 +1,7 @@
+{
+    "Cyclo": 20,
+    "Vendor": true,
+    "Exclude": [
+        ".pb.go"
+    ]
+}

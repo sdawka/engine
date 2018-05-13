@@ -23,6 +23,9 @@ test-e2e: install
 	go test -timeout 120s -race ./e2e -enable-e2e
 .PHONY: test-e2e
 
+lint:
+	gometalinter --config ./.gometalinter.json ./...
+
 proto:
 	docker run -it --rm -v $$PWD/controller/pb:/build/pb sendwithus/protoc \
 		-I /build/pb --gogo_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,plugins=grpc:/build/pb /build/pb/controller.proto
