@@ -25,6 +25,7 @@ test-e2e: install
 
 lint:
 	gometalinter --config ./.gometalinter.json ./...
+.PHONY: lint
 
 proto:
 	docker run -it --rm -v $$PWD/controller/pb:/build/pb sendwithus/protoc \

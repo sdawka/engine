@@ -12,6 +12,9 @@ before_script:
 
 jobs:
   include:
+    - stage: lint
+      script:
+      - make lint
     - stage: unit
       script:
       - make test
