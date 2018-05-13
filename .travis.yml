@@ -3,12 +3,14 @@ env:
     - CC_TEST_REPORTER_ID=7270ff0025c47f5c76e29b2e422f2c99615339a5abcfe0d31074b7818edf4054
 language: go
 go:
-  - "1.10.1"
+  - "1.10.2"
 go_import_path: github.com/battlesnakeio/engine
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
+  - go get -u github.com/alecthomas/gometalinter
+  - gometalinter --install
 
 jobs:
   include:
