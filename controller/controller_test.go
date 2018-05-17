@@ -7,14 +7,17 @@ import (
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
 	"github.com/stretchr/testify/require"
 )
 
 var client pb.ControllerClient
+var store Store
 
 func init() {
-	ctrl := New(InMemStore())
+	store = InMemStore()
+	ctrl := New(store)
 	go func() {
 		if err := ctrl.Serve(":0"); err != nil {
 			panic(err)
@@ -103,6 +106,9 @@ func TestController_GameCRUD(t *testing.T) {
 		_, err := client.EndGame(
 			pb.ContextWithLockToken(ctx, token), &pb.EndGameRequest{ID: gameID})
 		require.Nil(t, err)
+		g, err := store.GetGame(ctx, gameID)
+		require.NoError(t, err)
+		require.Equal(t, rules.GameStatusComplete, g.Status)
 	})
 }
 
