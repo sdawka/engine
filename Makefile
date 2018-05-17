@@ -3,7 +3,7 @@ install:
 .PHONY: install
 
 run: install
-	engine
+	engine all
 .PHONY: run
 
 make run-game: install-cli
@@ -22,6 +22,10 @@ test:
 test-e2e: install
 	go test -timeout 120s -race ./e2e -enable-e2e
 .PHONY: test-e2e
+
+lint:
+	gometalinter --config ./.gometalinter.json ./...
+.PHONY: lint
 
 proto:
 	docker run -it --rm -v $$PWD/controller/pb:/build/pb sendwithus/protoc \

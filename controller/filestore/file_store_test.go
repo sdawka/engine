@@ -7,9 +7,8 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/controller"
-	"github.com/battlesnakeio/engine/rules"
-
 	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
 	"github.com/stretchr/testify/require"
 )
 
@@ -135,7 +134,7 @@ func TestLockExpired(t *testing.T) {
 
 	token, err := fs.Lock(context.Background(), "asdf", "")
 	require.NoError(t, err)
-	token, err = fs.Lock(context.Background(), "asdf", token)
+	_, err = fs.Lock(context.Background(), "asdf", token)
 	require.NoError(t, err)
 }
 

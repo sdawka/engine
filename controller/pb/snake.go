@@ -12,22 +12,18 @@ func (s *Snake) Move(direction string) {
 		s.Body = append([]*Point{
 			{X: h.X, Y: h.Y - 1},
 		}, s.Body...)
-		break
 	case "down":
 		s.Body = append([]*Point{
 			{X: h.X, Y: h.Y + 1},
 		}, s.Body...)
-		break
 	case "left":
 		s.Body = append([]*Point{
 			{X: h.X - 1, Y: h.Y},
 		}, s.Body...)
-		break
 	case "right":
 		s.Body = append([]*Point{
 			{X: h.X + 1, Y: h.Y},
 		}, s.Body...)
-		break
 	default:
 		s.DefaultMove()
 	}

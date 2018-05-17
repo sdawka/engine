@@ -5,17 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 )
-
-func newClient(url string) *client {
-	return &client{
-		apiURL: url,
-		client: &http.Client{Timeout: 5 * time.Second},
-	}
-}
 
 type client struct {
 	apiURL string

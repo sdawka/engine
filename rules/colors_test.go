@@ -17,3 +17,11 @@ func TestNextColor(t *testing.T) {
 	// test wrap around
 	require.Equal(t, "red", nextColor())
 }
+
+func resetPalette(colors []string) {
+	colorMutex.Lock()
+	defer colorMutex.Unlock()
+
+	palette = colors
+	colorIndex = 0
+}

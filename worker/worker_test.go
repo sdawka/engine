@@ -65,10 +65,7 @@ func TestWorker_Run(t *testing.T) {
 				return fmt.Errorf("game expected %s found %s", gameID, id)
 			}
 			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
-			if err != nil {
-				return err
-			}
-			return nil
+			return err
 		}
 		err := w.run(ctx, 1)
 		require.Nil(t, err)
@@ -92,10 +89,7 @@ func TestWorker_Run(t *testing.T) {
 				}
 			}
 			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
-			if err != nil {
-				return err
-			}
-			return nil
+			return err
 		}
 		err := w.run(ctx, 1)
 		require.Nil(t, err)
@@ -145,10 +139,7 @@ func TestWorker_RunLoop(t *testing.T) {
 				}
 			}
 			_, err := cl.EndGame(c, &pb.EndGameRequest{ID: id})
-			if err != nil {
-				return err
-			}
-			return nil
+			return err
 		},
 	}
 

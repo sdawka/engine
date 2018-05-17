@@ -16,6 +16,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newClient(url string) *client {
+	return &client{
+		apiURL: url,
+		client: &http.Client{Timeout: 5 * time.Second},
+	}
+}
+
 var snakeURL string
 
 func init() {

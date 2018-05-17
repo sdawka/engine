@@ -12,6 +12,7 @@ import (
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/gogo/protobuf/proto"
 	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 func defaultDir() string {
@@ -59,7 +60,10 @@ type fileStore struct {
 // file. Should be called when game is complete.
 func (fs *fileStore) closeGame(id string) {
 	if w, ok := fs.writers[id]; ok {
-		w.Close()
+		err := w.Close()
+		if err != nil {
+			log.WithError(err).Error("Error while closing file writer")
+		}
 	}
 	delete(fs.games, id)
 	delete(fs.frames, id)
@@ -148,7 +152,7 @@ func (fs *fileStore) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.Ga
 	defer fs.lock.Unlock()
 
 	fs.games[g.ID] = g
-	if frames == nil || len(frames) == 0 {
+	if len(frames) == 0 {
 		fs.frames[g.ID] = []*pb.GameFrame{}
 		return nil
 	}

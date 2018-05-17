@@ -16,7 +16,10 @@ const (
 )
 
 func render(game *pb.Game, frame *pb.GameFrame) error {
-	termbox.Clear(defaultColor, defaultColor)
+	err := termbox.Clear(defaultColor, defaultColor)
+	if err != nil {
+		return err
+	}
 
 	var (
 		_, h   = termbox.Size()
