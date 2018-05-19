@@ -13,6 +13,9 @@ var rootCmd = &cobra.Command{
 	Use:     "engine",
 	Short:   "engine helps run games on the battlesnake game engine",
 	Version: version.Version,
+	Run: func(c *cobra.Command, args []string) {
+		server.RootCmd.Run(c, args)
+	},
 }
 
 var (
