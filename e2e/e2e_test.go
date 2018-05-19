@@ -101,7 +101,7 @@ func TestMain(m *testing.M) {
 		return
 	}
 
-	proc := exec.Command("engine", "all", "--chaos", "--backend", "file")
+	proc := exec.Command("engine", "all", "--chaos")
 	proc.Stdout = os.Stdout
 	proc.Stderr = os.Stderr
 
