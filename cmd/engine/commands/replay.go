@@ -93,7 +93,9 @@ func loadGame() (*pb.Game, *frameHolder, error) {
 		for {
 			mt, message, err := c.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				if !strings.Contains(err.Error(), "close 1000 (normal)") {
+					log.Println("read:", err)
+				}
 				return
 			}
 
@@ -137,8 +139,15 @@ func replayGame() {
 		}
 	}(eventQueue)
 
+	var currentFrame *pb.GameFrame
+	select {
+	case currentFrame = <-frames.initialFrame():
+		break
+	case <-time.After(100 * time.Millisecond):
+		log.Fatal("unable to find initial frame for game")
+	}
+
 	cycle := time.NewTicker(200 * time.Millisecond)
-	currentFrame := frames.get(0)
 	frameIndex := 0
 	paused := false
 	done := false

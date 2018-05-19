@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 
@@ -16,6 +17,9 @@ const (
 )
 
 func render(game *pb.Game, frame *pb.GameFrame) error {
+	if frame == nil {
+		return errors.New("received nil frame")
+	}
 	err := termbox.Clear(defaultColor, defaultColor)
 	if err != nil {
 		return err
