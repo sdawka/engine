@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func init() {
 	workerCmd.Flags().StringVarP(&controllerAddr, "controller-addr", "c", controllerAddr, "address of the controller")
 	workerCmd.Flags().DurationVarP(&workerPollInterval, "poll-interval", "p", workerPollInterval, "worker poll interval")
 	workerCmd.Flags().BoolVar(&workerChaos, "chaos", workerChaos, "introduce chaotic latency into the worker")
-	allCmd.Flags().AddFlagSet(workerCmd.Flags())
+	RootCmd.Flags().AddFlagSet(workerCmd.Flags())
 }
 
 // randTimeoutInterceptor provides a random amount of variance to all GRPC calls

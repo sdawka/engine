@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	"github.com/battlesnakeio/engine/controller/filestore"
@@ -18,7 +18,7 @@ func init() {
 	controllerCmd.Flags().StringVarP(&controllerListen, "listen", "l", controllerListen, "address for the controller to bind to")
 	controllerCmd.Flags().StringVarP(&controllerBackend, "backend", "b", controllerBackend, "controller backend, as one of: [inmem, file]")
 	controllerCmd.Flags().StringVarP(&controllerBackendArgs, "backend-args", "a", controllerBackendArgs, "options to pass to the backend being used")
-	allCmd.Flags().AddFlagSet(controllerCmd.Flags())
+	RootCmd.Flags().AddFlagSet(controllerCmd.Flags())
 }
 
 var controllerCmd = &cobra.Command{

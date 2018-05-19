@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -15,7 +15,7 @@ var (
 func init() {
 	apiCmd.Flags().StringVarP(&apiListen, "listen", "l", apiListen, "api address to listen on")
 	apiCmd.Flags().StringVarP(&controllerAddr, "controller-addr", "c", controllerAddr, "address of the controller")
-	allCmd.Flags().AddFlagSet(apiCmd.Flags())
+	RootCmd.Flags().AddFlagSet(apiCmd.Flags())
 }
 
 var apiCmd = &cobra.Command{

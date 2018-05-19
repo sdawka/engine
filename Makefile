@@ -3,17 +3,17 @@ install:
 .PHONY: install
 
 run: install
+<<<<<<< HEAD
 	engine all
+=======
+	engine server
+>>>>>>> a4b978fd9bbd4d525324394f1382881d89cc65f3
 .PHONY: run
 
-make run-game: install-cli
-	$(eval GAME_ID := $(shell engine-cli create -c ~/snake-config.json | jq '.ID'))
-	engine-cli run -g $(GAME_ID)
+run-game: install
+	$(eval GAME_ID := $(shell engine create -c ~/snake-config.json | jq '.ID'))
+	engine run -g $(GAME_ID)
 .PHONY: run-game
-
-install-cli:
-	go install github.com/battlesnakeio/engine/cmd/engine-cli
-.PHONY: install-cli
 
 test:
 	go test -timeout 20s -race -coverprofile coverage.txt -covermode=atomic ./...

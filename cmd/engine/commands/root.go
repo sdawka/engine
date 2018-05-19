@@ -4,22 +4,32 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/battlesnakeio/engine/cmd/engine/commands/server"
+	"github.com/battlesnakeio/engine/version"
 	"github.com/spf13/cobra"
 )
 
-var controllerAddr = "127.0.0.1:3004"
-
 var rootCmd = &cobra.Command{
-	Use:   "engine",
-	Short: "engine is the battlesnake game engine",
+	Use:     "engine",
+	Short:   "engine helps run games on the battlesnake game engine",
+	Version: version.Version,
 }
 
-// Execute runs the root command,
+var (
+	apiAddr string
+)
+
+// Execute runs the root command
 func Execute() {
-	rootCmd.AddCommand(apiCmd)
-	rootCmd.AddCommand(controllerCmd)
-	rootCmd.AddCommand(workerCmd)
-	rootCmd.AddCommand(allCmd)
+
+	rootCmd.Flags().StringVar(&apiAddr, "api-addr", "http://localhost:3005", "address of the api server")
+
+	rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(replayCmd)
+	rootCmd.AddCommand(loadTestCmd)
+	rootCmd.AddCommand(server.RootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
