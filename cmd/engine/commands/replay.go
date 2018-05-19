@@ -132,20 +132,8 @@ func replayGame() {
 	}
 	defer termbox.Close()
 
-	eventQueue := make(chan termbox.Event)
-	go func(ev chan<- termbox.Event) {
-		for {
-			ev <- termbox.PollEvent()
-		}
-	}(eventQueue)
-
-	var currentFrame *pb.GameFrame
-	select {
-	case currentFrame = <-frames.initialFrame():
-		break
-	case <-time.After(100 * time.Millisecond):
-		log.Fatal("unable to find initial frame for game")
-	}
+	eventQueue := setupEventQueue()
+	currentFrame := getInitialFrame(frames)
 
 	cycle := time.NewTicker(200 * time.Millisecond)
 	frameIndex := 0
@@ -206,4 +194,25 @@ func replayGame() {
 		}
 		termbox.PollEvent()
 	}
+}
+
+func setupEventQueue() <-chan termbox.Event {
+	eventQueue := make(chan termbox.Event)
+	go func(ev chan<- termbox.Event) {
+		for {
+			ev <- termbox.PollEvent()
+		}
+	}(eventQueue)
+	return eventQueue
+}
+
+func getInitialFrame(frames *frameHolder) *pb.GameFrame {
+	var currentFrame *pb.GameFrame
+	select {
+	case currentFrame = <-frames.initialFrame():
+		break
+	case <-time.After(100 * time.Millisecond):
+		log.Fatal("unable to find initial frame for game")
+	}
+	return currentFrame
 }
