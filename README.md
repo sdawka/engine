@@ -1,6 +1,8 @@
 # Battlesnake Engine
 
 [![Build Status](https://travis-ci.com/battlesnakeio/engine.svg?branch=master)](https://travis-ci.com/battlesnakeio/engine)
+[![Maintainability](https://api.codeclimate.com/v1/badges/66e1d3494b5af60ceee5/maintainability)](https://codeclimate.com/github/battlesnakeio/engine/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/66e1d3494b5af60ceee5/test_coverage)](https://codeclimate.com/github/battlesnakeio/engine/test_coverage)
 
 API and game logic for Battlesnake.
 
