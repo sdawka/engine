@@ -3,11 +3,7 @@ install:
 .PHONY: install
 
 run: install
-<<<<<<< HEAD
-	engine all
-=======
 	engine server
->>>>>>> a4b978fd9bbd4d525324394f1382881d89cc65f3
 .PHONY: run
 
 run-game: install
