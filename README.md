@@ -1,5 +1,7 @@
 # Battlesnake Engine
 
+[![Build Status](https://travis-ci.com/battlesnakeio/engine.svg?branch=master)](https://travis-ci.com/battlesnakeio/engine)
+
 API and game logic for Battlesnake.
 
 ---
