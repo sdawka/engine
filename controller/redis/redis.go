@@ -88,7 +88,7 @@ func (rs *Store) Unlock(ctx context.Context, key, token string) error {
 		return controller.ErrNotFound
 	}
 
-	r, err := UnlockCmd.Run(rs.client, []string{gameLockKey(key)}, token).Result()
+	r, err := unlockCmd.Run(rs.client, []string{gameLockKey(key)}, token).Result()
 	if err != nil {
 		return errors.Wrap(err, "unexpected redis error during unlock")
 	}
@@ -104,7 +104,7 @@ func (rs *Store) Unlock(ctx context.Context, key, token string) error {
 // PopGameID returns a new game that is unlocked and running. Workers call
 // this method through the controller to find games to process.
 func (rs *Store) PopGameID(c context.Context) (string, error) {
-	r, err := FindUnlockedGameCmd.Run(rs.client, []string{}).Result()
+	r, err := findUnlockedGameCmd.Run(rs.client, []string{}).Result()
 	if err != nil {
 		return "", errors.Wrap(err, "unexpected redis exception while popping game")
 	}
@@ -249,7 +249,7 @@ func (rs *Store) GetGame(c context.Context, id string) (*pb.Game, error) {
 	return &game, nil
 }
 
-var UnlockCmd = redis.NewScript(`
+var unlockCmd = redis.NewScript(`
 	if redis.call("GET", KEYS[1]) == ARGV[1] then
 		redis.call("DEL", KEYS[1])
 		return true
@@ -257,7 +257,7 @@ var UnlockCmd = redis.NewScript(`
 	return false
 `)
 
-var FindUnlockedGameCmd = redis.NewScript(fmt.Sprintf(`
+var findUnlockedGameCmd = redis.NewScript(fmt.Sprintf(`
 	local cursor = "0"
 	repeat
 		local result = redis.call("SCAN", cursor, "match", "game:*:state")
