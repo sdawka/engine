@@ -1,4 +1,4 @@
-package redisstore
+package redis
 
 import (
 	"context"
@@ -177,8 +177,8 @@ func TestPushGameFrame(t *testing.T) {
 	assert.Equal(t, controller.ErrNotFound, err)
 }
 
-func storeOrFail(t *testing.T) *RedisStore {
-	store, err := NewRedisStore("127.0.0.1:6379")
+func storeOrFail(t *testing.T) *Store {
+	store, err := NewStore("127.0.0.1:6379")
 	assert.NoError(t, err)
 	return store
 }
