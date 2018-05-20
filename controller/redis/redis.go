@@ -33,6 +33,11 @@ func NewStore(connectURL string) (*Store, error) {
 	return &Store{client: client}, nil
 }
 
+// Close closes the underlying redis client. see: github.com/go-redis/redis/Client.go
+func (rs *Store) Close() error {
+	return rs.client.Close()
+}
+
 // Lock will lock a specific game, returning a token that must be used to
 // write frames to the game.
 func (rs *Store) Lock(ctx context.Context, key, token string) (string, error) {

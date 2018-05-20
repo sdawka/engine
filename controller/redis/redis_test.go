@@ -2,16 +2,41 @@ package redis
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"testing"
 
+	"github.com/alicebob/miniredis"
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
 
+var store *Store
+
+func TestMain(m *testing.M) {
+	// Setup server
+	server := miniredis.NewMiniRedis()
+	err := server.StartAddr("127.0.0.1:9736")
+	if err != nil {
+		fmt.Println("unable to start local redis instance")
+		os.Exit(1)
+	}
+
+	// Setup store
+	s, err := NewStore(fmt.Sprintf("redis://%s", server.Addr()))
+	if err != nil {
+		fmt.Println("unable to connect redis store")
+		os.Exit(1)
+	}
+	store = s
+	retCode := m.Run()
+	server.Close()
+	os.Exit(retCode)
+}
+
 func TestLock(t *testing.T) {
-	store := storeOrFail(t)
 	gameKey := uuid.NewV4().String()
 
 	// No previous lock
@@ -33,7 +58,7 @@ func TestLock(t *testing.T) {
 // Unlock will unlock a game if it is locked and the token used to lock it
 // is correct.
 func TestUnlock(t *testing.T) {
-	store := storeOrFail(t)
+
 	gameKey := uuid.NewV4().String()
 
 	// No previous lock
@@ -52,7 +77,6 @@ func TestUnlock(t *testing.T) {
 // PopGameID returns a new game that is unlocked and running. Workers call
 // this method through the controller to find games to process.
 func TestPopGameID(t *testing.T) {
-	store := storeOrFail(t)
 
 	// Empty state
 	gameID, err := store.PopGameID(context.Background())
@@ -84,7 +108,6 @@ func TestPopGameID(t *testing.T) {
 // SetGameStatus is used to set a specific game status. This operation
 // should be atomic.
 func TestSetGameStatus(t *testing.T) {
-	store := storeOrFail(t)
 
 	// Add a game
 	game := &pb.Game{
@@ -106,7 +129,6 @@ func TestSetGameStatus(t *testing.T) {
 
 // Test Create/Get games
 func TestCreateGame(t *testing.T) {
-	store := storeOrFail(t)
 
 	// Iterate over each game case and ensure they persist correctly
 	for _, gameCase := range gameCases {
@@ -122,7 +144,7 @@ func TestCreateGame(t *testing.T) {
 
 // Tests PushGameFrame and ListGameFrames
 func TestPushGameFrame(t *testing.T) {
-	store := storeOrFail(t)
+
 	game := &pb.Game{ID: uuid.NewV4().String()}
 	err := store.CreateGame(context.Background(), game, nil)
 	assert.NoError(t, err)
@@ -175,12 +197,6 @@ func TestPushGameFrame(t *testing.T) {
 	_, err = store.ListGameFrames(context.Background(), game.ID, 10, 0)
 	assert.Error(t, err)
 	assert.Equal(t, controller.ErrNotFound, err)
-}
-
-func storeOrFail(t *testing.T) *Store {
-	store, err := NewStore("127.0.0.1:6379")
-	assert.NoError(t, err)
-	return store
 }
 
 type testCase struct {
