@@ -28,11 +28,11 @@ type clientHandle func(http.ResponseWriter, *http.Request, httprouter.Params, pb
 // New creates a new api server
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
-	router.POST("/games", newClientHandle(c, createGame))
-	router.POST("/games/:id/start", newClientHandle(c, startGame))
-	router.GET("/games/:id", newClientHandle(c, getStatus))
-	router.GET("/games/:id/frames", newClientHandle(c, getFrames))
-	router.GET("/socket/:id", newClientHandle(c, framesSocket))
+	router.POST("/games", logging(newClientHandle(c, createGame)))
+	router.POST("/games/:id/start", logging(newClientHandle(c, startGame)))
+	router.GET("/games/:id", logging(newClientHandle(c, getStatus)))
+	router.GET("/games/:id/frames", logging(newClientHandle(c, getFrames)))
+	router.GET("/socket/:id", logging(newClientHandle(c, framesSocket)))
 
 	handler := cors.Default().Handler(router)
 
@@ -41,6 +41,17 @@ func New(addr string, c pb.ControllerClient) *Server {
 			Addr:    addr,
 			Handler: handler,
 		},
+	}
+}
+
+func logging(h httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		start := time.Now()
+		h(w, r, p)
+		log.WithFields(log.Fields{
+			"duration": time.Since(start),
+			"url":      r.URL.String(),
+		}).Info("API Call")
 	}
 }
 

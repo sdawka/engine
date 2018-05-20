@@ -6,10 +6,12 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -174,10 +176,22 @@ func (s *Server) Serve(listen string) error {
 		return err
 	}
 	s.port = lis.Addr().(*net.TCPAddr).Port
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(grpc.UnaryInterceptor(loggingInterceptor))
 	pb.RegisterControllerServer(srv, s)
 	close(s.started)
 	return srv.Serve(lis)
+}
+
+func loggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	start := time.Now()
+	resp, err := handler(ctx, req)
+	if info.FullMethod != "/pb.Controller/Pop" {
+		log.WithFields(log.Fields{
+			"duration": time.Since(start),
+			"method":   info.FullMethod,
+		}).Info("controller rpc")
+	}
+	return resp, err
 }
 
 // DialAddress will return a localhost address to reach the server. This is
