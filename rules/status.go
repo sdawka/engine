@@ -1,5 +1,6 @@
 package rules
 
+// GameStatus current status of a game
 type GameStatus string
 
 var (
