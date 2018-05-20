@@ -15,27 +15,6 @@ import (
 
 var store *Store
 
-func TestMain(m *testing.M) {
-	// Setup server
-	server := miniredis.NewMiniRedis()
-	err := server.StartAddr("127.0.0.1:9736")
-	if err != nil {
-		fmt.Println("unable to start local redis instance")
-		os.Exit(1)
-	}
-
-	// Setup store
-	s, err := NewStore(fmt.Sprintf("redis://%s", server.Addr()))
-	if err != nil {
-		fmt.Println("unable to connect redis store")
-		os.Exit(1)
-	}
-	store = s
-	retCode := m.Run()
-	server.Close()
-	os.Exit(retCode)
-}
-
 func TestLock(t *testing.T) {
 	gameKey := uuid.NewV4().String()
 
@@ -66,7 +45,8 @@ func TestUnlock(t *testing.T) {
 	assert.NoError(t, err, "this should be a new lock")
 	assert.NotZero(t, tkn, "expect a reasonable token string back")
 
-	store.Unlock(context.Background(), gameKey, tkn)
+	err = store.Unlock(context.Background(), gameKey, tkn)
+	assert.NoError(t, err)
 
 	// No previous lock again (unlocked)
 	tkn, err = store.Lock(context.Background(), gameKey, "")
@@ -93,16 +73,16 @@ func TestPopGameID(t *testing.T) {
 	// Pop our game out
 	poppedID, err := store.PopGameID(context.Background())
 	assert.NoError(t, err)
-	assert.Equal(t, gameID, poppedID, "1 game in store, should pop that one")
+	assert.Equal(t, game.ID, poppedID, "1 game in store, should pop that one")
 
 	// Lock it
 	_, err = store.Lock(context.Background(), game.ID, "")
 	assert.NoError(t, err)
 
 	// no unlocked games left
-	gameID, err = store.PopGameID(context.Background())
+	poppedID, err = store.PopGameID(context.Background())
 	assert.NoError(t, err, "no error for empty unlocked games")
-	assert.Zero(t, gameID, "no game should be returned when empty unlocked games")
+	assert.Zero(t, poppedID, "no game should be returned when empty unlocked games")
 }
 
 // SetGameStatus is used to set a specific game status. This operation
@@ -159,7 +139,7 @@ func TestPushGameFrame(t *testing.T) {
 	assert.NoError(t, err)
 	frames, err = store.ListGameFrames(context.Background(), game.ID, 10, 0)
 	assert.NoError(t, err)
-	assert.Contains(t, testFrames[0], frames)
+	assert.Contains(t, frames, testFrames[0])
 	assert.Equal(t, 1, len(frames), "only 1 frame should be present")
 
 	// remaining frames
@@ -171,14 +151,17 @@ func TestPushGameFrame(t *testing.T) {
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, frames, testFrames)
 
-	// smaller limit
-	frames, err = store.ListGameFrames(context.Background(), game.ID, 2, 0)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(frames))
+	// a few different limits
+	for i := 1; i <= 3; i++ {
+		frames, err = store.ListGameFrames(context.Background(), game.ID, i, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, i, len(frames))
+	}
 
 	// offset
 	frames, err = store.ListGameFrames(context.Background(), game.ID, 2, 1)
 	assert.NoError(t, err)
+	assert.Equal(t, 2, len(frames), "expecting 2 frames")
 	for _, f := range []*pb.GameFrame{testFrames[1], testFrames[2]} {
 		assert.Contains(t, frames, f, "the frames should match the test frames, so offset by 1 and limit 2 should mean 2nd and 3rd frames")
 	}
@@ -186,17 +169,38 @@ func TestPushGameFrame(t *testing.T) {
 	// negative offset
 	frames, err = store.ListGameFrames(context.Background(), game.ID, 1, -1)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, len(frames), "should only be 1 game")
-	assert.Equal(t, testFrames[3], frames[0])
+	assert.Equal(t, 1, len(frames), "should only be 1 frame")
+	assert.Equal(t, testFrames[2], frames[0])
 
 	// bigger limit
 	_, err = store.ListGameFrames(context.Background(), game.ID, 1000000000, 0)
 	assert.NoError(t, err)
 
 	// No such game
-	_, err = store.ListGameFrames(context.Background(), game.ID, 10, 0)
-	assert.Error(t, err)
-	assert.Equal(t, controller.ErrNotFound, err)
+	frames, err = store.ListGameFrames(context.Background(), uuid.NewV4().String(), 10, 0)
+	assert.NoError(t, err)
+	assert.Zero(t, frames)
+}
+
+func TestMain(m *testing.M) {
+	// Setup server
+	server := miniredis.NewMiniRedis()
+	err := server.StartAddr("127.0.0.1:9736")
+	if err != nil {
+		fmt.Println("unable to start local redis instance")
+		os.Exit(1)
+	}
+
+	// Setup store
+	s, err := NewStore(fmt.Sprintf("redis://%s", server.Addr()))
+	if err != nil {
+		fmt.Println("unable to connect redis store")
+		os.Exit(1)
+	}
+	store = s
+	retCode := m.Run()
+	server.Close()
+	os.Exit(retCode)
 }
 
 type testCase struct {

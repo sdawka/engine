@@ -102,6 +102,12 @@
   revision = "3e24a7b6661e09b87a9f49d693034219f81602fa"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -118,12 +124,6 @@
   packages = ["."]
   revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
   version = "v1.2.0"
-
-[[projects]]
-  name = "github.com/sendwithus/errors"
-  packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -252,6 +252,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "98666375ea68f07a845b07c08b37492bd87afa5000df5e510717fa3c6fd5a30f"
+  inputs-digest = "4a63d1037ad8c703f16ef0ab0ee5a3c98bd8d1ad239570f72a47fce9d94f1e9b"
   solver-name = "gps-cdcl"
   solver-version = 1
