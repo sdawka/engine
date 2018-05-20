@@ -136,7 +136,7 @@ func (rs *Store) CreateGame(c context.Context, game *pb.Game, frames []*pb.GameF
 	pipe := rs.client.TxPipeline()
 	pipe.HSet(gk, "state", gameBytes)
 	pipe.HSet(gk, "status", game.Status)
-	pipe.SAdd(allGamesKey, game.ID)
+	pipe.HSet(gk, "id", game.ID)
 	pipe.Expire(gk, DefaultDataTTL)
 
 	// Marshal the frames
@@ -255,23 +255,29 @@ var UnlockCmd = redis.NewScript(`
 `)
 
 var FindUnlockedGameCmd = redis.NewScript(fmt.Sprintf(`
-	local ids=redis.call("SMEMBERS", "%s")
-	for _,key in ipairs(ids) do
-		if redis.call("EXISTS", "game:" .. key .. ":lock") == 0 then
-			if redis.call("HGET", "game:" .. key, "status") == "%s" then
-				return key
+	local cursor = "0"
+	repeat
+		local result = redis.call("SCAN", cursor, "match", "game:*:state")
+		cursor = result[1];
+		keys = result[2];
+		for _, key in ipairs(keys) do
+			local id = redis.call("HGET", key, "id")
+			if redis.call("EXISTS", "game:" .. id .. ":locks") == 0 then
+				if redis.call("HGET", key, "status") == "%s" then
+					return id
+				end
 			end
 		end
-	end
+		if cursor == "0" then
+        	done = true;
+    	end
+	until done
 	return ""
-`, allGamesKey, rules.GameStatusRunning))
-
-// allGamesKey is the key used to address the set of all games
-const allGamesKey = "games"
+`, rules.GameStatusRunning))
 
 // generates the redis key for a game
 func gameKey(gameID string) string {
-	return fmt.Sprintf("game:%s", gameID)
+	return fmt.Sprintf("game:%s:state", gameID)
 }
 
 // generates the redis key for game frames
@@ -281,5 +287,5 @@ func framesKey(gameID string) string {
 
 // generates the redis key for game lock state
 func gameLockKey(gameID string) string {
-	return fmt.Sprintf("game:%s:lock", gameID)
+	return fmt.Sprintf("game:%s:locks", gameID)
 }
