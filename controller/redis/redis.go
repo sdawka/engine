@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/battlesnakeio/engine/rules"
+
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
@@ -14,9 +16,14 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// Store is an implementation of the controller.Store interface
 type Store struct {
-	client *redis.Client
+	client  *redis.Client
+	dataTTL time.Duration
 }
+
+// DefaultDataTTL is how long data will be kept before redis evicts it
+const DefaultDataTTL = time.Hour * 30
 
 // NewStore will create a new instance of an underlying redis client, so it should not be re-created across "threads"
 // - connectURL see: github.com/go-redis/redis/options.go for URL specifics
@@ -36,7 +43,7 @@ func NewStore(connectURL string) (*Store, error) {
 		return nil, errors.Wrap(err, "unable to connect ")
 	}
 
-	return &Store{client: client}, nil
+	return &Store{client: client, dataTTL: DefaultDataTTL}, nil
 }
 
 // Close closes the underlying redis client. see: github.com/go-redis/redis/Client.go
@@ -93,15 +100,20 @@ func (rs *Store) Unlock(ctx context.Context, key, token string) error {
 
 // PopGameID returns a new game that is unlocked and running. Workers call
 // this method through the controller to find games to process.
-func (rs *Store) PopGameID(context.Context) (string, error) {
-	return "", nil
+func (rs *Store) PopGameID(c context.Context) (string, error) {
+	r, err := FindUnlockedGameCmd.Run(rs.client, []string{}).Result()
+	if err != nil {
+		return "", errors.Wrap(err, "unexpected redis exception while popping game")
+	}
+
+	return fmt.Sprint(r), nil
 }
 
 // SetGameStatus is used to set a specific game status. This operation
 // should be atomic.
 func (rs *Store) SetGameStatus(c context.Context, id, status string) error {
-	key := gameStatusKey(id)
-	err := rs.client.Set(key, status, 0).Err()
+	key := gameKey(id)
+	err := rs.client.HSet(key, "status", status).Err()
 	if err != nil {
 		return errors.Wrap(err, "unexpected redis error when setting game status")
 	}
@@ -111,30 +123,37 @@ func (rs *Store) SetGameStatus(c context.Context, id, status string) error {
 
 // CreateGame will insert a game with the default game frames.
 func (rs *Store) CreateGame(c context.Context, game *pb.Game, frames []*pb.GameFrame) error {
+	if game.ID == "" {
+		return fmt.Errorf("game must have a non-zero ID")
+	}
+
 	// Marshal the game
 	gk := gameKey(game.ID)
 	gameBytes, err := proto.Marshal(game)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal game state")
 	}
-	gsk := gameStatusKey(game.ID)
 	pipe := rs.client.TxPipeline()
-	pipe.Set(gk, gameBytes, 0)
-	pipe.Set(gsk, game.Status, 0)
+	pipe.HSet(gk, "state", gameBytes)
+	pipe.HSet(gk, "status", game.Status)
+	pipe.SAdd(allGamesKey, game.ID)
+	pipe.Expire(gk, DefaultDataTTL)
 
 	// Marshal the frames
 	if len(frames) > 0 {
 		framesKey := framesKey(game.ID)
-		frameData := make([][]byte, len(frames))
+		frameData := []interface{}{}
 
-		for i, f := range frames {
+		for _, f := range frames {
 			data, err := proto.Marshal(f)
 			if err != nil {
 				return errors.Wrap(err, "unable to marshal frame")
 			}
-			frameData[i] = data
+			frameData = append(frameData, data)
 		}
 		pipe.LPush(framesKey, frameData...)
+		// Frames will expire the same time as the game
+		pipe.Expire(framesKey, DefaultDataTTL)
 	}
 
 	// Execute the entire set of operations in one big transactional pipeline
@@ -152,6 +171,7 @@ func (rs *Store) PushGameFrame(c context.Context, id string, t *pb.GameFrame) er
 	if err != nil {
 		return errors.Wrap(err, "frame marshalling error")
 	}
+	// Do not update expiry here, we don't want the frames kept longer than the corresponding game
 	numAdded, err := rs.client.RPush(framesKey(id), frameBytes).Result()
 	if err != nil {
 		return errors.Wrap(err, "unexpected redis error")
@@ -206,22 +226,22 @@ func (rs *Store) ListGameFrames(c context.Context, id string, limit, offset int)
 func (rs *Store) GetGame(c context.Context, id string) (*pb.Game, error) {
 	// Marshal the game
 	gk := gameKey(id)
-	gsk := gameStatusKey(id)
 
 	pipe := rs.client.TxPipeline()
-	gameData, _ := rs.client.Get(gk).Bytes()
-	gameStatus := rs.client.Get(gsk).Val()
+	gameData := pipe.HGet(gk, "state")
+	gameStatus := pipe.HGet(gk, "status")
 
 	_, err := pipe.Exec()
 	if err != nil {
 		return nil, errors.Wrap(err, "unexpected redis error")
 	}
 	var game pb.Game
-	err = proto.Unmarshal(gameData, &game)
+	gameBytes, _ := gameData.Bytes()
+	err = proto.Unmarshal(gameBytes, &game)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to unmarshal game data")
 	}
-	game.Status = gameStatus
+	game.Status = gameStatus.Val()
 
 	return &game, nil
 }
@@ -234,14 +254,24 @@ var UnlockCmd = redis.NewScript(`
 	return false
 `)
 
-// generates the redis key for a game
-func gameKey(gameID string) string {
-	return fmt.Sprintf("games:%s:state", gameID)
-}
+var FindUnlockedGameCmd = redis.NewScript(fmt.Sprintf(`
+	local ids=redis.call("SMEMBERS", "%s")
+	for _,key in ipairs(ids) do
+		if redis.call("EXISTS", "game:" .. key .. ":lock") == 0 then
+			if redis.call("HGET", "game:" .. key, "status") == "%s" then
+				return key
+			end
+		end
+	end
+	return ""
+`, allGamesKey, rules.GameStatusRunning))
+
+// allGamesKey is the key used to address the set of all games
+const allGamesKey = "games"
 
 // generates the redis key for a game
-func gameStatusKey(gameID string) string {
-	return fmt.Sprintf("game:%s:status", gameID)
+func gameKey(gameID string) string {
+	return fmt.Sprintf("game:%s", gameID)
 }
 
 // generates the redis key for game frames

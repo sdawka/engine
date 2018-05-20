@@ -6,6 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/battlesnakeio/engine/rules"
+
 	"github.com/alicebob/miniredis"
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -65,7 +67,8 @@ func TestPopGameID(t *testing.T) {
 
 	// Add a game
 	game := &pb.Game{
-		ID: uuid.NewV4().String(),
+		ID:     uuid.NewV4().String(),
+		Status: rules.GameStatusRunning,
 	}
 	err = store.CreateGame(context.Background(), game, nil)
 	assert.NoError(t, err, "no error for creating games")
