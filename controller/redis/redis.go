@@ -100,11 +100,49 @@ func (rs *Store) PopGameID(context.Context) (string, error) {
 // SetGameStatus is used to set a specific game status. This operation
 // should be atomic.
 func (rs *Store) SetGameStatus(c context.Context, id, status string) error {
+	key := gameStatusKey(id)
+	err := rs.client.Set(key, status, 0).Err()
+	if err != nil {
+		return errors.Wrap(err, "unexpected redis error when setting game status")
+	}
+
 	return nil
 }
 
 // CreateGame will insert a game with the default game frames.
-func (rs *Store) CreateGame(context.Context, *pb.Game, []*pb.GameFrame) error {
+func (rs *Store) CreateGame(c context.Context, game *pb.Game, frames []*pb.GameFrame) error {
+	// Marshal the game
+	gk := gameKey(game.ID)
+	gameBytes, err := proto.Marshal(game)
+	if err != nil {
+		return errors.Wrap(err, "unable to marshal game state")
+	}
+	gsk := gameStatusKey(game.ID)
+	pipe := rs.client.TxPipeline()
+	pipe.Set(gk, gameBytes, 0)
+	pipe.Set(gsk, game.Status, 0)
+
+	// Marshal the frames
+	if len(frames) > 0 {
+		framesKey := framesKey(game.ID)
+		frameData := make([][]byte, len(frames))
+
+		for i, f := range frames {
+			data, err := proto.Marshal(f)
+			if err != nil {
+				return errors.Wrap(err, "unable to marshal frame")
+			}
+			frameData[i] = data
+		}
+		pipe.LPush(framesKey, frameData...)
+	}
+
+	// Execute the entire set of operations in one big transactional pipeline
+	_, err = pipe.Exec()
+	if err != nil {
+		return errors.Wrap(err, "unexpected redis error while saving game state")
+	}
+
 	return nil
 }
 
@@ -165,8 +203,27 @@ func (rs *Store) ListGameFrames(c context.Context, id string, limit, offset int)
 }
 
 // GetGame will fetch the game.
-func (rs *Store) GetGame(context.Context, string) (*pb.Game, error) {
-	return nil, nil
+func (rs *Store) GetGame(c context.Context, id string) (*pb.Game, error) {
+	// Marshal the game
+	gk := gameKey(id)
+	gsk := gameStatusKey(id)
+
+	pipe := rs.client.TxPipeline()
+	gameData, _ := rs.client.Get(gk).Bytes()
+	gameStatus := rs.client.Get(gsk).Val()
+
+	_, err := pipe.Exec()
+	if err != nil {
+		return nil, errors.Wrap(err, "unexpected redis error")
+	}
+	var game pb.Game
+	err = proto.Unmarshal(gameData, &game)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to unmarshal game data")
+	}
+	game.Status = gameStatus
+
+	return &game, nil
 }
 
 var UnlockCmd = redis.NewScript(`
@@ -182,12 +239,17 @@ func gameKey(gameID string) string {
 	return fmt.Sprintf("games:%s:state", gameID)
 }
 
+// generates the redis key for a game
+func gameStatusKey(gameID string) string {
+	return fmt.Sprintf("game:%s:status", gameID)
+}
+
 // generates the redis key for game frames
 func framesKey(gameID string) string {
-	return fmt.Sprintf("games:%s:frames", gameID)
+	return fmt.Sprintf("game:%s:frames", gameID)
 }
 
 // generates the redis key for game lock state
 func gameLockKey(gameID string) string {
-	return fmt.Sprintf("games:%s:lock", gameID)
+	return fmt.Sprintf("game:%s:lock", gameID)
 }

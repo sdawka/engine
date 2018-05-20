@@ -199,6 +199,7 @@ func TestMain(m *testing.M) {
 	}
 	store = s
 	retCode := m.Run()
+	store.Close()
 	server.Close()
 	os.Exit(retCode)
 }
@@ -260,13 +261,3 @@ var testFrames = []*pb.GameFrame{
 		},
 	},
 }
-
-/*
-ID     string   `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	Name   string   `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
-	URL    string   `protobuf:"bytes,3,opt,name=URL,proto3" json:"URL,omitempty"`
-	Body   []*Point `protobuf:"bytes,4,rep,name=Body" json:"Body,omitempty"`
-	Health int64    `protobuf:"varint,5,opt,name=Health,proto3" json:"Health,omitempty"`
-	Death  *Death   `protobuf:"bytes,6,opt,name=Death" json:"Death,omitempty"`
-	Color  string   `protobuf:"bytes,7,opt,name=Color,proto3" json:"Color,omitempty"`
-*/
