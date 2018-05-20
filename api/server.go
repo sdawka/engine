@@ -130,7 +130,7 @@ func gatherFrames(frames chan<- *pb.GameFrame, c pb.ControllerClient, id string)
 				break
 			}
 
-			if sg.Game.Status != rules.GameStatusRunning {
+			if sg.Game.Status != string(rules.GameStatusRunning) {
 				cancel()
 				break
 			}

@@ -169,7 +169,7 @@ func TestGetFramesWithControllerError(t *testing.T) {
 func TestGatherFrames(t *testing.T) {
 	_, mc := createAPIServer()
 	mc.StatusResponse = &pb.StatusResponse{
-		Game: &pb.Game{Status: rules.GameStatusComplete},
+		Game: &pb.Game{Status: string(rules.GameStatusComplete)},
 	}
 	calls := 0
 	mc.ListGameFramesResponse = func() *pb.ListGameFramesResponse {

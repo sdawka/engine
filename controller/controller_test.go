@@ -108,7 +108,7 @@ func TestController_GameCRUD(t *testing.T) {
 		require.Nil(t, err)
 		g, err := store.GetGame(ctx, gameID)
 		require.NoError(t, err)
-		require.Equal(t, rules.GameStatusComplete, g.Status)
+		require.Equal(t, rules.GameStatusComplete, rules.GameStatus(g.Status))
 	})
 }
 

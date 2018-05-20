@@ -36,7 +36,7 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 		ID:           id,
 		Width:        req.Width,
 		Height:       req.Height,
-		Status:       GameStatusStopped,
+		Status:       string(GameStatusStopped),
 		SnakeTimeout: 1000, // TODO: make this configurable
 		TurnTimeout:  200,  // TODO: make this configurable
 		Mode:         string(GameModeMultiPlayer),

@@ -1,12 +1,15 @@
 package rules
 
+// GameStatus current status of a game
+type GameStatus string
+
 var (
 	// GameStatusStopped represents a stopped game
-	GameStatusStopped = "stopped"
+	GameStatusStopped GameStatus = "stopped"
 	// GameStatusRunning represents a running game
-	GameStatusRunning = "running"
+	GameStatusRunning GameStatus = "running"
 	// GameStatusError represents a game that ended because of an error
-	GameStatusError = "error"
+	GameStatusError GameStatus = "error"
 	// GameStatusComplete represents a game that is done
-	GameStatusComplete = "complete"
+	GameStatusComplete GameStatus = "complete"
 )

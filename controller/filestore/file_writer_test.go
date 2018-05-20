@@ -34,7 +34,7 @@ func (w *mockWriter) Close() error {
 func basicGame() *pb.Game {
 	return &pb.Game{
 		ID:           "myid",
-		Status:       rules.GameStatusRunning,
+		Status:       string(rules.GameStatusRunning),
 		Width:        10,
 		Height:       15,
 		SnakeTimeout: 200,
