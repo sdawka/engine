@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var store *Store
+var store controller.Store
 
 func TestLock(t *testing.T) {
 	gameKey := uuid.NewV4().String()
@@ -68,7 +68,7 @@ func TestPopGameID(t *testing.T) {
 	// Add a game
 	game := &pb.Game{
 		ID:     uuid.NewV4().String(),
-		Status: rules.GameStatusRunning,
+		Status: string(rules.GameStatusRunning),
 	}
 	err = store.CreateGame(context.Background(), game, nil)
 	assert.NoError(t, err, "no error for creating games")
@@ -101,13 +101,13 @@ func TestSetGameStatus(t *testing.T) {
 	assert.NoError(t, err, "no error for creating games")
 
 	// Set a status
-	status := "TEST STATUS"
+	status := rules.GameStatusRunning
 	err = store.SetGameStatus(context.Background(), game.ID, status)
 	assert.NoError(t, err)
 
 	// Validate new status is present
 	game, _ = store.GetGame(context.Background(), game.ID)
-	assert.Equal(t, status, game.GetStatus())
+	assert.Equal(t, string(status), game.GetStatus())
 }
 
 // Test Create/Get games
@@ -202,7 +202,7 @@ func TestMain(m *testing.M) {
 	}
 	store = s
 	retCode := m.Run()
-	store.Close()
+	store.(*Store).Close()
 	server.Close()
 	os.Exit(retCode)
 }

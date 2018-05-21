@@ -114,9 +114,9 @@ func (rs *Store) PopGameID(c context.Context) (string, error) {
 
 // SetGameStatus is used to set a specific game status. This operation
 // should be atomic.
-func (rs *Store) SetGameStatus(c context.Context, id, status string) error {
+func (rs *Store) SetGameStatus(c context.Context, id string, status rules.GameStatus) error {
 	key := gameKey(id)
-	err := rs.client.HSet(key, "status", status).Err()
+	err := rs.client.HSet(key, "status", string(status)).Err()
 	if err != nil {
 		return errors.Wrap(err, "unexpected redis error when setting game status")
 	}
