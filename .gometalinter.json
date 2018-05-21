@@ -3,6 +3,7 @@
     "Deadline": "120s",
     "Vendor": true,
     "Exclude": [
-        ".pb.go"
+        ".pb.go",
+        "Errors unhandled.,LOW,HIGH \\(gas\\)"
     ]
 }
