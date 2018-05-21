@@ -148,6 +148,7 @@ func (rs *Store) CreateGame(c context.Context, game *pb.Game, frames []*pb.GameF
 		frameData := []interface{}{}
 
 		for _, f := range frames {
+			// nolint: vetshadow
 			data, err := proto.Marshal(f)
 			if err != nil {
 				return errors.Wrap(err, "unable to marshal frame")
@@ -239,6 +240,7 @@ func (rs *Store) GetGame(c context.Context, id string) (*pb.Game, error) {
 		return nil, errors.Wrap(err, "unexpected redis error")
 	}
 	var game pb.Game
+	// nolint: gas
 	gameBytes, _ := gameData.Bytes()
 	err = proto.Unmarshal(gameBytes, &game)
 	if err != nil {
