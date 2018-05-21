@@ -25,7 +25,9 @@ var createCmd = &cobra.Command{
 	},
 	Run: func(*cobra.Command, []string) {
 		cr := createGame()
-		fmt.Println(cr)
+		if cr != nil {
+			fmt.Printf(`{"ID": "%s"}`, cr.ID)
+		}
 	},
 }
 

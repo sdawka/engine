@@ -1,5 +1,9 @@
 # Battlesnake Engine
 
+[![Build Status](https://travis-ci.com/battlesnakeio/engine.svg?branch=master)](https://travis-ci.com/battlesnakeio/engine)
+[![Maintainability](https://api.codeclimate.com/v1/badges/66e1d3494b5af60ceee5/maintainability)](https://codeclimate.com/github/battlesnakeio/engine/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/66e1d3494b5af60ceee5/test_coverage)](https://codeclimate.com/github/battlesnakeio/engine/test_coverage)
+
 API and game logic for Battlesnake.
 
 ---
@@ -17,7 +21,7 @@ API and game logic for Battlesnake.
 
 # Running the engine
 
-Build an excutable via `go build` (add a `-a` to rebuild without cache), then call `./engine` to run the newly created executable. 
+Build an excutable via `make install` and then run `engine server` to run a local version of the server.
 
 **Better command**: `make run`
 
@@ -27,7 +31,7 @@ Note: if you use the Makefile, you'll want JQ installed, [here](https://stedolan
 
 1. Setup a `snake-config.json`, by default the engine looks in the HOME directory (see make run-game in the Makefile)
 
-Here's an example: 
+Here's an example:
 
 ```
 {
@@ -54,18 +58,18 @@ Here's an example:
 Example Output:
 ```
 ⇒  make run-game
-go install github.com/battlesnakeio/engine/cmd/engine-cli
+go install github.com/battlesnakeio/engine/cmd/engine
 engine-cli run -g "d151fe9d-8c15-4d31-a932-e7b4248d5586"
 ```
 
-4. To replay a game, run: `engine-cli replay -g <game id>`
+4. To replay a game, run: `engine replay -g <game id>`
 
 
-For more information about the engine-cli: 
+For more information about the engine:
 
-`engine-cli --help`
+`engine --help`
 
-`engline-cli [command] --help`
+`engine [command] --help`
 
 ## Backend configuration
 
@@ -82,6 +86,6 @@ Save games as files in `~/battlesnake/`
 
 ---
 
-# API 
+# API
 
 Refer to the [docs](https://github.com/battlesnakeio/docs) repository, specifically the snake api [here](https://github.com/battlesnakeio/docs/blob/master/apis/snake/spec.yaml) which can viewed with [Swagger's editor](https://swagger.io/swagger-editor/)

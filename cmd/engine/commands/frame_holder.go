@@ -9,11 +9,20 @@ import (
 type frameHolder struct {
 	sync.RWMutex
 	frames []*pb.GameFrame
+	ffc    chan *pb.GameFrame
 }
 
 func (fh *frameHolder) append(frame *pb.GameFrame) {
 	fh.Lock()
 	defer fh.Unlock()
+
+	if len(fh.frames) == 0 {
+		if fh.ffc == nil {
+			fh.ffc = make(chan *pb.GameFrame)
+		}
+		fh.ffc <- frame
+		close(fh.ffc)
+	}
 
 	fh.frames = append(fh.frames, frame)
 }
@@ -27,6 +36,13 @@ func (fh *frameHolder) get(index int) *pb.GameFrame {
 	}
 
 	return fh.frames[index]
+}
+
+func (fh *frameHolder) initialFrame() <-chan *pb.GameFrame {
+	if fh.ffc == nil {
+		fh.ffc = make(chan *pb.GameFrame)
+	}
+	return fh.ffc
 }
 
 func (fh *frameHolder) count() int {

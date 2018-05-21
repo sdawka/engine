@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -23,7 +24,7 @@ var statusCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(*cobra.Command, []string) {
-		getStatus(gameID)
+		spew.Dump(getStatus(gameID))
 	},
 }
 

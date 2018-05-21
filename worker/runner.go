@@ -36,8 +36,8 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			return err
 		}
 
-		log.WithField("game", id).
-			WithField("turn", nextFrame.Turn).
+		log.WithField("GameID", id).
+			WithField("Turn", nextFrame.Turn).
 			Info("adding game frame")
 		_, err = client.AddGameFrame(ctx, &pb.AddGameFrameRequest{
 			ID:        resp.Game.ID,
@@ -49,11 +49,14 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 		}
 
 		if rules.CheckForGameOver(rules.GameMode(resp.Game.Mode), nextFrame) {
-			log.WithField("game", id).
-				WithField("turn", nextFrame.Turn).
+			log.WithField("GameID", id).
+				WithField("Turn", nextFrame.Turn).
 				Info("ending game")
 			rules.NotifyGameEnd(resp.Game, nextFrame)
 			_, err := client.EndGame(ctx, &pb.EndGameRequest{ID: resp.Game.ID})
+			if err != nil {
+				log.WithError(err).WithField("GameID", id).Error("Error while ending game")
+			}
 			return err
 		}
 

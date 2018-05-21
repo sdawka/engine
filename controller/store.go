@@ -41,7 +41,7 @@ type Store interface {
 	PopGameID(context.Context) (string, error)
 	// SetGameStatus is used to set a specific game status. This operation
 	// should be atomic.
-	SetGameStatus(c context.Context, id, status string) error
+	SetGameStatus(c context.Context, id string, status rules.GameStatus) error
 	// CreateGame will insert a game with the default game frames.
 	CreateGame(context.Context, *pb.Game, []*pb.GameFrame) error
 	// PushGameFrame will push a game frame onto the list of frames.
@@ -142,7 +142,7 @@ func (in *inmem) PopGameID(ctx context.Context) (string, error) {
 	// For every game we need to make sure it's active and is not locked before
 	// returning it. We get randomness due to go's built in random map.
 	for id, g := range in.games {
-		if !in.isLocked(id) && g.Status == rules.GameStatusRunning {
+		if !in.isLocked(id) && g.Status == string(rules.GameStatusRunning) {
 			return id, nil
 		}
 	}
@@ -157,11 +157,11 @@ func (in *inmem) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.GameFr
 	return nil
 }
 
-func (in *inmem) SetGameStatus(ctx context.Context, id, status string) error {
+func (in *inmem) SetGameStatus(ctx context.Context, id string, status rules.GameStatus) error {
 	in.lock.Lock()
 	defer in.lock.Unlock()
 	if g, ok := in.games[id]; ok {
-		g.Status = status
+		g.Status = string(status)
 		return nil
 	}
 	return ErrNotFound

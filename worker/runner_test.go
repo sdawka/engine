@@ -44,7 +44,7 @@ func TestWorker_RunnerErrors(t *testing.T) {
 	})
 
 	t.Run("GameFrameError", func(t *testing.T) {
-		store.CreateGame(ctx, &pb.Game{ID: "1", Status: rules.GameStatusRunning}, nil)
+		store.CreateGame(ctx, &pb.Game{ID: "1", Status: string(rules.GameStatusRunning)}, nil)
 
 		err := w.run(ctx, 1)
 		require.NotNil(t, err)
@@ -53,7 +53,7 @@ func TestWorker_RunnerErrors(t *testing.T) {
 
 	t.Run("GameFrameLocked", func(t *testing.T) {
 		store.CreateGame(ctx,
-			&pb.Game{ID: "2", Status: rules.GameStatusRunning},
+			&pb.Game{ID: "2", Status: string(rules.GameStatusRunning)},
 			[]*pb.GameFrame{{}},
 		)
 		w.RunGame = func(c context.Context, cl pb.ControllerClient, id string) error {

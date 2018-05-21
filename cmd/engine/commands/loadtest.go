@@ -45,7 +45,7 @@ var loadTestCmd = &cobra.Command{
 			runGame(cr.ID)
 		}
 
-		statuses := map[string]string{}
+		statuses := map[string]rules.GameStatus{}
 		updates := make(chan statusUpdate)
 		for _, id := range ids {
 			statuses[id] = ""
@@ -57,7 +57,7 @@ var loadTestCmd = &cobra.Command{
 				"id":     s.id,
 				"status": s.status,
 			}).Info("Game Status")
-			statuses[s.id] = s.status
+			statuses[s.id] = rules.GameStatus(s.status)
 
 			done := true
 			for _, s := range statuses {
@@ -85,7 +85,7 @@ func checkStatus(id string, updates chan<- statusUpdate) {
 	for range t.C {
 		sr := getStatus(id)
 		updates <- statusUpdate{id: id, status: sr.Game.Status}
-		if sr.Game.Status == rules.GameStatusComplete || sr.Game.Status == rules.GameStatusError {
+		if sr.Game.Status == string(rules.GameStatusComplete) || sr.Game.Status == string(rules.GameStatusError) {
 			t.Stop()
 			return
 		}

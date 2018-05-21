@@ -140,7 +140,7 @@ func (fs *fileStore) PopGameID(ctx context.Context) (string, error) {
 	// For every game we need to make sure it's active and is not locked before
 	// returning it. We get randomness due to go's built in random map.
 	for id, g := range fs.games {
-		if !fs.isLocked(id) && g.Status == rules.GameStatusRunning {
+		if !fs.isLocked(id) && g.Status == string(rules.GameStatusRunning) {
 			return id, nil
 		}
 	}
@@ -159,7 +159,7 @@ func (fs *fileStore) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.Ga
 	return fs.appendFrames(g.ID, frames)
 }
 
-func (fs *fileStore) SetGameStatus(ctx context.Context, id, status string) error {
+func (fs *fileStore) SetGameStatus(ctx context.Context, id string, status rules.GameStatus) error {
 	fs.lock.Lock()
 	defer fs.lock.Unlock()
 
@@ -168,7 +168,7 @@ func (fs *fileStore) SetGameStatus(ctx context.Context, id, status string) error
 		return err
 	}
 
-	game.Status = status
+	game.Status = string(status)
 	if status != rules.GameStatusRunning {
 		fs.closeGame(id)
 	}

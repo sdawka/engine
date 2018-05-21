@@ -74,7 +74,7 @@ func testStoreGames(t *testing.T, s Store) {
 	ctx := context.Background()
 
 	// Create and fetch a game.
-	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning}, nil)
+	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: string(rules.GameStatusRunning)}, nil)
 	require.Nil(t, err)
 	g, err := s.GetGame(ctx, "test")
 	require.Nil(t, err)
@@ -100,7 +100,7 @@ func testStoreGameFrames(t *testing.T, s Store) {
 	ctx := context.Background()
 
 	// Create and fetch a game.
-	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning}, nil)
+	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: string(rules.GameStatusRunning)}, nil)
 	require.Nil(t, err)
 	g, err := s.GetGame(ctx, "test")
 	require.Nil(t, err)
@@ -140,7 +140,7 @@ func testStoreConcurrentWriters(t *testing.T, s Store) {
 	ctx := context.Background()
 
 	// Create and fetch a game.
-	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: rules.GameStatusRunning}, nil)
+	err := s.CreateGame(ctx, &pb.Game{ID: "test", Status: string(rules.GameStatusRunning)}, nil)
 	require.Nil(t, err)
 
 	var ok uint32 // How many got the lock.
