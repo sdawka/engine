@@ -23,7 +23,7 @@ type Store struct {
 }
 
 // DefaultDataTTL is how long data will be kept before redis evicts it
-const DefaultDataTTL = time.Hour * 30
+const DefaultDataTTL = time.Hour * 24 * 30
 
 // DefaultLockExpiry is how long locks are kept around for
 const DefaultLockExpiry = time.Minute
