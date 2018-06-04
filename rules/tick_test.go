@@ -18,6 +18,8 @@ func TestUpdateFood(t *testing.T) {
 			{
 				Body: []*pb.Point{
 					{X: 1, Y: 2},
+					{X: 2, Y: 2},
+					{X: 3, Y: 2},
 				},
 			},
 		},
@@ -26,7 +28,11 @@ func TestUpdateFood(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Len(t, updated, 2)
-	require.False(t, updated[1].Equal(&pb.Point{X: 1, Y: 2}))
+	require.True(t, updated[0].Equal(&pb.Point{X: 1,  Y: 1}))
+	require.False(t, updated[1].Equal(&pb.Point{X: 1,  Y: 2}))
+	require.False(t, updated[1].Equal(&pb.Point{X: 2,  Y: 2}))
+	require.False(t, updated[1].Equal(&pb.Point{X: 3,  Y: 2}))
+	require.False(t, updated[1].Equal(&pb.Point{X: 1,  Y: 1}))
 }
 
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
