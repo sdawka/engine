@@ -111,15 +111,15 @@ func getUnoccupiedPoint(width int64, height int64, food []*pb.Point, snakes []*p
 func getUnoccupiedPoints(width int64, height int64, food []*pb.Point, snakes []*pb.Snake) ([]*pb.Point, error) {
 	occupiedPoints, _ := getUniqOccupiedPoints(food, snakes)
 
-	numCandidatePoints := int(width*height)-len(occupiedPoints)
+	numCandidatePoints := int(width*height) - len(occupiedPoints)
 
 	candidatePoints := make([]*pb.Point, numCandidatePoints)
 
 	index := 0
 
-  for  x := int64(0); x < width; x++ {
-    for  y := int64(0); y < height; y++ {
- 			p := &pb.Point{X: x, Y: y}
+	for x := int64(0); x < width; x++ {
+		for y := int64(0); y < height; y++ {
+			p := &pb.Point{X: x, Y: y}
 			match := false
 
 			for _, o := range occupiedPoints {
@@ -133,12 +133,11 @@ func getUnoccupiedPoints(width int64, height int64, food []*pb.Point, snakes []*
 				candidatePoints[index] = p
 				index++
 			}
-    }
-  }
+		}
+	}
 
-  return candidatePoints, nil
+	return candidatePoints, nil
 }
-
 
 func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) ([]*pb.Point, error) {
 	occupiedPoints := []*pb.Point{}
@@ -146,12 +145,12 @@ func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) ([]*pb.Point, e
 	for _, f := range food {
 		candidate := true
 		for _, o := range occupiedPoints {
-			if (o.Equal(f)) {
+			if o.Equal(f) {
 				candidate = false
 			}
 		}
 
-		if (candidate) {
+		if candidate {
 			occupiedPoints = append(occupiedPoints, f)
 		}
 	}
@@ -160,12 +159,12 @@ func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) ([]*pb.Point, e
 		for _, b := range s.Body {
 			candidate := true
 			for _, o := range occupiedPoints {
-				if (o.Equal(b)) {
+				if o.Equal(b) {
 					candidate = false
 				}
 			}
 
-			if (candidate) {
+			if candidate {
 				occupiedPoints = append(occupiedPoints, b)
 			}
 		}
