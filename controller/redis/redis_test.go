@@ -3,15 +3,15 @@ package redis
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
-	"github.com/battlesnakeio/engine/rules"
-
-	"github.com/alicebob/miniredis"
+	"github.com/dlsteuer/miniredis"
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
-	uuid "github.com/satori/go.uuid"
+	"github.com/battlesnakeio/engine/rules"
+	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -202,7 +202,7 @@ func TestMain(m *testing.M) {
 	}
 	store = s
 	retCode := m.Run()
-	store.(*Store).Close()
+	store.(io.Closer).Close()
 	server.Close()
 	os.Exit(retCode)
 }

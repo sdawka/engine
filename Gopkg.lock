@@ -8,19 +8,19 @@
   revision = "5a6b3ba71ee69b77cf64febf8b5a7526ca5eaef0"
 
 [[projects]]
-  name = "github.com/alicebob/miniredis"
-  packages = [
-    ".",
-    "server"
-  ]
-  revision = "c8ba25935377e94fab2649b0ff92fdef1c98af76"
-  version = "2.4.2"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/dlsteuer/miniredis"
+  packages = [
+    ".",
+    "server"
+  ]
+  revision = "a2da0017e633143030b7a6b8fdcf22ff743cd373"
 
 [[projects]]
   name = "github.com/go-redis/redis"
@@ -61,15 +61,6 @@
   ]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
-
-[[projects]]
-  name = "github.com/gomodule/redigo"
-  packages = [
-    "internal",
-    "redis"
-  ]
-  revision = "9c11da706d9b7902c6da69c592f75637793fe121"
-  version = "v2.0.0"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -252,6 +243,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a63d1037ad8c703f16ef0ab0ee5a3c98bd8d1ad239570f72a47fce9d94f1e9b"
+  inputs-digest = "7991a5bf2cf47336fb84484b0814a2829e4dedfbd42e22f12c7f66b942db20d3"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/battlesnakeio/engine/rules"
-
 	"github.com/battlesnakeio/engine/controller"
+	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/battlesnakeio/engine/rules"
+	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
-
-	"github.com/battlesnakeio/engine/controller/pb"
-	"github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -145,11 +143,11 @@ func (rs *Store) CreateGame(c context.Context, game *pb.Game, frames []*pb.GameF
 	// Marshal the frames
 	if len(frames) > 0 {
 		framesKey := framesKey(game.ID)
-		frameData := []interface{}{}
+		var frameData []interface{}
 
 		for _, f := range frames {
-			// nolint: vetshadow
-			data, err := proto.Marshal(f)
+			var data []byte
+			data, err = proto.Marshal(f)
 			if err != nil {
 				return errors.Wrap(err, "unable to marshal frame")
 			}
@@ -240,8 +238,10 @@ func (rs *Store) GetGame(c context.Context, id string) (*pb.Game, error) {
 		return nil, errors.Wrap(err, "unexpected redis error")
 	}
 	var game pb.Game
-	// nolint: gas
-	gameBytes, _ := gameData.Bytes()
+	gameBytes, err := gameData.Bytes()
+	if err != nil {
+		return nil, errors.Wrap(err, "unexpected redis error")
+	}
 	err = proto.Unmarshal(gameBytes, &game)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to unmarshal game data")

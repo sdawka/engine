@@ -21,9 +21,8 @@ import (
 	"sync"
 	"time"
 
-	redigo "github.com/gomodule/redigo/redis"
-
-	"github.com/alicebob/miniredis/server"
+	"github.com/dlsteuer/miniredis/server"
+	"github.com/go-redis/redis"
 )
 
 type hashKey map[string]string
@@ -241,10 +240,16 @@ func (m *Miniredis) FastForward(duration time.Duration) {
 }
 
 // redigo returns a redigo.Conn, connected using net.Pipe
-func (m *Miniredis) redigo() redigo.Conn {
+func (m *Miniredis) redigo() *redis.Client {
 	c1, c2 := net.Pipe()
 	m.srv.ServeConn(c1)
-	return redigo.NewConn(c2, 0, 0)
+	c := redis.NewClient(&redis.Options{
+		Dialer: func() (net.Conn, error) {
+			return c2, nil
+		},
+		Password: m.password,
+	})
+	return c
 }
 
 // Dump returns a text version of the selected DB, usable for debugging.
