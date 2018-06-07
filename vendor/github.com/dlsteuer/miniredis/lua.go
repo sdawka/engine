@@ -1,13 +1,12 @@
 package miniredis
 
 import (
-	redigo "github.com/gomodule/redigo/redis"
+	"github.com/dlsteuer/miniredis/server"
+	"github.com/go-redis/redis"
 	"github.com/yuin/gopher-lua"
-
-	"github.com/alicebob/miniredis/server"
 )
 
-func mkLuaFuncs(conn redigo.Conn) map[string]lua.LGFunction {
+func mkLuaFuncs(conn *redis.Client) map[string]lua.LGFunction {
 	mkCall := func(failFast bool) func(l *lua.LState) int {
 		return func(l *lua.LState) int {
 			top := l.GetTop()
@@ -30,12 +29,24 @@ func mkLuaFuncs(conn redigo.Conn) map[string]lua.LGFunction {
 					return 0
 				}
 			}
-			cmd, ok := args[0].(string)
+			_, ok := args[0].(string)
 			if !ok {
 				l.Error(lua.LString("Unknown Redis command called from Lua script"), 1)
 				return 0
 			}
-			res, err := conn.Do(cmd, args[1:]...)
+			c := redis.NewCmd(args...)
+			err := conn.Process(c)
+			if err != nil {
+				if failFast {
+					// call() mode
+					l.Error(lua.LString(err.Error()), 1)
+					return 0
+				}
+				// pcall() mode
+				l.Push(lua.LNil)
+				return 1
+			}
+			res, err := c.Result()
 			if err != nil {
 				if failFast {
 					// call() mode

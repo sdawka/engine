@@ -7,6 +7,10 @@
   name = "golang.org/x/net"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/dlsteuer/miniredis"
+
+[[constraint]]
   name = "google.golang.org/grpc"
   version = "1.11.0"
 

@@ -11,7 +11,7 @@ import (
 	"github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
 
-	"github.com/alicebob/miniredis/server"
+	"github.com/dlsteuer/miniredis/server"
 )
 
 func commandsScripting(m *Miniredis) {

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alicebob/miniredis/server"
+	"github.com/dlsteuer/miniredis/server"
 )
 
 const (
