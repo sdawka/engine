@@ -42,7 +42,12 @@ var controllerCmd = &cobra.Command{
 		}
 
 		if c, ok := store.(io.Closer); ok {
-			defer c.Close()
+			defer func() {
+				err = c.Close()
+				if err != nil {
+					log.WithError(err).Error("unable to close store")
+				}
+			}()
 		}
 
 		if err != nil {
