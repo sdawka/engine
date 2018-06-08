@@ -260,16 +260,17 @@ var unlockCmd = redis.NewScript(`
 `)
 
 var findUnlockedGameCmd = redis.NewScript(fmt.Sprintf(`
-	local cursor = "0"
+	local cursor = "0";
+	local done = false;
 	repeat
-		local result = redis.call("SCAN", cursor, "match", "game:*:state")
+		local result = redis.call("SCAN", cursor, "match", "game:*:state");
 		cursor = result[1];
-		keys = result[2];
+		local keys = result[2];
 		for _, key in ipairs(keys) do
-			local id = redis.call("HGET", key, "id")
+			local id = redis.call("HGET", key, "id");
 			if redis.call("EXISTS", "game:" .. id .. ":locks") == 0 then
 				if redis.call("HGET", key, "status") == "%s" then
-					return id
+					return id;
 				end
 			end
 		end

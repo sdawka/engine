@@ -6,6 +6,30 @@ import (
 	"github.com/yuin/gopher-lua"
 )
 
+func setGlobalsProtection(l *lua.LState) error {
+	// redis doesn't allow accidental global creation in the lua scripts
+	// to mimic that we need to disable global creation in our lua scripting state
+	// taken from https://github.com/antirez/redis/blob/unstable/src/scripting.c#L860
+	return l.DoString(`local dbg=debug
+local mt = {}
+setmetatable(_G, mt)
+mt.__newindex = function (t, n, v)
+  print("new index")
+  print(dbg.getinfo(2, "S").what)
+  if dbg.getinfo(2) then
+    error("Script attempted to create global variable '"..tostring(n).."'", 2)
+  end
+  rawset(t, n, v)
+end
+mt.__index = function (t, n)
+  if dbg.getinfo(2) then
+    error("Script attempted to access nonexistent global variable '"..tostring(n).."'", 2)
+  end
+  return rawget(t, n)
+end
+debug = nil`)
+}
+
 func mkLuaFuncs(conn *redis.Client) map[string]lua.LGFunction {
 	mkCall := func(failFast bool) func(l *lua.LState) int {
 		return func(l *lua.LState) int {

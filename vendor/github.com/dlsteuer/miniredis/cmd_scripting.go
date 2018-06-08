@@ -10,7 +10,6 @@ import (
 	luajson "github.com/alicebob/gopher-json"
 	"github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
-
 	"github.com/dlsteuer/miniredis/server"
 )
 
@@ -35,6 +34,7 @@ func (m *Miniredis) runLuaScript(c *server.Peer, script string, args []string) {
 		{lua.TabLibName, lua.OpenTable},
 		{lua.StringLibName, lua.OpenString},
 		{lua.MathLibName, lua.OpenMath},
+		{lua.DebugLibName, lua.OpenDebug},
 	} {
 		if err := l.CallByParam(lua.P{
 			Fn:      l.NewFunction(pair.f),
@@ -86,6 +86,12 @@ func (m *Miniredis) runLuaScript(c *server.Peer, script string, args []string) {
 		l.Push(mod)
 		return 1
 	}))
+
+	err = setGlobalsProtection(l)
+	if err != nil {
+		c.WriteError(err.Error())
+		return
+	}
 
 	l.Push(lua.LString("redis"))
 	l.Call(1, 0)

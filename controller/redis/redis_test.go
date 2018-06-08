@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dlsteuer/miniredis"
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
+	"github.com/dlsteuer/miniredis"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -186,24 +186,31 @@ func TestPushGameFrame(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	// Setup server
-	server := miniredis.NewMiniRedis()
-	err := server.StartAddr("127.0.0.1:9736")
-	if err != nil {
-		fmt.Println("unable to start local redis instance")
-		os.Exit(1)
+	redisURL := os.Getenv("REDIS_URL")
+	if len(redisURL) == 0 {
+		// Setup server
+		server := miniredis.NewMiniRedis()
+		err := server.StartAddr("127.0.0.1:9736")
+		if err != nil {
+			fmt.Println("unable to start local redis instance")
+			os.Exit(1)
+		}
+		redisURL = fmt.Sprintf("redis://%s", server.Addr())
+
+		defer func() {
+			store.(io.Closer).Close()
+			server.Close()
+		}()
 	}
 
 	// Setup store
-	s, err := NewStore(fmt.Sprintf("redis://%s", server.Addr()))
+	s, err := NewStore(redisURL)
 	if err != nil {
 		fmt.Println("unable to connect redis store")
 		os.Exit(1)
 	}
 	store = s
 	retCode := m.Run()
-	store.(io.Closer).Close()
-	server.Close()
 	os.Exit(retCode)
 }
 
