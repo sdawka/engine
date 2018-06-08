@@ -107,6 +107,11 @@ func (rs *Store) PopGameID(c context.Context) (string, error) {
 		return "", errors.Wrap(err, "unexpected redis exception while popping game")
 	}
 
+	gameID := fmt.Sprint(r)
+	if len(gameID) == 0 {
+		return "", controller.ErrNotFound
+	}
+
 	return fmt.Sprint(r), nil
 }
 
