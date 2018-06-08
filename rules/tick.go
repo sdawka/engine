@@ -90,25 +90,28 @@ func updateFood(width, height int64, gameFrame *pb.GameFrame, foodToRemove []*pb
 	}
 
 	for range foodToRemove {
-		p, err := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
-		if err != nil {
-			return nil, err
+		p := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
+		if p != nil {
+			food = append(food, p)
 		}
-		food = append(food, p)
 	}
 
 	return food, nil
 }
 
-func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snake) (*pb.Point, error) {
+func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
 	openPoints := getUnoccupiedPoints(width, height, food, snakes)
+
+	if len(openPoints) == 0 {
+		return nil
+	}
 
 	randIndex := rand.Intn(len(openPoints))
 
-	return openPoints[randIndex], nil
+	return openPoints[randIndex]
 }
 
-func getUnoccupiedPoints(width, height int64, food []*pb.Point, snakes []*pb.Snake) ([]*pb.Point) {
+func getUnoccupiedPoints(width, height int64, food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
 	occupiedPoints := getUniqOccupiedPoints(food, snakes)
 
 	numCandidatePoints := int(width*height) - len(occupiedPoints)
@@ -136,24 +139,32 @@ func getUnoccupiedPoints(width, height int64, food []*pb.Point, snakes []*pb.Sna
 	return candidatePoints
 }
 
-func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) ([]*pb.Point) {
+func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
 	occupiedPoints := []*pb.Point{}
-
 	for _, f := range food {
+		candidate := true
 		for _, o := range occupiedPoints {
 			if o.Equal(f) {
-				occupiedPoints = append(occupiedPoints, f)
+				candidate = false
 				break
 			}
+		}
+		if candidate {
+			occupiedPoints = append(occupiedPoints, f)
 		}
 	}
 
 	for _, s := range snakes {
 		for _, b := range s.Body {
+			candidate := true
 			for _, o := range occupiedPoints {
 				if o.Equal(b) {
-					occupiedPoints = append(occupiedPoints, b)
+					candidate = false
+					break
 				}
+			}
+			if candidate {
+				occupiedPoints = append(occupiedPoints, b)
 			}
 		}
 	}

@@ -35,6 +35,78 @@ func TestUpdateFood(t *testing.T) {
 	require.False(t, updated[1].Equal(&pb.Point{X: 1, Y: 1}))
 }
 
+func TestUpdateFoodWithFullBoard(t *testing.T) {
+	updated, err := updateFood(2, 2, &pb.GameFrame{
+		Food: []*pb.Point{
+			{X: 0, Y: 0},
+		},
+		Snakes: []*pb.Snake{
+			{
+				Body: []*pb.Point{
+					{X: 0, Y: 0},
+					{X: 0, Y: 1},
+					{X: 1, Y: 1},
+					{X: 1, Y: 0},
+				},
+			},
+		},
+	}, []*pb.Point{
+		{X: 0, Y: 0},
+	})
+	require.NoError(t, err)
+	require.Len(t, updated, 0)
+}
+
+func TestGetUnoccupiedPointWithFullBoard(t *testing.T) {
+	unoccupiedPoint := getUnoccupiedPoint(2, 2,
+		[]*pb.Point{{X: 0, Y: 0}},
+		[]*pb.Snake{
+			{
+				Body: []*pb.Point{
+					{X: 0, Y: 1},
+					{X: 1, Y: 1},
+					{X: 1, Y: 0},
+				},
+			},
+		})
+	require.True(t, unoccupiedPoint.Equal(nil))
+}
+
+func TestGetUnoccupiedPointsWithEmptySpots(t *testing.T) {
+	unoccupiedPoints := getUnoccupiedPoints(2, 2,
+		[]*pb.Point{{X: 0, Y: 0}},
+		[]*pb.Snake{
+			{
+				Body: []*pb.Point{
+					{X: 0, Y: 1},
+				},
+			},
+		})
+
+	require.Len(t, unoccupiedPoints, 2)
+	require.True(t, unoccupiedPoints[0].Equal(&pb.Point{X: 1, Y: 0}))
+	require.True(t, unoccupiedPoints[1].Equal(&pb.Point{X: 1, Y: 1}))
+}
+
+func TestGetUniqOccupiedPoints(t *testing.T) {
+	unoccupiedPoints := getUniqOccupiedPoints(
+		[]*pb.Point{
+			{X: 0, Y: 0},
+		},
+		[]*pb.Snake{
+			{
+				Body: []*pb.Point{
+					{X: 0, Y: 1},
+					{X: 1, Y: 1},
+					{X: 1, Y: 1},
+					{X: 1, Y: 0},
+				},
+			},
+		})
+
+	require.Len(t, unoccupiedPoints, 4)
+}
+
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
 	gt, err := GameTick(commonGame, &pb.GameFrame{Turn: 5})
 	require.NoError(t, err)
