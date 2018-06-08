@@ -5,6 +5,8 @@ language: go
 go:
   - "1.10.2"
 go_import_path: github.com/battlesnakeio/engine
+services:
+  - docker
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
@@ -16,7 +18,8 @@ jobs:
   include:
     - script: make lint
     - script:
-      - make test
+      - docker run --rm -t -p 6379:6379 redis
+      - REDIS_URL=redis://127.0.0.1:6379 make test
       - cp coverage.txt c.out
       - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
       - bash <(curl -s https://codecov.io/bash)
