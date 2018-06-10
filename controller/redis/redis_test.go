@@ -11,11 +11,14 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/dlsteuer/miniredis"
+	"github.com/go-redis/redis"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var store controller.Store
+var server *miniredis.Miniredis
 
 func TestLock(t *testing.T) {
 	gameKey := uuid.NewV4().String()
@@ -59,10 +62,11 @@ func TestUnlock(t *testing.T) {
 // PopGameID returns a new game that is unlocked and running. Workers call
 // this method through the controller to find games to process.
 func TestPopGameID(t *testing.T) {
+	resetRedisServer(t)
 
 	// Empty state
 	gameID, err := store.PopGameID(context.Background())
-	assert.NoError(t, err, "no error for empty games")
+	require.NotNil(t, err, "%s, %v", gameID, err)
 	assert.Zero(t, gameID, "no game should be returned when empty")
 
 	// Add a game
@@ -84,7 +88,7 @@ func TestPopGameID(t *testing.T) {
 
 	// no unlocked games left
 	poppedID, err = store.PopGameID(context.Background())
-	assert.NoError(t, err, "no error for empty unlocked games")
+	require.NotNil(t, err)
 	assert.Zero(t, poppedID, "no game should be returned when empty unlocked games")
 }
 
@@ -189,7 +193,7 @@ func TestMain(m *testing.M) {
 	redisURL := os.Getenv("REDIS_URL")
 	if len(redisURL) == 0 {
 		// Setup server
-		server := miniredis.NewMiniRedis()
+		server = miniredis.NewMiniRedis()
 		err := server.StartAddr("127.0.0.1:9736")
 		if err != nil {
 			fmt.Println("unable to start local redis instance")
@@ -212,6 +216,29 @@ func TestMain(m *testing.M) {
 	store = s
 	retCode := m.Run()
 	os.Exit(retCode)
+}
+
+func resetRedisServer(t *testing.T) {
+	if server == nil {
+		// this means we're running against an actual redis instance, so instead flush all keys
+		redisURL := os.Getenv("REDIS_URL")
+		o, err := redis.ParseURL(redisURL)
+		require.NoError(t, err)
+		client := redis.NewClient(o)
+		err = client.FlushAll().Err()
+		require.NoError(t, err)
+		return
+	}
+
+	fmt.Println("Restarting miniredis")
+
+	server.Close()
+	server = miniredis.NewMiniRedis()
+	err := server.StartAddr("127.0.0.1:9736")
+	if err != nil {
+		fmt.Println("unable to start local redis instance")
+		os.Exit(1)
+	}
 }
 
 type testCase struct {
