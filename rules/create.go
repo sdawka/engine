@@ -21,7 +21,6 @@ const (
 
 // CreateInitialGame creates a new game based on the create request passed in
 func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error) {
-
 	snakes, err := getSnakes(req)
 	if err != nil {
 		return nil, nil, err
@@ -61,9 +60,9 @@ func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
 	snakes := []*pb.Snake{}
 
 	for _, opts := range req.Snakes {
-		startPoint, err := getUnoccupiedPoint(req.Width, req.Height, []*pb.Point{}, snakes)
-		if err != nil {
-			return nil, err
+		startPoint := getUnoccupiedPoint(req.Width, req.Height, []*pb.Point{}, snakes)
+		if startPoint == nil {
+			return nil, errors.New("no unoccupied spots left for new snake")
 		}
 		snake := &pb.Snake{
 			ID:     opts.ID,
@@ -96,11 +95,10 @@ func generateFood(req *pb.CreateRequest, snakes []*pb.Snake) ([]*pb.Point, error
 	food := []*pb.Point{}
 
 	for i := int64(0); i < req.Food; i++ {
-		p, err := getUnoccupiedPoint(req.Width, req.Height, food, snakes)
-		if err != nil {
-			return nil, err
+		p := getUnoccupiedPoint(req.Width, req.Height, food, snakes)
+		if p != nil {
+			food = append(food, p)
 		}
-		food = append(food, p)
 	}
 
 	return food, nil

@@ -1,7 +1,6 @@
 package rules
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -91,42 +90,86 @@ func updateFood(width, height int64, gameFrame *pb.GameFrame, foodToRemove []*pb
 	}
 
 	for range foodToRemove {
-		p, err := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
-		if err != nil {
-			return nil, err
+		p := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
+		if p != nil {
+			food = append(food, p)
 		}
-		food = append(food, p)
 	}
 
 	return food, nil
 }
 
-func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snake) (*pb.Point, error) {
-	attempts := 0
-	for {
-		attempts++
-		if attempts > 20 {
-			return nil, errors.New("unable to find available empty location after 20 attempts")
-		}
-		x := rand.Int63n(width)
-		y := rand.Int63n(height)
-		p := &pb.Point{X: x, Y: y}
-		for _, f := range food {
-			if f.Equal(p) {
-				continue
-			}
-		}
+func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
+	openPoints := getUnoccupiedPoints(width, height, food, snakes)
 
-		for _, s := range snakes {
-			for _, b := range s.Body {
-				if b.Equal(p) {
-					continue
+	if len(openPoints) == 0 {
+		return nil
+	}
+
+	randIndex := rand.Intn(len(openPoints))
+
+	return openPoints[randIndex]
+}
+
+func getUnoccupiedPoints(width, height int64, food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
+	occupiedPoints := getUniqOccupiedPoints(food, snakes)
+
+	numCandidatePoints := int(width*height) - len(occupiedPoints)
+
+	candidatePoints := make([]*pb.Point, 0, numCandidatePoints)
+
+	for x := int64(0); x < width; x++ {
+		for y := int64(0); y < height; y++ {
+			p := &pb.Point{X: x, Y: y}
+			match := false
+
+			for _, o := range occupiedPoints {
+				if o.Equal(p) {
+					match = true
+					break
 				}
 			}
-		}
 
-		return p, nil
+			if !match {
+				candidatePoints = append(candidatePoints, p)
+			}
+		}
 	}
+
+	return candidatePoints
+}
+
+func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
+	occupiedPoints := []*pb.Point{}
+	for _, f := range food {
+		candidate := true
+		for _, o := range occupiedPoints {
+			if o.Equal(f) {
+				candidate = false
+				break
+			}
+		}
+		if candidate {
+			occupiedPoints = append(occupiedPoints, f)
+		}
+	}
+
+	for _, s := range snakes {
+		for _, b := range s.Body {
+			candidate := true
+			for _, o := range occupiedPoints {
+				if o.Equal(b) {
+					candidate = false
+					break
+				}
+			}
+			if candidate {
+				occupiedPoints = append(occupiedPoints, b)
+			}
+		}
+	}
+
+	return occupiedPoints
 }
 
 func updateSnakes(game *pb.Game, frame *pb.GameFrame, moves []*SnakeUpdate) {

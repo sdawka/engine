@@ -37,3 +37,19 @@ func TestCreateInitialGame_GeneratedSnakeID(t *testing.T) {
 	require.Len(t, frames, 1)
 	require.NotEmpty(t, frames[0].Snakes[0].ID)
 }
+
+func TestCreateInitialGame_MoreSnakesThanSpace(t *testing.T) {
+	_, _, err := CreateInitialGame(&pb.CreateRequest{
+		Width:  2,
+		Height: 2,
+		Snakes: []*pb.SnakeOptions{
+			{ID: "snake_123"},
+			{ID: "snake_124"},
+			{ID: "snake_125"},
+			{ID: "snake_126"},
+			{ID: "snake_127"},
+		},
+	})
+
+	require.Error(t, err)
+}
