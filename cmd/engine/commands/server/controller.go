@@ -1,10 +1,13 @@
 package server
 
 import (
-	"github.com/battlesnakeio/engine/controller/filestore"
-	log "github.com/sirupsen/logrus"
+	"io"
+	"os"
 
 	"github.com/battlesnakeio/engine/controller"
+	"github.com/battlesnakeio/engine/controller/filestore"
+	"github.com/battlesnakeio/engine/controller/redis"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +19,7 @@ var (
 
 func init() {
 	controllerCmd.Flags().StringVarP(&controllerListen, "listen", "l", controllerListen, "address for the controller to bind to")
-	controllerCmd.Flags().StringVarP(&controllerBackend, "backend", "b", controllerBackend, "controller backend, as one of: [inmem, file]")
+	controllerCmd.Flags().StringVarP(&controllerBackend, "backend", "b", controllerBackend, "controller backend, as one of: [inmem, file, redis]")
 	controllerCmd.Flags().StringVarP(&controllerBackendArgs, "backend-args", "a", controllerBackendArgs, "options to pass to the backend being used")
 	RootCmd.Flags().AddFlagSet(controllerCmd.Flags())
 }
@@ -26,13 +29,30 @@ var controllerCmd = &cobra.Command{
 	Short: "runs the engine controller",
 	Run: func(c *cobra.Command, args []string) {
 		var store controller.Store
+		var err error
 		switch controllerBackend {
 		case "inmem":
 			store = controller.InMemStore()
 		case "file":
 			store = filestore.NewFileStore(controllerBackendArgs)
+		case "redis":
+			store, err = redis.NewStore(controllerBackendArgs)
 		default:
 			log.WithField("backend", controllerBackend).Fatal("invalid backend")
+		}
+
+		if c, ok := store.(io.Closer); ok {
+			defer func() {
+				err = c.Close()
+				if err != nil {
+					log.WithError(err).Error("unable to close store")
+				}
+			}()
+		}
+
+		if err != nil {
+			log.WithError(err).Error("unable to start up backend store")
+			os.Exit(1)
 		}
 
 		ctrl := controller.New(store)

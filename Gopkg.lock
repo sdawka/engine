@@ -20,7 +20,7 @@
     ".",
     "server"
   ]
-  revision = "a2da0017e633143030b7a6b8fdcf22ff743cd373"
+  revision = "4127b500a242c0b5ac506b2bbeccc30ffad50999"
 
 [[projects]]
   name = "github.com/go-redis/redis"
