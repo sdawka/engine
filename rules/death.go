@@ -39,12 +39,8 @@ func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 		}
 
 		for _, other := range frame.AliveSnakes() {
-			if other.ID == s.ID {
-				continue
-			}
-
-			for i, b := range other.Body {
-				if i == 0 && s.Head().Equal(b) {
+			if other.ID != s.ID {
+				if s.Head().Equal(other.Head()) {
 					if len(s.Body) <= len(other.Body) {
 						updates = append(updates, deathUpdate{
 							Snake: s,
@@ -53,16 +49,28 @@ func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 								Cause: DeathCauseHeadToHeadCollision,
 							},
 						})
-						break
 					}
+				}
+			}
+
+			for i, b := range other.Body {
+				if i == 0 {
+					continue
 				}
 
 				if s.Head().Equal(b) {
+					var cause string
+					if s.ID == other.ID {
+						cause = DeathCauseSnakeSelfCollision
+					} else {
+						cause = DeathCauseSnakeCollision
+					}
+
 					updates = append(updates, deathUpdate{
 						Snake: s,
 						Death: &pb.Death{
 							Turn:  frame.Turn,
-							Cause: DeathCauseSnakeCollision,
+							Cause: cause,
 						},
 					})
 					break

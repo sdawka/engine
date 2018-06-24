@@ -99,3 +99,25 @@ func TestDeathCauseHeadToHeadCollision(t *testing.T) {
 	require.Equal(t, DeathCauseHeadToHeadCollision, updates[1].Death.Cause)
 	require.Equal(t, int64(3), updates[1].Death.Turn)
 }
+
+func TestDeathCauseSnakeSelfCollision(t *testing.T) {
+	updates := checkForDeath(20, 20, &pb.GameFrame{
+		Turn: 3,
+		Snakes: []*pb.Snake{
+			&pb.Snake{
+				ID:     "1",
+				Health: 45,
+				Body: []*pb.Point{
+					{X: 4, Y: 4},
+					{X: 3, Y: 4},
+					{X: 3, Y: 3},
+					{X: 4, Y: 3},
+					{X: 4, Y: 4},
+				},
+			},
+		},
+	})
+	require.Len(t, updates, 1)
+	require.Equal(t, DeathCauseSnakeSelfCollision, updates[0].Death.Cause)
+	require.Equal(t, int64(3), updates[0].Death.Turn)
+}
