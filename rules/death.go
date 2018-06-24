@@ -13,7 +13,7 @@ type deathUpdate struct {
 func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 	updates := []deathUpdate{}
 	for _, s := range frame.AliveSnakes() {
-		if s.Health == 0 {
+		if deathByHealth(s.Health) {
 			updates = append(updates, deathUpdate{
 				Snake: s,
 				Death: &pb.Death{
@@ -27,7 +27,7 @@ func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 		if head == nil {
 			continue
 		}
-		if head.X < 0 || head.X >= width || head.Y < 0 || head.Y >= height {
+		if deathByOutOfBounds(head, width, height) {
 			updates = append(updates, deathUpdate{
 				Snake: s,
 				Death: &pb.Death{
@@ -39,30 +39,34 @@ func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 		}
 
 		for _, other := range frame.AliveSnakes() {
-			if other.ID == s.ID {
-				continue
+			if deathByHeadCollision(s, other) {
+				updates = append(updates, deathUpdate{
+					Snake: s,
+					Death: &pb.Death{
+						Turn:  frame.Turn,
+						Cause: DeathCauseHeadToHeadCollision,
+					},
+				})
 			}
 
 			for i, b := range other.Body {
-				if i == 0 && s.Head().Equal(b) {
-					if len(s.Body) <= len(other.Body) {
-						updates = append(updates, deathUpdate{
-							Snake: s,
-							Death: &pb.Death{
-								Turn:  frame.Turn,
-								Cause: DeathCauseHeadToHeadCollision,
-							},
-						})
-						break
-					}
+				if i == 0 {
+					continue
 				}
 
-				if s.Head().Equal(b) {
+				if deathByBodyCollision(s.Head(), b) {
+					var cause string
+					if s.ID == other.ID {
+						cause = DeathCauseSnakeSelfCollision
+					} else {
+						cause = DeathCauseSnakeCollision
+					}
+
 					updates = append(updates, deathUpdate{
 						Snake: s,
 						Death: &pb.Death{
 							Turn:  frame.Turn,
-							Cause: DeathCauseSnakeCollision,
+							Cause: cause,
 						},
 					})
 					break
@@ -71,4 +75,20 @@ func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
 		}
 	}
 	return updates
+}
+
+func deathByHealth(health int64) bool {
+	return health <= 0
+}
+
+func deathByBodyCollision(head, body *pb.Point) bool {
+	return head.Equal(body)
+}
+
+func deathByOutOfBounds(head *pb.Point, width, height int64) bool {
+	return (head.X < 0) || (head.X >= width) || (head.Y < 0) || (head.Y >= height)
+}
+
+func deathByHeadCollision(snake, other *pb.Snake) bool {
+	return (other.ID != snake.ID) && (snake.Head().Equal(other.Head())) && (len(snake.Body) <= len(other.Body))
 }
