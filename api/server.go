@@ -84,11 +84,15 @@ func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, 
 	frames := make(chan *pb.GameFrame)
 	go gatherFrames(frames, c, id)
 	for frame := range frames {
-		var data []byte
-		data, err = json.Marshal(frame)
+		m := jsonpb.Marshaler{EmitDefaults: true}
+
+		jsonStr, err := m.MarshalToString(frame)
 		if err != nil {
 			log.WithError(err).Error("Unable to serialize frame for websocket")
 		}
+
+		data := []byte(jsonStr)
+
 		err = ws.WriteMessage(websocket.TextMessage, data)
 		if err != nil {
 			log.WithError(err).Error("Unable to write to websocket")
