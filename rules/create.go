@@ -94,7 +94,7 @@ func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
 func generateFood(req *pb.CreateRequest, snakes []*pb.Snake) ([]*pb.Point, error) {
 	food := []*pb.Point{}
 
-	for i := int64(0); i < req.Food; i++ {
+	for i := int32(0); i < req.Food; i++ {
 		p := getUnoccupiedPoint(req.Width, req.Height, food, snakes)
 		if p != nil {
 			food = append(food, p)
