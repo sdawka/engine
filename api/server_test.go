@@ -202,6 +202,11 @@ func TestGetFramesContainsDefaultValues(t *testing.T) {
 		return &pb.ListGameFramesResponse{
 			Frames: []*pb.GameFrame{
 				{
+					Food: []*pb.Point{
+						{X: 0, Y: 1},
+						{X: 0, Y: 0},
+						{X: 1, Y: 0},
+					},
 					Snakes: []*pb.Snake{
 						{
 							Name: "Zero Snake",
@@ -229,6 +234,7 @@ func TestGetFramesContainsDefaultValues(t *testing.T) {
 
 	frames := castJsonInterface(resp["Frames"], 0)
 	snake := castJsonInterface(frames["Snakes"], 0)
+	food := frames["Food"]
 
 	require.Equal(t, 0, castPointInArray(snake["Body"], 0, "X"))
 	require.Equal(t, 1, castPointInArray(snake["Body"], 0, "Y"))
@@ -236,6 +242,13 @@ func TestGetFramesContainsDefaultValues(t *testing.T) {
 	require.Equal(t, 0, castPointInArray(snake["Body"], 1, "Y"))
 	require.Equal(t, 1, castPointInArray(snake["Body"], 2, "X"))
 	require.Equal(t, 0, castPointInArray(snake["Body"], 2, "Y"))
+
+	require.Equal(t, 0, castPointInArray(food, 0, "X"))
+	require.Equal(t, 1, castPointInArray(food, 0, "Y"))
+	require.Equal(t, 0, castPointInArray(food, 1, "X"))
+	require.Equal(t, 0, castPointInArray(food, 1, "Y"))
+	require.Equal(t, 1, castPointInArray(food, 2, "X"))
+	require.Equal(t, 0, castPointInArray(food, 2, "Y"))
 }
 
 func castPointInArray(resp interface{}, index int, key string) int {
