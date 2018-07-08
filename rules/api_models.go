@@ -29,8 +29,8 @@ type Game struct {
 
 // Board provides information about the game board
 type Board struct {
-	Height int64    `json:"height"`
-	Width  int64    `json:"width"`
+	Height int32    `json:"height"`
+	Width  int32    `json:"width"`
 	Food   []Coords `json:"food"`
 	Snakes []Snake  `json:"snakes"`
 }
@@ -45,8 +45,8 @@ type Snake struct {
 
 // Coords represents a point on the board
 type Coords struct {
-	X int64 `json:"x"`
-	Y int64 `json:"y"`
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
 }
 
 func buildSnakeRequest(game *pb.Game, frame *pb.GameFrame, snakeID string) SnakeRequest {

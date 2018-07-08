@@ -10,7 +10,7 @@ type deathUpdate struct {
 // checkForDeath looks through the snakes with the updated coords and checks to see if any have died
 // possible death options are starvation (health has reached 0), wall collision, snake body collision
 // snake head collision (other snake is same size or greater)
-func checkForDeath(width, height int64, frame *pb.GameFrame) []deathUpdate {
+func checkForDeath(width, height int32, frame *pb.GameFrame) []deathUpdate {
 	updates := []deathUpdate{}
 	for _, s := range frame.AliveSnakes() {
 		if deathByHealth(s.Health) {
@@ -85,7 +85,7 @@ func deathByBodyCollision(head, body *pb.Point) bool {
 	return head.Equal(body)
 }
 
-func deathByOutOfBounds(head *pb.Point, width, height int64) bool {
+func deathByOutOfBounds(head *pb.Point, width, height int32) bool {
 	return (head.X < 0) || (head.X >= width) || (head.Y < 0) || (head.Y >= height)
 }
 

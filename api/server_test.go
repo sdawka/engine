@@ -3,7 +3,9 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -192,4 +194,54 @@ func TestGatherFrames(t *testing.T) {
 		frameCount++
 	}
 	require.Equal(t, 1, frameCount)
+}
+
+func TestGetFramesContainsDefaultValues(t *testing.T) {
+	s, mc := createAPIServer()
+	mc.ListGameFramesResponse = func() *pb.ListGameFramesResponse {
+		return &pb.ListGameFramesResponse{
+			Frames: []*pb.GameFrame{
+				{
+					Snakes: []*pb.Snake{
+						{
+							Name: "Zero Snake",
+							Body: []*pb.Point{
+								{X: 0, Y: 1},
+								{X: 0, Y: 0},
+								{X: 1, Y: 0},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	req, _ := http.NewRequest("GET", "/games/abc_123/frames", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	body, err := ioutil.ReadAll(rr.Body)
+	require.NoError(t, err)
+
+	var resp map[string]interface{}
+	json.Unmarshal(body, &resp)
+
+	frames := castJsonInterface(resp["Frames"], 0)
+	snake := castJsonInterface(frames["Snakes"], 0)
+
+	require.Equal(t, 0, castPointInArray(snake["Body"], 0, "X"))
+	require.Equal(t, 1, castPointInArray(snake["Body"], 0, "Y"))
+	require.Equal(t, 0, castPointInArray(snake["Body"], 1, "X"))
+	require.Equal(t, 0, castPointInArray(snake["Body"], 1, "Y"))
+	require.Equal(t, 1, castPointInArray(snake["Body"], 2, "X"))
+	require.Equal(t, 0, castPointInArray(snake["Body"], 2, "Y"))
+}
+
+func castPointInArray(resp interface{}, index int, key string) int {
+	return int(resp.([]interface{})[index].(map[string]interface{})[key].(float64))
+}
+
+func castJsonInterface(resp interface{}, index int) map[string]interface{} {
+	return resp.([]interface{})[index].(map[string]interface{})
 }

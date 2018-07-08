@@ -73,7 +73,7 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	return nextFrame, nil
 }
 
-func updateFood(width, height int64, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
+func updateFood(width, height int32, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
 	food := []*pb.Point{}
 	for _, foodPos := range gameFrame.Food {
 		found := false
@@ -99,7 +99,7 @@ func updateFood(width, height int64, gameFrame *pb.GameFrame, foodToRemove []*pb
 	return food, nil
 }
 
-func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
+func getUnoccupiedPoint(width, height int32, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
 	openPoints := getUnoccupiedPoints(width, height, food, snakes)
 
 	if len(openPoints) == 0 {
@@ -111,15 +111,15 @@ func getUnoccupiedPoint(width, height int64, food []*pb.Point, snakes []*pb.Snak
 	return openPoints[randIndex]
 }
 
-func getUnoccupiedPoints(width, height int64, food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
+func getUnoccupiedPoints(width, height int32, food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
 	occupiedPoints := getUniqOccupiedPoints(food, snakes)
 
-	numCandidatePoints := int(width*height) - len(occupiedPoints)
+	numCandidatePoints := (width * height) - int32(len(occupiedPoints))
 
 	candidatePoints := make([]*pb.Point, 0, numCandidatePoints)
 
-	for x := int64(0); x < width; x++ {
-		for y := int64(0); y < height; y++ {
+	for x := int32(0); x < width; x++ {
+		for y := int32(0); y < height; y++ {
 			p := &pb.Point{X: x, Y: y}
 			match := false
 

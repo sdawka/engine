@@ -213,8 +213,8 @@ func TestReadGameInfoOneLine(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, "myid", game.ID)
-	require.Equal(t, int64(10), game.Width)
-	require.Equal(t, int64(12), game.Height)
+	require.Equal(t, int32(10), game.Width)
+	require.Equal(t, int32(12), game.Height)
 }
 
 func TestReadGameInfoManyLines(t *testing.T) {

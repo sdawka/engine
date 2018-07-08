@@ -73,7 +73,7 @@ func renderFood(left, top int, food []*pb.Point) {
 
 var foods = map[string]rune{}
 
-func getFoodEmoji(x, y int64) rune {
+func getFoodEmoji(x, y int32) rune {
 	key := fmt.Sprintf("(%d, %d)", x, y)
 	r, ok := foods[key]
 	if !ok {
