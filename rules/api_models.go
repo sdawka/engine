@@ -39,7 +39,7 @@ type Board struct {
 type Snake struct {
 	ID     string   `json:"id"`
 	Name   string   `json:"name"`
-	Health int64    `json:"health"`
+	Health int32    `json:"health"`
 	Body   []Coords `json:"body"`
 }
 

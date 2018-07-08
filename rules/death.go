@@ -77,7 +77,7 @@ func checkForDeath(width, height int32, frame *pb.GameFrame) []deathUpdate {
 	return updates
 }
 
-func deathByHealth(health int64) bool {
+func deathByHealth(health int32) bool {
 	return health <= 0
 }
 

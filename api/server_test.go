@@ -196,7 +196,7 @@ func TestGatherFrames(t *testing.T) {
 	require.Equal(t, 1, frameCount)
 }
 
-func TestGetFramesContainsDefaultValues(t *testing.T) {
+func TestGetFramesContainsZeroValues(t *testing.T) {
 	s, mc := createAPIServer()
 	mc.ListGameFramesResponse = func() *pb.ListGameFramesResponse {
 		return &pb.ListGameFramesResponse{
@@ -209,7 +209,8 @@ func TestGetFramesContainsDefaultValues(t *testing.T) {
 					},
 					Snakes: []*pb.Snake{
 						{
-							Name: "Zero Snake",
+							Name:   "Zero Snake",
+							Health: 0,
 							Body: []*pb.Point{
 								{X: 0, Y: 1},
 								{X: 0, Y: 0},
@@ -242,6 +243,8 @@ func TestGetFramesContainsDefaultValues(t *testing.T) {
 	require.Equal(t, 0, castPointInArray(snake["Body"], 1, "Y"))
 	require.Equal(t, 1, castPointInArray(snake["Body"], 2, "X"))
 	require.Equal(t, 0, castPointInArray(snake["Body"], 2, "Y"))
+
+	require.Equal(t, 0, int(snake["Health"].(float64)))
 
 	require.Equal(t, 0, castPointInArray(food, 0, "X"))
 	require.Equal(t, 1, castPointInArray(food, 0, "Y"))
