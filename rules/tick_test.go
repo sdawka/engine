@@ -110,7 +110,7 @@ func TestGetUniqOccupiedPoints(t *testing.T) {
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
 	gt, err := GameTick(commonGame, &pb.GameFrame{Turn: 5})
 	require.NoError(t, err)
-	require.Equal(t, int64(6), gt.Turn)
+	require.Equal(t, int32(6), gt.Turn)
 }
 
 func TestGameTickUpdatesSnake(t *testing.T) {

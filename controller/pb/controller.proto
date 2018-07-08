@@ -124,7 +124,7 @@ message Game {
 };
 
 message GameFrame {
-  int64 Turn = 1;
+  int32 Turn = 1;
   repeated Point Food = 2;
   repeated Snake Snakes = 3;
 }
@@ -146,5 +146,5 @@ message Snake {
 
 message Death {
   string Cause = 1;
-  int64 Turn = 2;
+  int32 Turn = 2;
 }

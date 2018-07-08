@@ -79,7 +79,7 @@ func TestController_GameCRUD(t *testing.T) {
 		require.Equal(t, int64(1000), game.Game.SnakeTimeout)
 		require.Equal(t, "multi-player", game.Game.Mode)
 		require.NotNil(t, game.LastFrame)
-		require.Equal(t, int64(0), game.LastFrame.Turn)
+		require.Equal(t, int32(0), game.LastFrame.Turn)
 	})
 
 	t.Run("GetGame_NoGames", func(t *testing.T) {
@@ -180,7 +180,7 @@ func TestController_Frames(t *testing.T) {
 				pb.ContextWithLockToken(ctx, token), &pb.AddGameFrameRequest{
 					ID: gameID,
 					GameFrame: &pb.GameFrame{
-						Turn: int64(i + 1),
+						Turn: int32(i + 1),
 					},
 				})
 			require.Nil(t, err)

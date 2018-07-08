@@ -17,7 +17,7 @@ type StartResponse struct {
 // SnakeRequest the message send for all snake api calls
 type SnakeRequest struct {
 	Game  Game  `json:"game"`
-	Turn  int64 `json:"turn"`
+	Turn  int32 `json:"turn"`
 	Board Board `json:"board"`
 	You   Snake `json:"you"`
 }

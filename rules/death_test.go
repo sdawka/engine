@@ -18,7 +18,7 @@ func TestDeathCauseStarvation(t *testing.T) {
 	})
 	require.Len(t, updates, 1)
 	require.Equal(t, DeathCauseStarvation, updates[0].Death.Cause)
-	require.Equal(t, int64(3), updates[0].Death.Turn)
+	require.Equal(t, int32(3), updates[0].Death.Turn)
 }
 
 func TestDeathCauseWallCollision(t *testing.T) {
@@ -41,7 +41,7 @@ func TestDeathCauseWallCollision(t *testing.T) {
 		})
 		require.Len(t, updates, 1)
 		require.Equal(t, DeathCauseWallCollision, updates[0].Death.Cause)
-		require.Equal(t, int64(3), updates[0].Death.Turn)
+		require.Equal(t, int32(3), updates[0].Death.Turn)
 	}
 }
 
@@ -68,7 +68,7 @@ func TestDeathCauseSnakeCollision(t *testing.T) {
 	})
 	require.Len(t, updates, 1)
 	require.Equal(t, DeathCauseSnakeCollision, updates[0].Death.Cause)
-	require.Equal(t, int64(3), updates[0].Death.Turn)
+	require.Equal(t, int32(3), updates[0].Death.Turn)
 }
 
 func TestDeathCauseHeadToHeadCollision(t *testing.T) {
@@ -95,9 +95,9 @@ func TestDeathCauseHeadToHeadCollision(t *testing.T) {
 	})
 	require.Len(t, updates, 2)
 	require.Equal(t, DeathCauseHeadToHeadCollision, updates[0].Death.Cause)
-	require.Equal(t, int64(3), updates[0].Death.Turn)
+	require.Equal(t, int32(3), updates[0].Death.Turn)
 	require.Equal(t, DeathCauseHeadToHeadCollision, updates[1].Death.Cause)
-	require.Equal(t, int64(3), updates[1].Death.Turn)
+	require.Equal(t, int32(3), updates[1].Death.Turn)
 }
 
 func TestDeathCauseSnakeSelfCollision(t *testing.T) {
@@ -119,5 +119,5 @@ func TestDeathCauseSnakeSelfCollision(t *testing.T) {
 	})
 	require.Len(t, updates, 1)
 	require.Equal(t, DeathCauseSnakeSelfCollision, updates[0].Death.Cause)
-	require.Equal(t, int64(3), updates[0].Death.Turn)
+	require.Equal(t, int32(3), updates[0].Death.Turn)
 }

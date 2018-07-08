@@ -81,7 +81,7 @@ func TestWorker_Run(t *testing.T) {
 				_, err := cl.AddGameFrame(c, &pb.AddGameFrameRequest{
 					ID: id,
 					GameFrame: &pb.GameFrame{
-						Turn: int64(i + 1),
+						Turn: int32(i + 1),
 					},
 				})
 				if err != nil {
