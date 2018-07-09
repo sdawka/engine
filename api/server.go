@@ -86,7 +86,8 @@ func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, 
 	for frame := range frames {
 		m := jsonpb.Marshaler{EmitDefaults: true}
 
-		jsonStr, err := m.MarshalToString(frame)
+		var jsonStr string
+		jsonStr, err = m.MarshalToString(frame)
 		if err != nil {
 			log.WithError(err).Error("Unable to serialize frame for websocket")
 		}
