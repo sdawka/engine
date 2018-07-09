@@ -233,8 +233,8 @@ func TestGetFramesContainsZeroValues(t *testing.T) {
 	var resp map[string]interface{}
 	json.Unmarshal(body, &resp)
 
-	frames := castJsonInterface(resp["Frames"], 0)
-	snake := castJsonInterface(frames["Snakes"], 0)
+	frames := castJSONInterface(resp["Frames"], 0)
+	snake := castJSONInterface(frames["Snakes"], 0)
 	food := frames["Food"]
 
 	require.Equal(t, 0, castPointInArray(snake["Body"], 0, "X"))
@@ -258,6 +258,6 @@ func castPointInArray(resp interface{}, index int, key string) int {
 	return int(resp.([]interface{})[index].(map[string]interface{})[key].(float64))
 }
 
-func castJsonInterface(resp interface{}, index int) map[string]interface{} {
+func castJSONInterface(resp interface{}, index int) map[string]interface{} {
 	return resp.([]interface{})[index].(map[string]interface{})
 }
