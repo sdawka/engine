@@ -4,7 +4,8 @@
 .idea/
 
 # Builds
-build
+build/
+dist/
 *.out
 *.test
 
