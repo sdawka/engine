@@ -15,11 +15,13 @@ before_script:
 - "./cc-test-reporter before-build"
 jobs:
   include:
-  - script:
+  - stage: lint
+    script:
     - go get -u github.com/alecthomas/gometalinter
     - gometalinter --install
     - make lint
-  - script:
+  - stage: test
+    script:
     - docker run -d --name=battlesnake-redis --rm -t -p 6379:6379 redis
     - REDIS_URL=redis://127.0.0.1:6379 make test
     - cp coverage.txt c.out
@@ -28,10 +30,10 @@ jobs:
     - docker rm -f battlesnake-redis
     - rm ./cc-test-reporter
   - script: make test-e2e
-deploy:
-- provider: script
-  skip_cleanup: true
-  script: curl -sL https://git.io/goreleaser | bash
-  on:
-    tags: true
-    condition: "$TRAVIS_OS_NAME = linux"
+  - stage: deploy
+    script: skip
+    deploy:
+    - provider: script
+      skip_cleanup: true
+      script: curl -sL https://git.io/goreleaser | bash
+      if: branch = master AND tag IS present
