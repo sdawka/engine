@@ -13,11 +13,12 @@ before_script:
   > ./cc-test-reporter
 - chmod +x ./cc-test-reporter
 - "./cc-test-reporter before-build"
-- go get -u github.com/alecthomas/gometalinter
-- gometalinter --install
 jobs:
   include:
-  - script: make lint
+  - script:
+    - go get -u github.com/alecthomas/gometalinter
+    - gometalinter --install
+    - make lint
   - script:
     - docker run -d --name=battlesnake-redis --rm -t -p 6379:6379 redis
     - REDIS_URL=redis://127.0.0.1:6379 make test
@@ -25,6 +26,7 @@ jobs:
     - "./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT"
     - bash <(curl -s https://codecov.io/bash)
     - docker rm -f battlesnake-redis
+    - rm ./cc-test-reporter
   - script: make test-e2e
 deploy:
 - provider: script
