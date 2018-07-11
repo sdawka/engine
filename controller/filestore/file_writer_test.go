@@ -111,19 +111,19 @@ func checkBasicGameJSON(t *testing.T, j string) {
 	require.NoError(t, err)
 
 	require.Equal(t, "myid", info.ID)
-	require.Equal(t, int64(10), info.Width)
-	require.Equal(t, int64(15), info.Height)
+	require.Equal(t, int32(10), info.Width)
+	require.Equal(t, int32(15), info.Height)
 }
 
-func checkBasicFrameJSON(t *testing.T, j string, turn int64) {
+func checkBasicFrameJSON(t *testing.T, j string, turn int32) {
 	f := &pb.GameFrame{}
 	err := json.Unmarshal([]byte(j), &f)
 	require.NoError(t, err)
 
 	require.Equal(t, turn, f.Turn, "wrong turn")
 	require.Len(t, f.Food, 1, "wrong food count")
-	require.Equal(t, int64(1), f.Food[0].X)
-	require.Equal(t, int64(1), f.Food[0].Y)
+	require.Equal(t, int32(1), f.Food[0].X)
+	require.Equal(t, int32(1), f.Food[0].Y)
 	require.Len(t, f.Snakes, 2)
 	require.Equal(t, "snake1", f.Snakes[0].ID)
 	require.Equal(t, "snake2", f.Snakes[1].ID)
@@ -140,7 +140,7 @@ func checkDeadSnakeFrameJSON(t *testing.T, j string) {
 	require.Equal(t, "snake1", f.Snakes[0].ID)
 	require.NotNil(t, f.Snakes[0].Death)
 	require.Equal(t, "death-cause", f.Snakes[0].Death.Cause)
-	require.Equal(t, int64(1), f.Snakes[0].Death.Turn)
+	require.Equal(t, int32(1), f.Snakes[0].Death.Turn)
 }
 
 func TestWriteGameInfo(t *testing.T) {
