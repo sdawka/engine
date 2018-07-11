@@ -13,6 +13,11 @@ before_script:
   > ./cc-test-reporter
 - chmod +x ./cc-test-reporter
 - "./cc-test-reporter before-build"
+stages:
+  - lint
+  - test
+  - deploy
+    if: branch = master AND tag IS present
 jobs:
   include:
   - stage: lint
@@ -36,4 +41,3 @@ jobs:
     - provider: script
       skip_cleanup: true
       script: curl -sL https://git.io/goreleaser | bash
-      if: branch = master AND tag IS present
