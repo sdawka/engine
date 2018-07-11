@@ -16,7 +16,7 @@ before_script:
 stages:
   - lint
   - test
-  - deploy
+  - name: deploy
     if: branch = master AND tag IS present
 jobs:
   include:
