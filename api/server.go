@@ -10,6 +10,7 @@ import (
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
@@ -83,11 +84,16 @@ func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, 
 	frames := make(chan *pb.GameFrame)
 	go gatherFrames(frames, c, id)
 	for frame := range frames {
-		var data []byte
-		data, err = json.Marshal(frame)
+		m := jsonpb.Marshaler{EmitDefaults: true}
+
+		var jsonStr string
+		jsonStr, err = m.MarshalToString(frame)
 		if err != nil {
 			log.WithError(err).Error("Unable to serialize frame for websocket")
 		}
+
+		data := []byte(jsonStr)
+
 		err = ws.WriteMessage(websocket.TextMessage, data)
 		if err != nil {
 			log.WithError(err).Error("Unable to write to websocket")
@@ -256,14 +262,10 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 		return
 	}
 
-	j, err := json.Marshal(resp)
-	if err != nil {
-		writeError(w, err, http.StatusInternalServerError, "Error serializing response to JSON", log.Fields{
-			"resp": resp,
-		})
-		return
-	}
-	_, err = w.Write(j)
+	m := jsonpb.Marshaler{EmitDefaults: true}
+
+	err = m.Marshal(w, resp)
+
 	if err != nil {
 		log.WithError(err).Error("Unable to write response to stream")
 	}

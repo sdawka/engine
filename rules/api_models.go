@@ -17,7 +17,7 @@ type StartResponse struct {
 // SnakeRequest the message send for all snake api calls
 type SnakeRequest struct {
 	Game  Game  `json:"game"`
-	Turn  int64 `json:"turn"`
+	Turn  int32 `json:"turn"`
 	Board Board `json:"board"`
 	You   Snake `json:"you"`
 }
@@ -29,8 +29,8 @@ type Game struct {
 
 // Board provides information about the game board
 type Board struct {
-	Height int64    `json:"height"`
-	Width  int64    `json:"width"`
+	Height int32    `json:"height"`
+	Width  int32    `json:"width"`
 	Food   []Coords `json:"food"`
 	Snakes []Snake  `json:"snakes"`
 }
@@ -39,14 +39,14 @@ type Board struct {
 type Snake struct {
 	ID     string   `json:"id"`
 	Name   string   `json:"name"`
-	Health int64    `json:"health"`
+	Health int32    `json:"health"`
 	Body   []Coords `json:"body"`
 }
 
 // Coords represents a point on the board
 type Coords struct {
-	X int64 `json:"x"`
-	Y int64 `json:"y"`
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
 }
 
 func buildSnakeRequest(game *pb.Game, frame *pb.GameFrame, snakeID string) SnakeRequest {

@@ -110,7 +110,7 @@ func TestGetUniqOccupiedPoints(t *testing.T) {
 func TestGameTickUpdatesTurnCounter(t *testing.T) {
 	gt, err := GameTick(commonGame, &pb.GameFrame{Turn: 5})
 	require.NoError(t, err)
-	require.Equal(t, int64(6), gt.Turn)
+	require.Equal(t, int32(6), gt.Turn)
 }
 
 func TestGameTickUpdatesSnake(t *testing.T) {
@@ -135,7 +135,7 @@ func TestGameTickUpdatesSnake(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
-	require.Equal(t, int64(66), snake.Health)
+	require.Equal(t, int32(66), snake.Health)
 	require.Len(t, snake.Body, 3)
 	require.Equal(t, &pb.Point{X: 1, Y: 0}, snake.Body[0])
 	require.Equal(t, &pb.Point{X: 1, Y: 1}, snake.Body[1])
@@ -170,7 +170,7 @@ func TestGameFrameSnakeEats(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
-	require.Equal(t, int64(100), snake.Health)
+	require.Equal(t, int32(100), snake.Health)
 	require.Len(t, snake.Body, 4)
 }
 
@@ -194,7 +194,7 @@ func TestGameTickDeadSnakeDoNotUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, gt.Snakes, 1)
 	snake = gt.Snakes[0]
-	require.Equal(t, int64(87), snake.Health)
+	require.Equal(t, int32(87), snake.Health)
 	require.Len(t, snake.Body, 3)
 	require.Equal(t, &pb.Point{X: 1, Y: 1}, snake.Body[0])
 	require.Equal(t, &pb.Point{X: 1, Y: 2}, snake.Body[1])

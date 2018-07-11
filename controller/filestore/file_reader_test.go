@@ -139,8 +139,8 @@ func TestReadGameFrames(t *testing.T) {
 	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 2)
-	require.Equal(t, int64(1), frames[0].Turn)
-	require.Equal(t, int64(2), frames[1].Turn)
+	require.Equal(t, int32(1), frames[0].Turn)
+	require.Equal(t, int32(2), frames[1].Turn)
 	require.Equal(t, "snake1", frames[0].Snakes[0].ID)
 	require.Equal(t, "snake2", frames[0].Snakes[1].ID)
 	require.Equal(t, "snake1", frames[1].Snakes[0].ID)
@@ -160,8 +160,8 @@ func testGarbageEnding(t *testing.T, garbage string) {
 	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 2, "3rd frame is invalid and should be ignored")
-	require.Equal(t, int64(1), frames[0].Turn)
-	require.Equal(t, int64(2), frames[1].Turn)
+	require.Equal(t, int32(1), frames[0].Turn)
+	require.Equal(t, int32(2), frames[1].Turn)
 }
 
 func TestReadGameFramesPlusGarbage(t *testing.T) {
@@ -179,8 +179,8 @@ func TestReadGameFramesGarbageAfterHeader(t *testing.T) {
 	frames, _ := ReadGameFrames("", "myid")
 
 	require.Len(t, frames, 2, "garbage should be ignored")
-	require.Equal(t, int64(1), frames[0].Turn)
-	require.Equal(t, int64(2), frames[1].Turn)
+	require.Equal(t, int32(1), frames[0].Turn)
+	require.Equal(t, int32(2), frames[1].Turn)
 }
 
 func TestReadGameFramesEmpty(t *testing.T) {
@@ -213,8 +213,8 @@ func TestReadGameInfoOneLine(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, "myid", game.ID)
-	require.Equal(t, int64(10), game.Width)
-	require.Equal(t, int64(12), game.Height)
+	require.Equal(t, int32(10), game.Width)
+	require.Equal(t, int32(12), game.Height)
 }
 
 func TestReadGameInfoManyLines(t *testing.T) {
