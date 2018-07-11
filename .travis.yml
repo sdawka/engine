@@ -1,27 +1,37 @@
 env:
   global:
-    - CC_TEST_REPORTER_ID=7270ff0025c47f5c76e29b2e422f2c99615339a5abcfe0d31074b7818edf4054
+  - CC_TEST_REPORTER_ID=7270ff0025c47f5c76e29b2e422f2c99615339a5abcfe0d31074b7818edf4054
 language: go
 go:
-  - "1.10.2"
+  - 1.10.2
 go_import_path: github.com/battlesnakeio/engine
 services:
   - docker
 before_script:
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
+    > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
+  - "./cc-test-reporter before-build"
   - go get -u github.com/alecthomas/gometalinter
   - gometalinter --install
 
 jobs:
   include:
-    - script: make lint
-    - script:
-      - docker run -d --name=battlesnake-redis --rm -t -p 6379:6379 redis
-      - REDIS_URL=redis://127.0.0.1:6379 make test
-      - cp coverage.txt c.out
-      - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-      - bash <(curl -s https://codecov.io/bash)
-      - docker rm -f battlesnake-redis
-    - script: make test-e2e
+  - script: make lint
+  - script:
+    - docker run -d --name=battlesnake-redis --rm -t -p 6379:6379 redis
+    - REDIS_URL=redis://127.0.0.1:6379 make test
+    - cp coverage.txt c.out
+    - "./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT"
+    - bash <(curl -s https://codecov.io/bash)
+    - docker rm -f battlesnake-redis
+  - script: make test-e2e
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: curl -sL https://git.io/goreleaser | bash
+  on:
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux
+
