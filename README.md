@@ -6,22 +6,21 @@
 
 API and game logic for Battlesnake.
 
+**NOTE**: If you just plan on running the engine by itself, it's recommended to skip to the [running a release binary](#using-a-release-binary) section.
+
 ---
 
-# Install and setup
+## Install and Setup
 
 1. Install Golang if you haven't already [here](https://golang.org/doc/install)
-
 2. Set your GOPATH, [here](https://github.com/golang/go/wiki/SettingGOPATH)
-
 3. Add Go's _bin_ folder to your paths. More on that [here](https://golang.org/doc/code.html#GOPATH), or you can use:
-`export PATH="$PATH:$GOPATH/bin"`
-
+    `export PATH="$PATH:$GOPATH/bin"`
 4. Git clone the project into `$GOPATH/src/github.com/battlesnakeio/engine`. Note, the docs for GOPATH and project directory layouts can be found [here](https://github.com/golang/go/wiki/SettingGOPATH).
 
-# Running the engine
+## Running the engine
 
-Build an excutable via `make install` and then run `engine server` to run a local version of the server.
+Build an executable via `make install` and then run `engine server` to run a local version of the server.
 
 **Better command**: `make run`
 
@@ -29,56 +28,97 @@ Note: if you use the Makefile, you'll want JQ installed, [here](https://stedolan
 
 ## Running a game with the CLI
 
-1. Setup a `snake-config.json`, by default the engine looks in the HOME directory (see make run-game in the Makefile)
+### Using Make
 
-Here's an example:
+1. Setup a `snake-config.json`, by default the engine looks in the HOME directory (see make run-game in the Makefile).
 
-```
-{
-    "width": 20,
-    "height": 20,
-    "food": 10,
-    "snakes": [
+    Here's an example:
+    ```json
+    {
+      "width": 20,
+      "height": 20,
+      "food": 10,
+      "snakes": [
         {
-            "name": "Snake 1",
-            "url": "http://localhost:8080"
+          "name": "Snake 1",
+          "url": "http://localhost:8080"
         },
         {
-            "name": "Snake 2",
-            "url": "http://localhost:3001"
+          "name": "Snake 2",
+          "url": "http://localhost:3001"
         }
-    ]
-}
-```
-
+      ]
+    }
+    ```
 2. Start the engine (refer above)
-
 3. Start a game with `make run-game`
-
-Example Output:
-```
-⇒  make run-game
-go install github.com/battlesnakeio/engine/cmd/engine
-engine-cli run -g "d151fe9d-8c15-4d31-a932-e7b4248d5586"
-```
-
+    Example Output:
+    ```shell
+    $ make run-game
+    go install github.com/battlesnakeio/engine/cmd/engine
+    engine-cli run -g "d151fe9d-8c15-4d31-a932-e7b4248d5586"
+    ```
 4. To replay a game, run: `engine replay -g <game id>`
 
+### Using a release binary
+
+**NOTE:** This section is recommended if you don't want/need to setup a GO environment.
+
+1. Download the [latest `engine` release](https://github.com/battlesnakeio/engine/releases/latest) for your architecture to a folder somewhere on your machine
+2. Unpack/unzip the downloaded release. You should have an `engine` binary, the LICENSE, and the README available in the unpackaged folder
+3. Follow the `snake-config.json` setup from the [previous section](#using-make)
+4. Open a terminal window and run the `engine` server with `./engine server` and keep this tab running for the next few steps
+5. Open another terminal window and navigate to the `engine` binary folder
+6. Start a game with `./engine create -c ~/.snake-config.json` which will yield a JSON response with `{"ID": "some id here"}
+7. Use the game ID from the previous step to run the game with `./engine run -g <game ID>`
+
+_Protip_: If you want to create and run a game in your browser (provided you have the [`board`](https://github.com/battlesnakeio/board) setup and running, and have [`jq`](https://stedolan.github.io/jq/) installed) you can run a one-liner with:
+
+```shell
+ENGINE_URL=http://localhost:3005
+./engine create -c ~/.snake-config.json \
+  | jq --raw-output ".ID" \
+  | xargs -I {} sh -c \
+      "open -a \"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" \
+          \"http://localhost:3000/?engine=${ENGINE_URL}&game={}\" \
+        && ./engine run -g {}'
+```
 
 For more information about the engine:
 
-`engine --help`
+```shell
+$ engine --help
+> engine helps run games on the battlesnake game engine
 
-`engine [command] --help`
+Usage:
+  engine [flags]
+  engine [command]
+
+Available Commands:
+  create      creates a new game on the battlesnake engine
+  help        Help about any command
+  load-test   run a load test against the engine, using the provided snake config
+  replay      replays an existing game on the battlesnake engine
+  run         runs an existing game on the battlesnake engine
+  server      serve the battlesnake game engine
+  status      gets the status of a game from the battlesnake engine
+
+Flags:
+      --api-addr string   address of the api server (default "http://localhost:3005")
+  -h, --help              help for engine
+      --version           version for engine
+
+Use "engine [command] --help" for more information about a command.
+```
 
 ## Backend configuration
 
 Storage options:
 
-* `inmem` - This is the default. All game data is erased when the engine restarts.
-* `file` - Stores one file per game. Games can be resumed or replayed after restart.
+- `inmem` - This is the default. All game data is erased when the engine restarts.
+- `file` - Stores one file per game. Games can be resumed or replayed after restart.
 
-### Examples:
+### Backend configuration examples
 
 Save games as files in `~/battlesnake/`
 
@@ -86,6 +126,6 @@ Save games as files in `~/battlesnake/`
 
 ---
 
-# API
+## Batlesnake API
 
-Refer to the [docs](https://github.com/battlesnakeio/docs) repository, specifically the snake api [here](https://github.com/battlesnakeio/docs/blob/master/apis/snake/spec.yaml) which can viewed with [Swagger's editor](https://swagger.io/swagger-editor/)
+Refer to the [docs](https://github.com/battlesnakeio/docs) repository, specifically the [snake API](https://github.com/battlesnakeio/docs/blob/master/apis/snake/spec.yaml) which can viewed with [Swagger's editor](https://swagger.io/swagger-editor/)
