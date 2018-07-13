@@ -72,10 +72,23 @@ Note: if you use the Makefile, you'll want JQ installed, [here](https://stedolan
 6. Start a game with `./engine create -c ~/.snake-config.json` which will yield a JSON response with `{"ID": "some id here"}
 7. Use the game ID from the previous step to run the game with `./engine run -g <game ID>`
 
-_Protip_: If you want to create and run a game in your browser (provided you have the [`board`](https://github.com/battlesnakeio/board) setup and running, and have [`jq`](https://stedolan.github.io/jq/) installed) you can run a one-liner with:
+_Protip_: Provided you have the [`board`](https://github.com/battlesnakeio/board) setup and running, and have [`jq`](https://stedolan.github.io/jq/) installed, you can create a game then run it in your browser you can run this one-liner:
 
 ```shell
 ENGINE_URL=http://localhost:3005
+
+./engine create -c ~/.snake-config.json \
+  | jq --raw-output ".ID" \
+  | xargs -I {} sh -c \
+      "echo \"Go to this URL in your browser http://localhost:3000/?engine=${ENGINE_URL}&game={}\" && sleep 10; \
+        ./engine run -g {}"
+```
+
+On macOS/OS X, you can tweak the above command and automatically open your browser to the correct game and run it, all in on go:
+
+```shell
+ENGINE_URL=http://localhost:3005
+
 ./engine create -c ~/.snake-config.json \
   | jq --raw-output ".ID" \
   | xargs -I {} sh -c \
@@ -104,7 +117,7 @@ Available Commands:
   status      gets the status of a game from the battlesnake engine
 
 Flags:
-      --api-addr string   address of the api server (default "http://localhost:3005")
+      --api-addr string   address of the api server (default <http://localhost:3005>)
   -h, --help              help for engine
       --version           version for engine
 
@@ -117,15 +130,18 @@ Storage options:
 
 - `inmem` - This is the default. All game data is erased when the engine restarts.
 - `file` - Stores one file per game. Games can be resumed or replayed after restart.
+- `redis` - Stores game data in a redis key. Games can be resumed or replayed after restart.
 
 ### Backend configuration examples
 
 Save games as files in `~/battlesnake/`
 
-```engine all --backend file --backend-args ~/battlesnake```
+```shell
+engine all --backend file --backend-args ~/battlesnake
+```
 
 ---
 
-## Batlesnake API
+## Battlesnake API
 
 Refer to the [docs](https://github.com/battlesnakeio/docs) repository, specifically the [snake API](https://github.com/battlesnakeio/docs/blob/master/apis/snake/spec.yaml) which can viewed with [Swagger's editor](https://swagger.io/swagger-editor/)
