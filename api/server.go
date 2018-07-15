@@ -179,14 +179,8 @@ func createGame(w http.ResponseWriter, r *http.Request, _ httprouter.Params, c p
 		return
 	}
 
-	j, err := json.Marshal(resp)
-	if err != nil {
-		writeError(w, err, http.StatusInternalServerError, "Error serializing to JSON", log.Fields{
-			"resp": resp,
-		})
-		return
-	}
-	_, err = w.Write(j)
+	m := jsonpb.Marshaler{EmitDefaults: true}
+	err = m.Marshal(w, resp)
 	if err != nil {
 		log.WithError(err).Error("Unable to write response to stream")
 	}
@@ -228,14 +222,8 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 		return
 	}
 
-	j, err := json.Marshal(resp)
-	if err != nil {
-		writeError(w, err, http.StatusInternalServerError, "Error serializing response to JSON", log.Fields{
-			"resp": resp,
-		})
-		return
-	}
-	_, err = w.Write(j)
+	m := jsonpb.Marshaler{EmitDefaults: true}
+	err = m.Marshal(w, resp)
 	if err != nil {
 		log.WithError(err).Error("Unable to write response to stream")
 	}
