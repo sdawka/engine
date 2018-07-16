@@ -134,10 +134,20 @@ Storage options:
 
 ### Backend configuration examples
 
+#### File-based
+
 Save games as files in `~/battlesnake/`
 
 ```shell
 engine all --backend file --backend-args ~/battlesnake
+```
+
+#### Redis
+
+Save games as keys in redis
+
+```shell
+engine all --backend redis --backend-args 'redis://localhost:6379'
 ```
 
 ---
