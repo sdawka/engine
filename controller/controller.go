@@ -11,11 +11,11 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/pkg/errors"
 	"strconv"
 )
 
@@ -40,16 +40,16 @@ type Server struct {
 
 // ValidateMySnake takes a snake URL and sends requests to validate a snakes validity.
 func (s *Server) ValidateMySnake(ctx context.Context, req *pb.ValidateMySnakeRequest) (*pb.ValidateMySnakeResponse, error) {
-	url := req.URL;
+	url := req.URL
 
 	if url == "" {
 		return nil, errors.New("url not found in request")
 	}
-	gameId := strconv.FormatInt(time.Now().UnixNano(), 10)
+	gameID := strconv.FormatInt(time.Now().UnixNano(), 10)
 	validateMySnakeResponse := &pb.ValidateMySnakeResponse{
-		StartStatus: rules.ValidateStart(gameId, url),
-		MoveStatus: rules.ValidateMove(gameId, url),
-		EndStatus: rules.ValidateEnd(gameId, url),
+		StartStatus: rules.ValidateStart(gameID, url),
+		MoveStatus:  rules.ValidateMove(gameID, url),
+		EndStatus:   rules.ValidateEnd(gameID, url),
 	}
 	return validateMySnakeResponse, nil
 }

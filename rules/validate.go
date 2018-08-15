@@ -9,16 +9,20 @@ import (
 	"time"
 )
 
+// Validates the start end point on a snake server
 func ValidateStart(gameID string, url string) *pb.SnakeResponseStatus {
 	response := scoreResponse(gameID, url, "/start")
 	return response
 }
 
+
+// Validates the move end point on a snake server
 func ValidateMove(gameID string, url string) *pb.SnakeResponseStatus {
 	response := scoreResponse(gameID, url, "/move")
 	return response
 }
 
+// Validates the end end point on a snake server
 func ValidateEnd(gameID string, url string) *pb.SnakeResponseStatus {
 	response := scoreResponse(gameID, url, "/end")
 	return response
