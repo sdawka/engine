@@ -78,10 +78,10 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	if err != nil {
 		return "", 0, 0, err
 	}
+	defer response.Body.Close()
 	statusCode := response.StatusCode
 	finish := time.Now().UnixNano()
 	time := int32((finish - start) / int64(time.Millisecond))
-	defer response.Body.Close()
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return "", statusCode, 0, err
