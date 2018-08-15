@@ -78,24 +78,22 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	if err != nil {
 		return "", 0, 0, err
 	}
-	responseCode := response.StatusCode
+	statusCode := response.StatusCode
 	finish := time.Now().UnixNano()
-	responseTime := int32((finish - start) / int64(time.Millisecond))
+	time := int32((finish - start) / int64(time.Millisecond))
 	defer response.Body.Close()
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", responseCode, 0, err
+		return "", statusCode, 0, err
 	}
+	raw := string(contents[:])
 
-	rawResponse := ""
-
-	rawResponse = string(contents[:])
 	if endpoint != "/end" {
 		var raw map[string]interface{}
 		err = json.Unmarshal(contents, &raw)
 	}
 
-	return rawResponse, responseCode, responseTime, err
+	return raw, statusCode, time, err
 }
 
 func createGameFrame(gameID string, url string) (*pb.Game, *pb.GameFrame) {
