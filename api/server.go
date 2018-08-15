@@ -13,9 +13,9 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pkg/errors"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
-	"github.com/pkg/errors"
 )
 
 // Server this is the api server
@@ -275,16 +275,16 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 func validateMySnake(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
 	queryValues := r.URL.Query()
-	url := queryValues.Get("url");
+	url := queryValues.Get("url")
 	if url == "" {
 		err := errors.New("url parameter not provided")
-		writeError(w, err, http.StatusBadRequest, "You must provide a url parameter", nil);
+		writeError(w, err, http.StatusBadRequest, "You must provide a url parameter", nil)
 	}
 	m := jsonpb.Marshaler{EmitDefaults: true}
 	req := &pb.ValidateMySnakeRequest{
 		URL: url,
 	}
-	resp, err :=  c.ValidateMySnake(r.Context(), req)
+	resp, err := c.ValidateMySnake(r.Context(), req)
 	err = m.Marshal(w, resp)
 
 	if err != nil {

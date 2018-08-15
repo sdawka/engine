@@ -19,12 +19,12 @@ import (
 type MockController struct {
 	pb.ControllerClient
 
-	Error                  error
-	CreateResponse         *pb.CreateResponse
-	StartResponse          *pb.StartResponse
-	StatusResponse         *pb.StatusResponse
+	Error                   error
+	CreateResponse          *pb.CreateResponse
+	StartResponse           *pb.StartResponse
+	StatusResponse          *pb.StatusResponse
 	ValidateMySnakeResponse *pb.ValidateMySnakeResponse
-	ListGameFramesResponse func() *pb.ListGameFramesResponse
+	ListGameFramesResponse  func() *pb.ListGameFramesResponse
 }
 
 func (mc *MockController) Create(ctx context.Context, req *pb.CreateRequest, opts ...grpc.CallOption) (*pb.CreateResponse, error) {
@@ -48,9 +48,9 @@ func (mc *MockController) ValidateMySnake(ctx context.Context, req *pb.ValidateM
 
 func createAPIServer() (*Server, *MockController) {
 	var client = &MockController{
-		CreateResponse: &pb.CreateResponse{},
-		StartResponse:  &pb.StartResponse{},
-		StatusResponse: &pb.StatusResponse{},
+		CreateResponse:          &pb.CreateResponse{},
+		StartResponse:           &pb.StartResponse{},
+		StatusResponse:          &pb.StatusResponse{},
 		ValidateMySnakeResponse: &pb.ValidateMySnakeResponse{},
 		ListGameFramesResponse: func() *pb.ListGameFramesResponse {
 			return &pb.ListGameFramesResponse{}

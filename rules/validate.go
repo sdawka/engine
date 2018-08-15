@@ -1,12 +1,12 @@
 package rules
 
 import (
-	"github.com/battlesnakeio/engine/controller/pb"
-	"time"
-	"strings"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"github.com/battlesnakeio/engine/controller/pb"
 	"io/ioutil"
+	"strings"
+	"time"
 )
 
 func ValidateStart(gameID string, url string) *pb.SnakeResponseStatus {
