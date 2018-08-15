@@ -10,35 +10,55 @@ import (
 var snakeURL = "http://good-server"
 
 func TestValidateEnd(t *testing.T) {
-	json := ""
 	expected := &pb.SnakeResponseStatus{
-		Message: "Perfect",
+		Message:    "Perfect",
+		StatusCode: 200,
+		Raw:        "",
+		Score: &pb.Score{
+			ChecksPassed: 3,
+			ChecksFailed: 0,
+		},
 	}
-	validateWithJSON(t, ValidateEnd, snakeURL+"/end", json, expected, 0, 3)
+	validateWithJSON(t, ValidateEnd, snakeURL+"/end", expected)
 }
 func TestValidateMove(t *testing.T) {
-	json := "{  }"
 	expected := &pb.SnakeResponseStatus{
-		Message: "Perfect",
+		Message:    "Perfect",
+		Raw:        "{  }",
+		StatusCode: 200,
+		Score: &pb.Score{
+			ChecksPassed: 3,
+			ChecksFailed: 0,
+		},
 	}
-	validateWithJSON(t, ValidateMove, snakeURL+"/move", json, expected, 0, 3)
+	validateWithJSON(t, ValidateMove, snakeURL+"/move", expected)
 }
 
 func TestValidateStart(t *testing.T) {
-	json := "{ \"color\": \"blue\" }"
 	expected := &pb.SnakeResponseStatus{
-		Message: "Perfect",
+		Message:    "Perfect",
+		Raw:        "{ \"color\": \"blue\" }",
+		StatusCode: 200,
+		Score: &pb.Score{
+			ChecksPassed: 3,
+			ChecksFailed: 0,
+		},
 	}
-	validateWithJSON(t, ValidateStart, snakeURL+"/start", json, expected, 0, 3)
+	validateWithJSON(t, ValidateStart, snakeURL+"/start", expected)
 }
 
 func TestValidateStartBadJson(t *testing.T) {
-	json := "{ color\": \"blue\" }"
 	expected := &pb.SnakeResponseStatus{
-		Message: "Bad response format",
-		Errors:  []string{"invalid character 'c' looking for beginning of object key string"},
+		Message:    "Bad response format",
+		Raw:        "{ color\": \"blue\" }",
+		StatusCode: 200,
+		Errors:     []string{"invalid character 'c' looking for beginning of object key string"},
+		Score: &pb.Score{
+			ChecksPassed: 2,
+			ChecksFailed: 1,
+		},
 	}
-	validateWithJSON(t, ValidateStart, snakeURL+"/start", json, expected, 1, 2)
+	validateWithJSON(t, ValidateStart, snakeURL+"/start", expected)
 }
 
 func TestValidateStartBadUrl(t *testing.T) {
@@ -47,11 +67,12 @@ func TestValidateStartBadUrl(t *testing.T) {
 	require.Equal(t, []string{"invalid url 'start'"}, response.Errors)
 }
 
-func validateWithJSON(t *testing.T, status func(id string, url string) *pb.SnakeResponseStatus, url string, json string, expected *pb.SnakeResponseStatus, expectedFailed int32, expectedChecksPassed int32) {
-	createClient = singleEndpointMockClient(t, url, json, 200)
+func validateWithJSON(t *testing.T, status func(id string, url string) *pb.SnakeResponseStatus, url string, expected *pb.SnakeResponseStatus) {
+	createClient = singleEndpointMockClient(t, url, expected.Raw, 200)
 	response := status("1234", snakeURL)
 	require.True(t, strings.Contains(response.Message, expected.Message), "got: "+response.Message+", expected: "+expected.Message)
 	require.Equal(t, expected.Errors, response.Errors)
-	require.Equal(t, expectedChecksPassed, response.Score.ChecksPassed, "IncrementPassed count mismatch")
-	require.Equal(t, expectedFailed, response.Score.ChecksFailed, "Expected count mismatch")
+	require.Equal(t, expected.Raw, response.Raw)
+	require.Equal(t, expected.Score.ChecksPassed, response.Score.ChecksPassed, "Passed count mismatch")
+	require.Equal(t, expected.Score.ChecksFailed, response.Score.ChecksFailed, "Failed count mismatch")
 }

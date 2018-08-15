@@ -71,9 +71,9 @@ message ValidateMySnakeResponse {
 message SnakeResponseStatus {
   string Message = 1;
   repeated string Errors = 2;
-  int32 responseTime = 3;
-  string rawResponse = 4;
-  int32 responseCode = 5;
+  int32 time = 3;
+  string raw = 4;
+  int32 statusCode = 5;
   Score score = 6;
 }
  message Score {

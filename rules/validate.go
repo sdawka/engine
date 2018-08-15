@@ -40,9 +40,9 @@ func scoreResponse(gameID string, url string, endpoint string) *pb.SnakeResponse
 		response.Score.ChecksPassed++
 		rawResponse, responseCode, responseTime, responseError := makeSnakeCall(game, frame, url, endpoint)
 		response.Message = "Perfect"
-		response.RawResponse = rawResponse
-		response.ResponseTime = responseTime
-		response.ResponseCode = int32(responseCode)
+		response.Raw = rawResponse
+		response.Time = responseTime
+		response.StatusCode = int32(responseCode)
 		if responseError != nil {
 			response.Score.ChecksFailed++
 			if strings.HasPrefix(responseError.Error(), "invalid") {
