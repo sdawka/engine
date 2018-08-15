@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/battlesnakeio/engine/controller/pb"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -78,7 +79,12 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	if err != nil {
 		return "", 0, 0, err
 	}
-	defer response.Body.Close()
+	defer func() {
+		err = response.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Unable to close websocket stream")
+		}
+	}()
 	statusCode := response.StatusCode
 	finish := time.Now().UnixNano()
 	time := int32((finish - start) / int64(time.Millisecond))
