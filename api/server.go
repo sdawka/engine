@@ -284,13 +284,16 @@ func validateMySnake(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	req := &pb.ValidateMySnakeRequest{
 		URL: url,
 	}
-	resp, err := c.ValidateMySnake(r.Context(), req)
-	err = m.Marshal(w, resp)
 
+	resp, err := c.ValidateMySnake(r.Context(), req)
+	if err != nil {
+		writeError(w, err, http.StatusBadRequest, "Error validating snake", nil)
+	}
+
+	err = m.Marshal(w, resp)
 	if err != nil {
 		log.WithError(err).Error("Unable to write response to stream")
 	}
-	return
 }
 
 // WaitForExit starts up the server and blocks until the server shuts down.
