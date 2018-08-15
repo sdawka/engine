@@ -23,6 +23,7 @@ type MockController struct {
 	CreateResponse         *pb.CreateResponse
 	StartResponse          *pb.StartResponse
 	StatusResponse         *pb.StatusResponse
+	ValidateMySnakeResponse *pb.ValidateMySnakeResponse
 	ListGameFramesResponse func() *pb.ListGameFramesResponse
 }
 
@@ -41,12 +42,16 @@ func (mc *MockController) Status(ctx context.Context, req *pb.StatusRequest, opt
 func (mc *MockController) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest, opts ...grpc.CallOption) (*pb.ListGameFramesResponse, error) {
 	return mc.ListGameFramesResponse(), mc.Error
 }
+func (mc *MockController) ValidateMySnake(ctx context.Context, req *pb.ValidateMySnakeRequest, opts ...grpc.CallOption) (*pb.ValidateMySnakeResponse, error) {
+	return mc.ValidateMySnakeResponse, mc.Error
+}
 
 func createAPIServer() (*Server, *MockController) {
 	var client = &MockController{
 		CreateResponse: &pb.CreateResponse{},
 		StartResponse:  &pb.StartResponse{},
 		StatusResponse: &pb.StatusResponse{},
+		ValidateMySnakeResponse: &pb.ValidateMySnakeResponse{},
 		ListGameFramesResponse: func() *pb.ListGameFramesResponse {
 			return &pb.ListGameFramesResponse{}
 		},
@@ -156,6 +161,36 @@ func TestGetFrames(t *testing.T) {
 
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestValidateMySnake(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/validateMySnake?url=dsnek.heroku.com", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestValidateMySnakeBlankUrl(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/validateMySnake?url=", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
+func TestValidateMySnakeMissingUrl(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/validateMySnake", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
 func TestGetFramesWithControllerError(t *testing.T) {

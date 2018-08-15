@@ -8,6 +8,10 @@ It is generated from these files:
 	controller.proto
 
 It has these top-level messages:
+	ValidateMySnakeRequest
+	ValidateMySnakeResponse
+	SnakeResponseStatus
+	Score
 	PopRequest
 	PopResponse
 	StatusRequest
@@ -52,13 +56,143 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
+type ValidateMySnakeRequest struct {
+	URL string `protobuf:"bytes,1,opt,name=URL,proto3" json:"URL,omitempty"`
+}
+
+func (m *ValidateMySnakeRequest) Reset()                    { *m = ValidateMySnakeRequest{} }
+func (m *ValidateMySnakeRequest) String() string            { return proto.CompactTextString(m) }
+func (*ValidateMySnakeRequest) ProtoMessage()               {}
+func (*ValidateMySnakeRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{0} }
+
+func (m *ValidateMySnakeRequest) GetURL() string {
+	if m != nil {
+		return m.URL
+	}
+	return ""
+}
+
+type ValidateMySnakeResponse struct {
+	StartStatus *SnakeResponseStatus `protobuf:"bytes,1,opt,name=StartStatus" json:"StartStatus,omitempty"`
+	MoveStatus  *SnakeResponseStatus `protobuf:"bytes,2,opt,name=MoveStatus" json:"MoveStatus,omitempty"`
+	EndStatus   *SnakeResponseStatus `protobuf:"bytes,3,opt,name=EndStatus" json:"EndStatus,omitempty"`
+}
+
+func (m *ValidateMySnakeResponse) Reset()         { *m = ValidateMySnakeResponse{} }
+func (m *ValidateMySnakeResponse) String() string { return proto.CompactTextString(m) }
+func (*ValidateMySnakeResponse) ProtoMessage()    {}
+func (*ValidateMySnakeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptorController, []int{1}
+}
+
+func (m *ValidateMySnakeResponse) GetStartStatus() *SnakeResponseStatus {
+	if m != nil {
+		return m.StartStatus
+	}
+	return nil
+}
+
+func (m *ValidateMySnakeResponse) GetMoveStatus() *SnakeResponseStatus {
+	if m != nil {
+		return m.MoveStatus
+	}
+	return nil
+}
+
+func (m *ValidateMySnakeResponse) GetEndStatus() *SnakeResponseStatus {
+	if m != nil {
+		return m.EndStatus
+	}
+	return nil
+}
+
+type SnakeResponseStatus struct {
+	Message      string   `protobuf:"bytes,1,opt,name=Message,proto3" json:"Message,omitempty"`
+	Errors       []string `protobuf:"bytes,2,rep,name=Errors" json:"Errors,omitempty"`
+	ResponseTime int32    `protobuf:"varint,3,opt,name=responseTime,proto3" json:"responseTime,omitempty"`
+	RawResponse  string   `protobuf:"bytes,4,opt,name=rawResponse,proto3" json:"rawResponse,omitempty"`
+	ResponseCode int32    `protobuf:"varint,5,opt,name=responseCode,proto3" json:"responseCode,omitempty"`
+	Score        *Score   `protobuf:"bytes,6,opt,name=score" json:"score,omitempty"`
+}
+
+func (m *SnakeResponseStatus) Reset()                    { *m = SnakeResponseStatus{} }
+func (m *SnakeResponseStatus) String() string            { return proto.CompactTextString(m) }
+func (*SnakeResponseStatus) ProtoMessage()               {}
+func (*SnakeResponseStatus) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{2} }
+
+func (m *SnakeResponseStatus) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+func (m *SnakeResponseStatus) GetErrors() []string {
+	if m != nil {
+		return m.Errors
+	}
+	return nil
+}
+
+func (m *SnakeResponseStatus) GetResponseTime() int32 {
+	if m != nil {
+		return m.ResponseTime
+	}
+	return 0
+}
+
+func (m *SnakeResponseStatus) GetRawResponse() string {
+	if m != nil {
+		return m.RawResponse
+	}
+	return ""
+}
+
+func (m *SnakeResponseStatus) GetResponseCode() int32 {
+	if m != nil {
+		return m.ResponseCode
+	}
+	return 0
+}
+
+func (m *SnakeResponseStatus) GetScore() *Score {
+	if m != nil {
+		return m.Score
+	}
+	return nil
+}
+
+type Score struct {
+	ChecksPassed int32 `protobuf:"varint,1,opt,name=checksPassed,proto3" json:"checksPassed,omitempty"`
+	ChecksFailed int32 `protobuf:"varint,2,opt,name=checksFailed,proto3" json:"checksFailed,omitempty"`
+}
+
+func (m *Score) Reset()                    { *m = Score{} }
+func (m *Score) String() string            { return proto.CompactTextString(m) }
+func (*Score) ProtoMessage()               {}
+func (*Score) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{3} }
+
+func (m *Score) GetChecksPassed() int32 {
+	if m != nil {
+		return m.ChecksPassed
+	}
+	return 0
+}
+
+func (m *Score) GetChecksFailed() int32 {
+	if m != nil {
+		return m.ChecksFailed
+	}
+	return 0
+}
+
 type PopRequest struct {
 }
 
 func (m *PopRequest) Reset()                    { *m = PopRequest{} }
 func (m *PopRequest) String() string            { return proto.CompactTextString(m) }
 func (*PopRequest) ProtoMessage()               {}
-func (*PopRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{0} }
+func (*PopRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{4} }
 
 type PopResponse struct {
 	ID    string `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
@@ -68,7 +202,7 @@ type PopResponse struct {
 func (m *PopResponse) Reset()                    { *m = PopResponse{} }
 func (m *PopResponse) String() string            { return proto.CompactTextString(m) }
 func (*PopResponse) ProtoMessage()               {}
-func (*PopResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{1} }
+func (*PopResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{5} }
 
 func (m *PopResponse) GetID() string {
 	if m != nil {
@@ -91,7 +225,7 @@ type StatusRequest struct {
 func (m *StatusRequest) Reset()                    { *m = StatusRequest{} }
 func (m *StatusRequest) String() string            { return proto.CompactTextString(m) }
 func (*StatusRequest) ProtoMessage()               {}
-func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{2} }
+func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{6} }
 
 func (m *StatusRequest) GetID() string {
 	if m != nil {
@@ -108,7 +242,7 @@ type StatusResponse struct {
 func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
 func (m *StatusResponse) String() string            { return proto.CompactTextString(m) }
 func (*StatusResponse) ProtoMessage()               {}
-func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{3} }
+func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
 
 func (m *StatusResponse) GetGame() *Game {
 	if m != nil {
@@ -131,7 +265,7 @@ type StartRequest struct {
 func (m *StartRequest) Reset()                    { *m = StartRequest{} }
 func (m *StartRequest) String() string            { return proto.CompactTextString(m) }
 func (*StartRequest) ProtoMessage()               {}
-func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{4} }
+func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
 
 func (m *StartRequest) GetID() string {
 	if m != nil {
@@ -146,7 +280,7 @@ type StartResponse struct {
 func (m *StartResponse) Reset()                    { *m = StartResponse{} }
 func (m *StartResponse) String() string            { return proto.CompactTextString(m) }
 func (*StartResponse) ProtoMessage()               {}
-func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{5} }
+func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
 
 type CreateRequest struct {
 	Width  int32           `protobuf:"varint,1,opt,name=Width,proto3" json:"Width,omitempty"`
@@ -158,7 +292,7 @@ type CreateRequest struct {
 func (m *CreateRequest) Reset()                    { *m = CreateRequest{} }
 func (m *CreateRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()               {}
-func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{6} }
+func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
 
 func (m *CreateRequest) GetWidth() int32 {
 	if m != nil {
@@ -195,7 +329,7 @@ type CreateResponse struct {
 func (m *CreateResponse) Reset()                    { *m = CreateResponse{} }
 func (m *CreateResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateResponse) ProtoMessage()               {}
-func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{7} }
+func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{11} }
 
 func (m *CreateResponse) GetID() string {
 	if m != nil {
@@ -212,7 +346,7 @@ type AddGameFrameRequest struct {
 func (m *AddGameFrameRequest) Reset()                    { *m = AddGameFrameRequest{} }
 func (m *AddGameFrameRequest) String() string            { return proto.CompactTextString(m) }
 func (*AddGameFrameRequest) ProtoMessage()               {}
-func (*AddGameFrameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{8} }
+func (*AddGameFrameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
 
 func (m *AddGameFrameRequest) GetID() string {
 	if m != nil {
@@ -235,7 +369,7 @@ type AddGameFrameResponse struct {
 func (m *AddGameFrameResponse) Reset()                    { *m = AddGameFrameResponse{} }
 func (m *AddGameFrameResponse) String() string            { return proto.CompactTextString(m) }
 func (*AddGameFrameResponse) ProtoMessage()               {}
-func (*AddGameFrameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{9} }
+func (*AddGameFrameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
 
 func (m *AddGameFrameResponse) GetGame() *Game {
 	if m != nil {
@@ -253,7 +387,7 @@ type ListGameFramesRequest struct {
 func (m *ListGameFramesRequest) Reset()                    { *m = ListGameFramesRequest{} }
 func (m *ListGameFramesRequest) String() string            { return proto.CompactTextString(m) }
 func (*ListGameFramesRequest) ProtoMessage()               {}
-func (*ListGameFramesRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{10} }
+func (*ListGameFramesRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{14} }
 
 func (m *ListGameFramesRequest) GetID() string {
 	if m != nil {
@@ -285,7 +419,7 @@ func (m *ListGameFramesResponse) Reset()         { *m = ListGameFramesResponse{}
 func (m *ListGameFramesResponse) String() string { return proto.CompactTextString(m) }
 func (*ListGameFramesResponse) ProtoMessage()    {}
 func (*ListGameFramesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptorController, []int{11}
+	return fileDescriptorController, []int{15}
 }
 
 func (m *ListGameFramesResponse) GetFrames() []*GameFrame {
@@ -309,7 +443,7 @@ type EndGameRequest struct {
 func (m *EndGameRequest) Reset()                    { *m = EndGameRequest{} }
 func (m *EndGameRequest) String() string            { return proto.CompactTextString(m) }
 func (*EndGameRequest) ProtoMessage()               {}
-func (*EndGameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{12} }
+func (*EndGameRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
 
 func (m *EndGameRequest) GetID() string {
 	if m != nil {
@@ -324,7 +458,7 @@ type EndGameResponse struct {
 func (m *EndGameResponse) Reset()                    { *m = EndGameResponse{} }
 func (m *EndGameResponse) String() string            { return proto.CompactTextString(m) }
 func (*EndGameResponse) ProtoMessage()               {}
-func (*EndGameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{13} }
+func (*EndGameResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{17} }
 
 type PingRequest struct {
 }
@@ -332,7 +466,7 @@ type PingRequest struct {
 func (m *PingRequest) Reset()                    { *m = PingRequest{} }
 func (m *PingRequest) String() string            { return proto.CompactTextString(m) }
 func (*PingRequest) ProtoMessage()               {}
-func (*PingRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{14} }
+func (*PingRequest) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{18} }
 
 type PingResponse struct {
 	Version string `protobuf:"bytes,1,opt,name=Version,proto3" json:"Version,omitempty"`
@@ -341,7 +475,7 @@ type PingResponse struct {
 func (m *PingResponse) Reset()                    { *m = PingResponse{} }
 func (m *PingResponse) String() string            { return proto.CompactTextString(m) }
 func (*PingResponse) ProtoMessage()               {}
-func (*PingResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{15} }
+func (*PingResponse) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{19} }
 
 func (m *PingResponse) GetVersion() string {
 	if m != nil {
@@ -359,7 +493,7 @@ type SnakeOptions struct {
 func (m *SnakeOptions) Reset()                    { *m = SnakeOptions{} }
 func (m *SnakeOptions) String() string            { return proto.CompactTextString(m) }
 func (*SnakeOptions) ProtoMessage()               {}
-func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{16} }
+func (*SnakeOptions) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{20} }
 
 func (m *SnakeOptions) GetName() string {
 	if m != nil {
@@ -395,7 +529,7 @@ type Game struct {
 func (m *Game) Reset()                    { *m = Game{} }
 func (m *Game) String() string            { return proto.CompactTextString(m) }
 func (*Game) ProtoMessage()               {}
-func (*Game) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{17} }
+func (*Game) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{21} }
 
 func (m *Game) GetID() string {
 	if m != nil {
@@ -455,7 +589,7 @@ type GameFrame struct {
 func (m *GameFrame) Reset()                    { *m = GameFrame{} }
 func (m *GameFrame) String() string            { return proto.CompactTextString(m) }
 func (*GameFrame) ProtoMessage()               {}
-func (*GameFrame) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{18} }
+func (*GameFrame) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{22} }
 
 func (m *GameFrame) GetTurn() int32 {
 	if m != nil {
@@ -486,7 +620,7 @@ type Point struct {
 func (m *Point) Reset()                    { *m = Point{} }
 func (m *Point) String() string            { return proto.CompactTextString(m) }
 func (*Point) ProtoMessage()               {}
-func (*Point) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{19} }
+func (*Point) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{23} }
 
 func (m *Point) GetX() int32 {
 	if m != nil {
@@ -515,7 +649,7 @@ type Snake struct {
 func (m *Snake) Reset()                    { *m = Snake{} }
 func (m *Snake) String() string            { return proto.CompactTextString(m) }
 func (*Snake) ProtoMessage()               {}
-func (*Snake) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{20} }
+func (*Snake) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{24} }
 
 func (m *Snake) GetID() string {
 	if m != nil {
@@ -574,7 +708,7 @@ type Death struct {
 func (m *Death) Reset()                    { *m = Death{} }
 func (m *Death) String() string            { return proto.CompactTextString(m) }
 func (*Death) ProtoMessage()               {}
-func (*Death) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{21} }
+func (*Death) Descriptor() ([]byte, []int) { return fileDescriptorController, []int{25} }
 
 func (m *Death) GetCause() string {
 	if m != nil {
@@ -591,6 +725,10 @@ func (m *Death) GetTurn() int32 {
 }
 
 func init() {
+	proto.RegisterType((*ValidateMySnakeRequest)(nil), "pb.ValidateMySnakeRequest")
+	proto.RegisterType((*ValidateMySnakeResponse)(nil), "pb.ValidateMySnakeResponse")
+	proto.RegisterType((*SnakeResponseStatus)(nil), "pb.SnakeResponseStatus")
+	proto.RegisterType((*Score)(nil), "pb.Score")
 	proto.RegisterType((*PopRequest)(nil), "pb.PopRequest")
 	proto.RegisterType((*PopResponse)(nil), "pb.PopResponse")
 	proto.RegisterType((*StatusRequest)(nil), "pb.StatusRequest")
@@ -613,6 +751,131 @@ func init() {
 	proto.RegisterType((*Point)(nil), "pb.Point")
 	proto.RegisterType((*Snake)(nil), "pb.Snake")
 	proto.RegisterType((*Death)(nil), "pb.Death")
+}
+func (this *ValidateMySnakeRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ValidateMySnakeRequest)
+	if !ok {
+		that2, ok := that.(ValidateMySnakeRequest)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.URL != that1.URL {
+		return false
+	}
+	return true
+}
+func (this *ValidateMySnakeResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ValidateMySnakeResponse)
+	if !ok {
+		that2, ok := that.(ValidateMySnakeResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.StartStatus.Equal(that1.StartStatus) {
+		return false
+	}
+	if !this.MoveStatus.Equal(that1.MoveStatus) {
+		return false
+	}
+	if !this.EndStatus.Equal(that1.EndStatus) {
+		return false
+	}
+	return true
+}
+func (this *SnakeResponseStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SnakeResponseStatus)
+	if !ok {
+		that2, ok := that.(SnakeResponseStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Message != that1.Message {
+		return false
+	}
+	if len(this.Errors) != len(that1.Errors) {
+		return false
+	}
+	for i := range this.Errors {
+		if this.Errors[i] != that1.Errors[i] {
+			return false
+		}
+	}
+	if this.ResponseTime != that1.ResponseTime {
+		return false
+	}
+	if this.RawResponse != that1.RawResponse {
+		return false
+	}
+	if this.ResponseCode != that1.ResponseCode {
+		return false
+	}
+	if !this.Score.Equal(that1.Score) {
+		return false
+	}
+	return true
+}
+func (this *Score) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Score)
+	if !ok {
+		that2, ok := that.(Score)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ChecksPassed != that1.ChecksPassed {
+		return false
+	}
+	if this.ChecksFailed != that1.ChecksFailed {
+		return false
+	}
+	return true
 }
 func (this *PopRequest) Equal(that interface{}) bool {
 	if that == nil {
@@ -1269,6 +1532,8 @@ type ControllerClient interface {
 	EndGame(ctx context.Context, in *EndGameRequest, opts ...grpc.CallOption) (*EndGameResponse, error)
 	// ping will ping the controller.
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	// ValidateMySnake will call a snake URL and return stats about it's validity.
+	ValidateMySnake(ctx context.Context, in *ValidateMySnakeRequest, opts ...grpc.CallOption) (*ValidateMySnakeResponse, error)
 }
 
 type controllerClient struct {
@@ -1351,6 +1616,15 @@ func (c *controllerClient) Ping(ctx context.Context, in *PingRequest, opts ...gr
 	return out, nil
 }
 
+func (c *controllerClient) ValidateMySnake(ctx context.Context, in *ValidateMySnakeRequest, opts ...grpc.CallOption) (*ValidateMySnakeResponse, error) {
+	out := new(ValidateMySnakeResponse)
+	err := grpc.Invoke(ctx, "/pb.Controller/ValidateMySnake", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Controller service
 
 type ControllerServer interface {
@@ -1375,6 +1649,8 @@ type ControllerServer interface {
 	EndGame(context.Context, *EndGameRequest) (*EndGameResponse, error)
 	// ping will ping the controller.
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	// ValidateMySnake will call a snake URL and return stats about it's validity.
+	ValidateMySnake(context.Context, *ValidateMySnakeRequest) (*ValidateMySnakeResponse, error)
 }
 
 func RegisterControllerServer(s *grpc.Server, srv ControllerServer) {
@@ -1525,6 +1801,24 @@ func _Controller_Ping_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Controller_ValidateMySnake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateMySnakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ControllerServer).ValidateMySnake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Controller/ValidateMySnake",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ControllerServer).ValidateMySnake(ctx, req.(*ValidateMySnakeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Controller_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Controller",
 	HandlerType: (*ControllerServer)(nil),
@@ -1561,9 +1855,77 @@ var _Controller_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Ping",
 			Handler:    _Controller_Ping_Handler,
 		},
+		{
+			MethodName: "ValidateMySnake",
+			Handler:    _Controller_ValidateMySnake_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "controller.proto",
+}
+
+func NewPopulatedValidateMySnakeRequest(r randyController, easy bool) *ValidateMySnakeRequest {
+	this := &ValidateMySnakeRequest{}
+	this.URL = string(randStringController(r))
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedValidateMySnakeResponse(r randyController, easy bool) *ValidateMySnakeResponse {
+	this := &ValidateMySnakeResponse{}
+	if r.Intn(10) != 0 {
+		this.StartStatus = NewPopulatedSnakeResponseStatus(r, easy)
+	}
+	if r.Intn(10) != 0 {
+		this.MoveStatus = NewPopulatedSnakeResponseStatus(r, easy)
+	}
+	if r.Intn(10) != 0 {
+		this.EndStatus = NewPopulatedSnakeResponseStatus(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedSnakeResponseStatus(r randyController, easy bool) *SnakeResponseStatus {
+	this := &SnakeResponseStatus{}
+	this.Message = string(randStringController(r))
+	v1 := r.Intn(10)
+	this.Errors = make([]string, v1)
+	for i := 0; i < v1; i++ {
+		this.Errors[i] = string(randStringController(r))
+	}
+	this.ResponseTime = int32(r.Int31())
+	if r.Intn(2) == 0 {
+		this.ResponseTime *= -1
+	}
+	this.RawResponse = string(randStringController(r))
+	this.ResponseCode = int32(r.Int31())
+	if r.Intn(2) == 0 {
+		this.ResponseCode *= -1
+	}
+	if r.Intn(10) != 0 {
+		this.Score = NewPopulatedScore(r, easy)
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
+}
+
+func NewPopulatedScore(r randyController, easy bool) *Score {
+	this := &Score{}
+	this.ChecksPassed = int32(r.Int31())
+	if r.Intn(2) == 0 {
+		this.ChecksPassed *= -1
+	}
+	this.ChecksFailed = int32(r.Int31())
+	if r.Intn(2) == 0 {
+		this.ChecksFailed *= -1
+	}
+	if !easy && r.Intn(10) != 0 {
+	}
+	return this
 }
 
 func NewPopulatedPopRequest(r randyController, easy bool) *PopRequest {
@@ -1633,9 +1995,9 @@ func NewPopulatedCreateRequest(r randyController, easy bool) *CreateRequest {
 		this.Food *= -1
 	}
 	if r.Intn(10) != 0 {
-		v1 := r.Intn(5)
-		this.Snakes = make([]*SnakeOptions, v1)
-		for i := 0; i < v1; i++ {
+		v2 := r.Intn(5)
+		this.Snakes = make([]*SnakeOptions, v2)
+		for i := 0; i < v2; i++ {
 			this.Snakes[i] = NewPopulatedSnakeOptions(r, easy)
 		}
 	}
@@ -1692,9 +2054,9 @@ func NewPopulatedListGameFramesRequest(r randyController, easy bool) *ListGameFr
 func NewPopulatedListGameFramesResponse(r randyController, easy bool) *ListGameFramesResponse {
 	this := &ListGameFramesResponse{}
 	if r.Intn(10) != 0 {
-		v2 := r.Intn(5)
-		this.Frames = make([]*GameFrame, v2)
-		for i := 0; i < v2; i++ {
+		v3 := r.Intn(5)
+		this.Frames = make([]*GameFrame, v3)
+		for i := 0; i < v3; i++ {
 			this.Frames[i] = NewPopulatedGameFrame(r, easy)
 		}
 	}
@@ -1780,16 +2142,16 @@ func NewPopulatedGameFrame(r randyController, easy bool) *GameFrame {
 		this.Turn *= -1
 	}
 	if r.Intn(10) != 0 {
-		v3 := r.Intn(5)
-		this.Food = make([]*Point, v3)
-		for i := 0; i < v3; i++ {
+		v4 := r.Intn(5)
+		this.Food = make([]*Point, v4)
+		for i := 0; i < v4; i++ {
 			this.Food[i] = NewPopulatedPoint(r, easy)
 		}
 	}
 	if r.Intn(10) != 0 {
-		v4 := r.Intn(5)
-		this.Snakes = make([]*Snake, v4)
-		for i := 0; i < v4; i++ {
+		v5 := r.Intn(5)
+		this.Snakes = make([]*Snake, v5)
+		for i := 0; i < v5; i++ {
 			this.Snakes[i] = NewPopulatedSnake(r, easy)
 		}
 	}
@@ -1819,9 +2181,9 @@ func NewPopulatedSnake(r randyController, easy bool) *Snake {
 	this.Name = string(randStringController(r))
 	this.URL = string(randStringController(r))
 	if r.Intn(10) != 0 {
-		v5 := r.Intn(5)
-		this.Body = make([]*Point, v5)
-		for i := 0; i < v5; i++ {
+		v6 := r.Intn(5)
+		this.Body = make([]*Point, v6)
+		for i := 0; i < v6; i++ {
 			this.Body[i] = NewPopulatedPoint(r, easy)
 		}
 	}
@@ -1869,9 +2231,9 @@ func randUTF8RuneController(r randyController) rune {
 	return rune(ru + 61)
 }
 func randStringController(r randyController) string {
-	v6 := r.Intn(100)
-	tmps := make([]rune, v6)
-	for i := 0; i < v6; i++ {
+	v7 := r.Intn(100)
+	tmps := make([]rune, v7)
+	for i := 0; i < v7; i++ {
 		tmps[i] = randUTF8RuneController(r)
 	}
 	return string(tmps)
@@ -1893,11 +2255,11 @@ func randFieldController(dAtA []byte, r randyController, fieldNumber int, wire i
 	switch wire {
 	case 0:
 		dAtA = encodeVarintPopulateController(dAtA, uint64(key))
-		v7 := r.Int63()
+		v8 := r.Int63()
 		if r.Intn(2) == 0 {
-			v7 *= -1
+			v8 *= -1
 		}
-		dAtA = encodeVarintPopulateController(dAtA, uint64(v7))
+		dAtA = encodeVarintPopulateController(dAtA, uint64(v8))
 	case 1:
 		dAtA = encodeVarintPopulateController(dAtA, uint64(key))
 		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
@@ -1926,56 +2288,69 @@ func encodeVarintPopulateController(dAtA []byte, v uint64) []byte {
 func init() { proto.RegisterFile("controller.proto", fileDescriptorController) }
 
 var fileDescriptorController = []byte{
-	// 811 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x74, 0x55, 0xdd, 0x4e, 0xdb, 0x48,
-	0x14, 0x96, 0xe3, 0x24, 0x90, 0x43, 0x12, 0xc2, 0xc0, 0xb2, 0x5e, 0x6b, 0x17, 0xb2, 0x5e, 0xed,
-	0x8a, 0xd5, 0x6e, 0x83, 0x0a, 0x7d, 0x01, 0x7e, 0x0a, 0xad, 0x94, 0x16, 0x64, 0xa0, 0x85, 0xf6,
-	0xca, 0x21, 0x26, 0xb1, 0x48, 0x3c, 0xa9, 0x3d, 0xbe, 0xa8, 0xfa, 0x42, 0x95, 0x7a, 0xd1, 0xbb,
-	0xaa, 0xaf, 0xd3, 0x3e, 0x45, 0x2f, 0x3b, 0x73, 0xe6, 0xf8, 0x27, 0x24, 0xb9, 0xb0, 0x34, 0xdf,
-	0xf9, 0x9b, 0x33, 0xdf, 0xf9, 0x31, 0xb4, 0x6e, 0x79, 0x28, 0x22, 0x3e, 0x1a, 0xf9, 0x51, 0x67,
-	0x12, 0x71, 0xc1, 0x59, 0x69, 0xd2, 0xb3, 0x1f, 0x0d, 0x02, 0x31, 0x4c, 0x7a, 0x9d, 0x5b, 0x3e,
-	0xde, 0x1d, 0xf0, 0x01, 0xdf, 0x45, 0x55, 0x2f, 0xb9, 0x43, 0x84, 0x00, 0x4f, 0xda, 0xc5, 0xa9,
-	0x03, 0x9c, 0xf3, 0x89, 0xeb, 0xbf, 0x4b, 0xfc, 0x58, 0x38, 0xfb, 0xb0, 0x82, 0x28, 0x9e, 0xf0,
-	0x30, 0xf6, 0x59, 0x13, 0x4a, 0xcf, 0x8f, 0x2d, 0xa3, 0x6d, 0xec, 0xd4, 0x5c, 0x79, 0x62, 0x1b,
-	0x50, 0xb9, 0xe4, 0xf7, 0x7e, 0x68, 0x95, 0x50, 0xa4, 0x81, 0xb3, 0x0d, 0x8d, 0x0b, 0xe1, 0x89,
-	0x24, 0xa6, 0x28, 0x0f, 0xdd, 0x9c, 0xb7, 0xd0, 0x4c, 0x0d, 0x28, 0xf0, 0xef, 0x50, 0x3e, 0xf5,
-	0xc6, 0x3e, 0xda, 0xac, 0xec, 0x2d, 0x77, 0x26, 0xbd, 0x8e, 0xc2, 0x2e, 0x4a, 0xd9, 0x7f, 0x50,
-	0xeb, 0x7a, 0xb1, 0x38, 0x89, 0x94, 0x49, 0x09, 0x4d, 0x1a, 0xa9, 0x09, 0x0a, 0xdd, 0x5c, 0xef,
-	0x6c, 0x41, 0x5d, 0x06, 0x8f, 0xc4, 0xa2, 0xcb, 0x57, 0x31, 0x3b, 0xa5, 0xd7, 0x77, 0x3b, 0x1f,
-	0xa0, 0x71, 0x14, 0xf9, 0x9e, 0xf0, 0x53, 0x0f, 0xf9, 0xaa, 0xd7, 0x41, 0x5f, 0x0c, 0xd1, 0xa9,
-	0xe2, 0x6a, 0xc0, 0x36, 0xa1, 0xfa, 0xcc, 0x0f, 0x06, 0x43, 0x81, 0x19, 0x54, 0x5c, 0x42, 0x8c,
-	0x41, 0xf9, 0x84, 0xf3, 0xbe, 0x65, 0xa2, 0x14, 0xcf, 0x6c, 0x07, 0xaa, 0x17, 0xa1, 0x77, 0xef,
-	0xc7, 0x56, 0xb9, 0x6d, 0xca, 0x6c, 0x5b, 0x2a, 0x5b, 0x94, 0x9c, 0x4d, 0x44, 0x20, 0x6f, 0x75,
-	0x49, 0xef, 0xb4, 0xa1, 0x99, 0x5e, 0x3e, 0x9f, 0x63, 0xc7, 0x85, 0xf5, 0x83, 0x7e, 0x3f, 0x7f,
-	0xea, 0xfc, 0x67, 0x29, 0x8e, 0x32, 0x9b, 0x05, 0x1c, 0x65, 0x47, 0xe7, 0x09, 0x6c, 0x4c, 0xc7,
-	0xcc, 0xcb, 0x30, 0x98, 0x5b, 0x06, 0x25, 0x75, 0xae, 0xe0, 0x97, 0x6e, 0x10, 0x8b, 0xcc, 0x6d,
-	0x51, 0x7d, 0x15, 0x81, 0xdd, 0x60, 0x1c, 0xa4, 0x4c, 0x69, 0xa0, 0x08, 0x3c, 0xbb, 0xbb, 0x8b,
-	0x7d, 0x41, 0x54, 0x11, 0x92, 0x61, 0x37, 0x1f, 0x86, 0xa5, 0x74, 0xfe, 0x86, 0xaa, 0x96, 0xc8,
-	0xd8, 0xe6, 0xec, 0x83, 0x48, 0xa9, 0xae, 0x3b, 0xe2, 0x49, 0x98, 0x5d, 0x87, 0x40, 0x31, 0xfb,
-	0x34, 0xc4, 0x37, 0x2e, 0xea, 0x84, 0x35, 0x58, 0xcd, 0x2c, 0xa8, 0x17, 0x1a, 0xb2, 0xdf, 0x83,
-	0x70, 0x90, 0xb6, 0xff, 0x0e, 0xd4, 0x35, 0xa4, 0x84, 0x2c, 0x58, 0x7a, 0xe5, 0x47, 0xb1, 0xac,
-	0x20, 0x85, 0x49, 0xa1, 0x73, 0x2c, 0xbb, 0xae, 0x50, 0x5f, 0xd5, 0x15, 0x2f, 0x53, 0x26, 0x6b,
-	0x2e, 0x9e, 0x59, 0x0b, 0xcc, 0x2b, 0xb7, 0x4b, 0xb3, 0xa2, 0x8e, 0x94, 0x91, 0x99, 0x65, 0xf4,
-	0xc5, 0xd0, 0x73, 0x30, 0xc3, 0xa8, 0xe4, 0x4e, 0x4f, 0x0c, 0x79, 0x13, 0xca, 0x5b, 0xd5, 0x9c,
-	0xdf, 0xaa, 0xe5, 0xa9, 0x56, 0x75, 0x28, 0xc9, 0xcb, 0x60, 0xec, 0xf3, 0x44, 0x58, 0x55, 0xa9,
-	0x35, 0xdd, 0x29, 0x19, 0x6b, 0xc3, 0xca, 0x65, 0x12, 0x85, 0xa9, 0xc9, 0x12, 0x9a, 0x14, 0x45,
-	0xea, 0x69, 0x2f, 0x78, 0xdf, 0xb7, 0x96, 0xf5, 0xd3, 0xd4, 0xd9, 0xf1, 0x0a, 0xdd, 0xa7, 0x0c,
-	0x94, 0x3d, 0x8d, 0x0f, 0x9e, 0xd9, 0x1f, 0x34, 0x25, 0x25, 0x2c, 0x64, 0x4d, 0x15, 0xf2, 0x9c,
-	0x07, 0xa1, 0xa0, 0x81, 0xf9, 0x33, 0x1b, 0x18, 0x33, 0x37, 0x40, 0x49, 0x36, 0x29, 0x7f, 0x41,
-	0x05, 0x3d, 0x58, 0x1d, 0x8c, 0x6b, 0x8a, 0x6d, 0x5c, 0x2b, 0x74, 0x43, 0x85, 0x37, 0x6e, 0x9c,
-	0x4f, 0x06, 0x54, 0xd0, 0x7e, 0x86, 0xc1, 0xb4, 0x20, 0xa5, 0xd9, 0x82, 0x98, 0x79, 0x41, 0x64,
-	0x9a, 0x87, 0xbc, 0xff, 0x9e, 0xc6, 0xb6, 0x98, 0xa6, 0x12, 0x6b, 0x62, 0xbd, 0x91, 0xe4, 0xbb,
-	0x92, 0x12, 0xab, 0x10, 0xdb, 0x86, 0xca, 0xb1, 0x1c, 0xe2, 0x21, 0x32, 0x4a, 0x7e, 0x28, 0x70,
-	0xb5, 0x5c, 0xb7, 0xe8, 0x88, 0x47, 0xc8, 0x67, 0xcd, 0xd5, 0xc0, 0x79, 0x0c, 0x05, 0xb5, 0x97,
-	0xc4, 0x69, 0xbb, 0x68, 0x90, 0xf1, 0x58, 0xca, 0x79, 0xdc, 0xfb, 0x6c, 0x02, 0x1c, 0x65, 0x6b,
-	0x9e, 0xfd, 0x03, 0xa6, 0xdc, 0xcf, 0xac, 0xa9, 0x13, 0x4d, 0xd7, 0xb6, 0xbd, 0x9a, 0x61, 0x6a,
-	0xdc, 0xdd, 0xb4, 0x7f, 0xd8, 0x1a, 0x32, 0x5b, 0x5c, 0xcf, 0x36, 0x2b, 0x8a, 0xc8, 0xe1, 0x7f,
-	0xc9, 0xa3, 0xda, 0x92, 0xac, 0x45, 0xca, 0x6c, 0xa1, 0xda, 0x6b, 0x05, 0x49, 0x1e, 0x5e, 0x6f,
-	0x31, 0x1d, 0x7e, 0x6a, 0x9d, 0xea, 0xf0, 0x0f, 0x96, 0xdc, 0x01, 0xd4, 0x8b, 0x0b, 0x88, 0xfd,
-	0xaa, 0x6c, 0xe6, 0xac, 0x39, 0xdb, 0x9a, 0x55, 0x50, 0x88, 0x53, 0x68, 0x4e, 0xaf, 0x0d, 0xf6,
-	0x9b, 0xb2, 0x9d, 0xbb, 0xa1, 0x6c, 0x7b, 0x9e, 0x8a, 0x02, 0xed, 0xc1, 0x12, 0xad, 0x01, 0x86,
-	0xa9, 0x4e, 0x6f, 0x0d, 0x7b, 0x7d, 0x4a, 0x46, 0x3e, 0xff, 0x42, 0x59, 0x2d, 0x06, 0xa6, 0x89,
-	0xce, 0x37, 0x86, 0xdd, 0xca, 0x05, 0xda, 0xf4, 0xb0, 0xf5, 0xe3, 0xdb, 0x96, 0xf1, 0xf1, 0xfb,
-	0x96, 0xf1, 0x55, 0x7e, 0x6f, 0xe4, 0x1f, 0xb9, 0x57, 0xc5, 0x3f, 0xed, 0xfe, 0xcf, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0xae, 0x94, 0xa8, 0x28, 0xb0, 0x07, 0x00, 0x00,
+	// 1014 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x56, 0xdd, 0x6e, 0x1b, 0x45,
+	0x14, 0xd6, 0x7a, 0x6d, 0xa7, 0x3e, 0x71, 0x1c, 0x67, 0x52, 0x52, 0xb3, 0x40, 0x1a, 0x06, 0x81,
+	0xc2, 0x5f, 0x22, 0x52, 0x10, 0xe2, 0xb2, 0x4d, 0x9a, 0x00, 0x4a, 0x48, 0xb4, 0x4d, 0x4b, 0x0b,
+	0x57, 0x6b, 0xef, 0xc4, 0x5e, 0xc5, 0xd9, 0x31, 0xbb, 0x6b, 0x50, 0xc5, 0x0b, 0x21, 0x71, 0x8f,
+	0x78, 0x00, 0x9e, 0x80, 0x37, 0x80, 0xa7, 0x40, 0xe2, 0xa6, 0x33, 0x67, 0xce, 0xec, 0x4f, 0xbc,
+	0xee, 0x45, 0xa2, 0x39, 0x3f, 0x73, 0xe6, 0xcc, 0x77, 0xbe, 0xf9, 0xbc, 0xd0, 0x1f, 0xc9, 0x38,
+	0x4b, 0xe4, 0x74, 0x2a, 0x92, 0xbd, 0x59, 0x22, 0x33, 0xc9, 0x1a, 0xb3, 0xa1, 0xf7, 0xe9, 0x38,
+	0xca, 0x26, 0xf3, 0xe1, 0xde, 0x48, 0xde, 0xec, 0x8f, 0xe5, 0x58, 0xee, 0x63, 0x68, 0x38, 0xbf,
+	0x42, 0x0b, 0x0d, 0x5c, 0x99, 0x2d, 0xfc, 0x23, 0xd8, 0x7a, 0x16, 0x4c, 0xa3, 0x30, 0xc8, 0xc4,
+	0xd9, 0xcb, 0x27, 0x71, 0x70, 0x2d, 0x7c, 0xf1, 0xd3, 0x5c, 0xa4, 0x19, 0xeb, 0x83, 0xfb, 0xd4,
+	0x3f, 0x1d, 0x38, 0x3b, 0xce, 0x6e, 0xc7, 0xd7, 0x4b, 0xfe, 0x97, 0x03, 0xf7, 0x16, 0x92, 0xd3,
+	0x99, 0x8c, 0x53, 0xc1, 0xbe, 0x82, 0xd5, 0x27, 0x59, 0x90, 0x64, 0xea, 0x5f, 0x36, 0x4f, 0x71,
+	0xd7, 0xea, 0xc1, 0xbd, 0xbd, 0xd9, 0x70, 0xaf, 0x92, 0x67, 0xc2, 0x7e, 0x39, 0x97, 0x7d, 0x09,
+	0x70, 0x26, 0x7f, 0xa6, 0xd0, 0xa0, 0xf1, 0xfa, 0x9d, 0xa5, 0x54, 0xf6, 0x05, 0x74, 0x1e, 0xc7,
+	0x21, 0xed, 0x73, 0x5f, 0xbf, 0xaf, 0xc8, 0xe4, 0x7f, 0x3b, 0xb0, 0x59, 0x93, 0xc2, 0x06, 0xb0,
+	0x72, 0x26, 0xd2, 0x34, 0x18, 0x0b, 0xba, 0xb4, 0x35, 0xd9, 0x16, 0xb4, 0x1f, 0x27, 0x89, 0x4c,
+	0x74, 0x77, 0xae, 0x0a, 0x90, 0xc5, 0x38, 0x74, 0x13, 0xaa, 0x71, 0x19, 0xdd, 0x08, 0xec, 0xa1,
+	0xe5, 0x57, 0x7c, 0x6c, 0x07, 0x56, 0x93, 0xe0, 0x17, 0x7b, 0xd4, 0xa0, 0x89, 0x95, 0xcb, 0xae,
+	0x72, 0x95, 0x43, 0x19, 0x8a, 0x41, 0xab, 0x5a, 0x45, 0xfb, 0xd8, 0x7d, 0x68, 0xa5, 0x23, 0x99,
+	0x88, 0x41, 0x1b, 0xaf, 0xd9, 0xc1, 0x6b, 0x6a, 0x87, 0x6f, 0xfc, 0xfc, 0x1c, 0x5a, 0x68, 0xeb,
+	0x6a, 0xa3, 0x89, 0x18, 0x5d, 0xa7, 0x17, 0x41, 0x9a, 0x8a, 0x10, 0xaf, 0xa2, 0xaa, 0x95, 0x7d,
+	0x45, 0xce, 0x71, 0x10, 0x4d, 0x55, 0x4e, 0xa3, 0x9c, 0x63, 0x7c, 0xbc, 0x0b, 0x70, 0x21, 0x67,
+	0x44, 0x06, 0xfe, 0x00, 0x56, 0xd1, 0xa2, 0x96, 0x7b, 0xd0, 0xf8, 0xe6, 0x88, 0x50, 0x52, 0x2b,
+	0x76, 0x17, 0x5a, 0x97, 0xf2, 0x5a, 0xc4, 0x58, 0xa9, 0xe3, 0x1b, 0x83, 0xdf, 0x87, 0x35, 0x42,
+	0x9f, 0x28, 0x75, 0x6b, 0x1b, 0xff, 0x11, 0x7a, 0x36, 0x81, 0x0a, 0xbf, 0x0d, 0xcd, 0x93, 0xe0,
+	0x46, 0x10, 0x7f, 0xee, 0xe8, 0x6b, 0x6a, 0xdb, 0x47, 0x2f, 0xfb, 0x18, 0x3a, 0xa7, 0x41, 0x9a,
+	0x1d, 0x27, 0x3a, 0xc5, 0x10, 0x65, 0xcd, 0xa6, 0xa0, 0xd3, 0x2f, 0xe2, 0x7c, 0x1b, 0xba, 0xc8,
+	0xb2, 0x65, 0x87, 0xaf, 0x63, 0x77, 0x3a, 0x6e, 0xce, 0xe6, 0xbf, 0xc2, 0xda, 0x61, 0x22, 0x14,
+	0xb7, 0xed, 0x0e, 0x75, 0xab, 0xef, 0xa3, 0x30, 0x9b, 0x10, 0x86, 0xc6, 0xd0, 0x64, 0xf8, 0x5a,
+	0x44, 0xe3, 0x49, 0x46, 0xb0, 0x91, 0xc5, 0x18, 0x34, 0x8f, 0xa5, 0x0c, 0x89, 0x04, 0xb8, 0x66,
+	0xbb, 0xd0, 0x46, 0xa6, 0xa5, 0x6a, 0xee, 0xae, 0xea, 0xb6, 0x9f, 0xd3, 0xf3, 0x7c, 0x96, 0x45,
+	0xea, 0x54, 0x9f, 0xe2, 0x7c, 0x07, 0x7a, 0xf6, 0xf0, 0x7a, 0x8c, 0xb9, 0x0f, 0x9b, 0x0f, 0xc3,
+	0xb0, 0xb8, 0x6a, 0xfd, 0xb5, 0x34, 0x46, 0x79, 0xce, 0x12, 0x8c, 0xf2, 0x25, 0xff, 0x1c, 0xee,
+	0x56, 0x6b, 0x16, 0x63, 0x18, 0xd7, 0x8e, 0x41, 0x7b, 0xf9, 0x53, 0x78, 0xe3, 0x34, 0x4a, 0xb3,
+	0x7c, 0xdb, 0xb2, 0xf9, 0x6a, 0x00, 0x4f, 0xa3, 0x9b, 0xc8, 0x22, 0x65, 0x0c, 0x0d, 0xe0, 0xf9,
+	0xd5, 0x55, 0x2a, 0x32, 0x82, 0x8a, 0x2c, 0x55, 0x76, 0xeb, 0x76, 0x59, 0x6a, 0xe7, 0x7d, 0x68,
+	0x1b, 0x8f, 0xaa, 0xed, 0x2e, 0x5e, 0x88, 0x82, 0xfa, 0xb8, 0x43, 0x39, 0x8f, 0xf3, 0xe3, 0xd0,
+	0xd0, 0xc8, 0xaa, 0xb7, 0x7f, 0xb2, 0x1c, 0x32, 0xbe, 0x01, 0xeb, 0x79, 0x06, 0x71, 0x61, 0x4d,
+	0xf1, 0x3d, 0x8a, 0xc7, 0x96, 0xfe, 0xbb, 0xd0, 0x35, 0x26, 0x35, 0xa4, 0xa4, 0xe2, 0x99, 0x48,
+	0x52, 0x35, 0x41, 0x2b, 0x15, 0x64, 0xf2, 0x23, 0xc5, 0xba, 0xd2, 0x7c, 0x35, 0x2b, 0xbe, 0xb3,
+	0x48, 0x76, 0x7c, 0x5c, 0x5b, 0x65, 0x6d, 0xe4, 0xca, 0x4a, 0x1d, 0xb9, 0x79, 0x47, 0x7f, 0x38,
+	0xe6, 0x1d, 0x2c, 0x20, 0xaa, 0xb0, 0x2b, 0xe9, 0xa4, 0x52, 0x22, 0xd2, 0xae, 0x9c, 0xaa, 0x6e,
+	0x3d, 0x55, 0x9b, 0x15, 0xaa, 0x72, 0x6a, 0x52, 0x0b, 0x94, 0x9c, 0x67, 0x28, 0x2a, 0xae, 0x5f,
+	0xf1, 0x69, 0xdd, 0xba, 0x9c, 0x27, 0xb1, 0x4d, 0x59, 0xc1, 0x94, 0xb2, 0x4b, 0x5f, 0xed, 0x4c,
+	0xeb, 0xd5, 0x1d, 0x73, 0x35, 0xbd, 0xe6, 0x41, 0x89, 0x7d, 0x3a, 0x41, 0xe7, 0xd3, 0xf3, 0xc1,
+	0x35, 0x7b, 0x87, 0x5e, 0x49, 0x03, 0x07, 0x89, 0x3a, 0x76, 0x21, 0xa3, 0x38, 0xa3, 0x07, 0xf3,
+	0x6e, 0xfe, 0x60, 0xdc, 0x22, 0xc1, 0x88, 0xb5, 0x7d, 0x29, 0xef, 0x41, 0x0b, 0x77, 0xb0, 0x2e,
+	0x38, 0xcf, 0xa9, 0xb6, 0xf3, 0x5c, 0x5b, 0x2f, 0x68, 0xf0, 0xce, 0x0b, 0xfe, 0xbb, 0xa3, 0xf4,
+	0x50, 0xe7, 0x2f, 0x20, 0x68, 0x07, 0xd2, 0x58, 0x1c, 0x88, 0x5b, 0x0c, 0x44, 0xb5, 0xf9, 0x48,
+	0x86, 0x2f, 0xe9, 0xd9, 0x96, 0xdb, 0xd4, 0x6e, 0x03, 0x6c, 0x30, 0x55, 0x78, 0xb7, 0x2c, 0xb0,
+	0xda, 0xd2, 0x32, 0x7d, 0xa4, 0x1e, 0xf1, 0xa4, 0x2c, 0xd3, 0xe8, 0xf0, 0x8d, 0xdf, 0x50, 0x74,
+	0x2a, 0x13, 0xc4, 0xb3, 0xe3, 0x1b, 0x83, 0x7f, 0x06, 0xa5, 0x70, 0x30, 0x4f, 0x2d, 0x5d, 0x8c,
+	0x91, 0xe3, 0xd8, 0x28, 0x70, 0x3c, 0xf8, 0xdf, 0x05, 0x38, 0xcc, 0x7f, 0xff, 0xd9, 0x07, 0xe0,
+	0x2a, 0x7d, 0x66, 0x3d, 0xd3, 0xa8, 0x95, 0x6d, 0x6f, 0x3d, 0xb7, 0x89, 0xb8, 0xfb, 0x96, 0x3f,
+	0x6c, 0x03, 0x91, 0x2d, 0xcb, 0xb3, 0xc7, 0xca, 0x2e, 0xda, 0xf0, 0x89, 0xc2, 0x51, 0xab, 0x24,
+	0xeb, 0x53, 0x30, 0x17, 0x54, 0x6f, 0xa3, 0xe4, 0x29, 0xca, 0x1b, 0x15, 0x33, 0xe5, 0x2b, 0x72,
+	0x6a, 0xca, 0xdf, 0x12, 0xb9, 0x87, 0xd0, 0x2d, 0x0b, 0x10, 0xc3, 0xdf, 0xef, 0x1a, 0x99, 0xf3,
+	0x06, 0x8b, 0x01, 0x2a, 0x71, 0x02, 0xbd, 0xaa, 0x6c, 0xb0, 0x37, 0x75, 0x6e, 0xad, 0x42, 0x79,
+	0x5e, 0x5d, 0x88, 0x0a, 0x1d, 0xc0, 0x0a, 0xc9, 0x00, 0xc3, 0x56, 0xab, 0xaa, 0xe1, 0x6d, 0x56,
+	0x7c, 0xb4, 0xe7, 0x43, 0x68, 0x6a, 0x61, 0x60, 0x06, 0xe8, 0x42, 0x31, 0xbc, 0x7e, 0xe1, 0xa0,
+	0xd4, 0x6f, 0x61, 0xfd, 0xd6, 0xc7, 0x13, 0xc3, 0x6e, 0xea, 0x3f, 0xbf, 0xbc, 0xb7, 0x6a, 0x63,
+	0xa6, 0xd6, 0xa3, 0xfe, 0x7f, 0xff, 0x6c, 0x3b, 0xbf, 0xfd, 0xbb, 0xed, 0xfc, 0xa9, 0xfe, 0x7e,
+	0x50, 0x9f, 0x7d, 0xc3, 0x36, 0x7e, 0xce, 0x3d, 0x78, 0x15, 0x00, 0x00, 0xff, 0xff, 0xd9, 0x8b,
+	0x0a, 0x57, 0x15, 0x0a, 0x00, 0x00,
 }

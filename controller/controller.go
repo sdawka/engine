@@ -15,6 +15,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/pkg/errors"
+	"strconv"
 )
 
 // MaxTicks is the maximum amount of ticks that can be returned.
@@ -34,6 +36,22 @@ type Server struct {
 
 	started chan struct{}
 	port    int
+}
+
+// ValidateMySnake takes a snake URL and sends requests to validate a snakes validity.
+func (s *Server) ValidateMySnake(ctx context.Context, req *pb.ValidateMySnakeRequest) (*pb.ValidateMySnakeResponse, error) {
+	url := req.URL;
+
+	if url == "" {
+		return nil, errors.New("url not found in request")
+	}
+	gameId := strconv.FormatInt(time.Now().UnixNano(), 10)
+	validateMySnakeResponse := &pb.ValidateMySnakeResponse{
+		StartStatus: rules.ValidateStart(gameId, url),
+		MoveStatus: rules.ValidateMove(gameId, url),
+		EndStatus: rules.ValidateEnd(gameId, url),
+	}
+	return validateMySnakeResponse, nil
 }
 
 // Pop should pop a game that is unlocked and unfinished from the queue, lock
@@ -169,7 +187,7 @@ func (s *Server) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingRespons
 	return &pb.PingResponse{Version: version.Version}, nil
 }
 
-// Serve will intantiate a grpc server.
+// Serve will instantiate a grpc server.
 func (s *Server) Serve(listen string) error {
 	lis, err := net.Listen("tcp", listen)
 	if err != nil {
