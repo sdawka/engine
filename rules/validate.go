@@ -72,7 +72,10 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	netClient := createClient(5000 * time.Millisecond)
 	req := buildSnakeRequest(game, frame, "you")
 
-	data, _ := json.Marshal(req)
+	data, err := json.Marshal(req)
+	if err != nil {
+		return "", 0, 0, err
+	}
 	buf := bytes.NewBuffer(data)
 	start := time.Now().UnixNano()
 	response, err := netClient.Post(url+endpoint, "application/json", buf)
