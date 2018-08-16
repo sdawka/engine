@@ -19,12 +19,12 @@ import (
 type MockController struct {
 	pb.ControllerClient
 
-	Error                   error
-	CreateResponse          *pb.CreateResponse
-	StartResponse           *pb.StartResponse
-	StatusResponse          *pb.StatusResponse
-	ValidateMySnakeResponse *pb.ValidateMySnakeResponse
-	ListGameFramesResponse  func() *pb.ListGameFramesResponse
+	Error                  error
+	CreateResponse         *pb.CreateResponse
+	StartResponse          *pb.StartResponse
+	StatusResponse         *pb.StatusResponse
+	ValidateSnakeResponse  *pb.ValidateSnakeResponse
+	ListGameFramesResponse func() *pb.ListGameFramesResponse
 }
 
 func (mc *MockController) Create(ctx context.Context, req *pb.CreateRequest, opts ...grpc.CallOption) (*pb.CreateResponse, error) {
@@ -42,16 +42,16 @@ func (mc *MockController) Status(ctx context.Context, req *pb.StatusRequest, opt
 func (mc *MockController) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest, opts ...grpc.CallOption) (*pb.ListGameFramesResponse, error) {
 	return mc.ListGameFramesResponse(), mc.Error
 }
-func (mc *MockController) ValidateMySnake(ctx context.Context, req *pb.ValidateMySnakeRequest, opts ...grpc.CallOption) (*pb.ValidateMySnakeResponse, error) {
-	return mc.ValidateMySnakeResponse, mc.Error
+func (mc *MockController) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest, opts ...grpc.CallOption) (*pb.ValidateSnakeResponse, error) {
+	return mc.ValidateSnakeResponse, mc.Error
 }
 
 func createAPIServer() (*Server, *MockController) {
 	var client = &MockController{
-		CreateResponse:          &pb.CreateResponse{},
-		StartResponse:           &pb.StartResponse{},
-		StatusResponse:          &pb.StatusResponse{},
-		ValidateMySnakeResponse: &pb.ValidateMySnakeResponse{},
+		CreateResponse:        &pb.CreateResponse{},
+		StartResponse:         &pb.StartResponse{},
+		StatusResponse:        &pb.StatusResponse{},
+		ValidateSnakeResponse: &pb.ValidateSnakeResponse{},
 		ListGameFramesResponse: func() *pb.ListGameFramesResponse {
 			return &pb.ListGameFramesResponse{}
 		},
@@ -163,30 +163,30 @@ func TestGetFrames(t *testing.T) {
 	require.Equal(t, http.StatusOK, rr.Code)
 }
 
-func TestValidateMySnake(t *testing.T) {
+func TestValidateSnake(t *testing.T) {
 	s, _ := createAPIServer()
 
-	req, _ := http.NewRequest("GET", "/validateMySnake?url=dsnek.heroku.com", nil)
+	req, _ := http.NewRequest("GET", "/validateSnake?url=dsnek.heroku.com", nil)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusOK, rr.Code)
 }
 
-func TestValidateMySnakeBlankUrl(t *testing.T) {
+func TestValidateSnakeBlankUrl(t *testing.T) {
 	s, _ := createAPIServer()
 
-	req, _ := http.NewRequest("GET", "/validateMySnake?url=", nil)
+	req, _ := http.NewRequest("GET", "/validateSnake?url=", nil)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
-func TestValidateMySnakeMissingUrl(t *testing.T) {
+func TestValidateSnakeMissingUrl(t *testing.T) {
 	s, _ := createAPIServer()
 
-	req, _ := http.NewRequest("GET", "/validateMySnake", nil)
+	req, _ := http.NewRequest("GET", "/validateSnake", nil)
 	rr := httptest.NewRecorder()
 
 	s.hs.Handler.ServeHTTP(rr, req)

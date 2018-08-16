@@ -58,12 +58,12 @@ service Controller {
   rpc EndGame(EndGameRequest) returns (EndGameResponse);
   // ping will ping the controller.
   rpc Ping(PingRequest) returns (PingResponse);
-  // ValidateMySnake will call a snake URL and return stats about it's validity.
-  rpc ValidateMySnake(ValidateMySnakeRequest) returns (ValidateMySnakeResponse);
+  // ValidateSnake will call a snake URL and return stats about it's validity.
+  rpc ValidateSnake(ValidateSnakeRequest) returns (ValidateSnakeResponse);
 }
 
-message ValidateMySnakeRequest { string URL = 1; }
-message ValidateMySnakeResponse {
+message ValidateSnakeRequest { string URL = 1; }
+message ValidateSnakeResponse {
    SnakeResponseStatus StartStatus = 1;
    SnakeResponseStatus MoveStatus = 2;
    SnakeResponseStatus EndStatus = 3;

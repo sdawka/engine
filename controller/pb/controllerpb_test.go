@@ -8,8 +8,8 @@ It is generated from these files:
 	controller.proto
 
 It has these top-level messages:
-	ValidateMySnakeRequest
-	ValidateMySnakeResponse
+	ValidateSnakeRequest
+	ValidateSnakeResponse
 	SnakeResponseStatus
 	Score
 	PopRequest
@@ -51,15 +51,15 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-func TestValidateMySnakeRequestProto(t *testing.T) {
+func TestValidateSnakeRequestProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeRequest(popr, false)
+	p := NewPopulatedValidateSnakeRequest(popr, false)
 	dAtA, err := proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ValidateMySnakeRequest{}
+	msg := &ValidateSnakeRequest{}
 	if err := proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -82,15 +82,15 @@ func TestValidateMySnakeRequestProto(t *testing.T) {
 	}
 }
 
-func TestValidateMySnakeResponseProto(t *testing.T) {
+func TestValidateSnakeResponseProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeResponse(popr, false)
+	p := NewPopulatedValidateSnakeResponse(popr, false)
 	dAtA, err := proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ValidateMySnakeResponse{}
+	msg := &ValidateSnakeResponse{}
 	if err := proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -857,16 +857,16 @@ func TestDeathProto(t *testing.T) {
 	}
 }
 
-func TestValidateMySnakeRequestJSON(t *testing.T) {
+func TestValidateSnakeRequestJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeRequest(popr, true)
+	p := NewPopulatedValidateSnakeRequest(popr, true)
 	marshaler := jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ValidateMySnakeRequest{}
+	msg := &ValidateSnakeRequest{}
 	err = jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -875,16 +875,16 @@ func TestValidateMySnakeRequestJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestValidateMySnakeResponseJSON(t *testing.T) {
+func TestValidateSnakeResponseJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeResponse(popr, true)
+	p := NewPopulatedValidateSnakeResponse(popr, true)
 	marshaler := jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ValidateMySnakeResponse{}
+	msg := &ValidateSnakeResponse{}
 	err = jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -1325,12 +1325,12 @@ func TestDeathJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestValidateMySnakeRequestProtoText(t *testing.T) {
+func TestValidateSnakeRequestProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeRequest(popr, true)
+	p := NewPopulatedValidateSnakeRequest(popr, true)
 	dAtA := proto.MarshalTextString(p)
-	msg := &ValidateMySnakeRequest{}
+	msg := &ValidateSnakeRequest{}
 	if err := proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1339,12 +1339,12 @@ func TestValidateMySnakeRequestProtoText(t *testing.T) {
 	}
 }
 
-func TestValidateMySnakeRequestProtoCompactText(t *testing.T) {
+func TestValidateSnakeRequestProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeRequest(popr, true)
+	p := NewPopulatedValidateSnakeRequest(popr, true)
 	dAtA := proto.CompactTextString(p)
-	msg := &ValidateMySnakeRequest{}
+	msg := &ValidateSnakeRequest{}
 	if err := proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1353,12 +1353,12 @@ func TestValidateMySnakeRequestProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestValidateMySnakeResponseProtoText(t *testing.T) {
+func TestValidateSnakeResponseProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeResponse(popr, true)
+	p := NewPopulatedValidateSnakeResponse(popr, true)
 	dAtA := proto.MarshalTextString(p)
-	msg := &ValidateMySnakeResponse{}
+	msg := &ValidateSnakeResponse{}
 	if err := proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1367,12 +1367,12 @@ func TestValidateMySnakeResponseProtoText(t *testing.T) {
 	}
 }
 
-func TestValidateMySnakeResponseProtoCompactText(t *testing.T) {
+func TestValidateSnakeResponseProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := rand.New(rand.NewSource(seed))
-	p := NewPopulatedValidateMySnakeResponse(popr, true)
+	p := NewPopulatedValidateSnakeResponse(popr, true)
 	dAtA := proto.CompactTextString(p)
-	msg := &ValidateMySnakeResponse{}
+	msg := &ValidateSnakeResponse{}
 	if err := proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}

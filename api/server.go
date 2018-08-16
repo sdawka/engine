@@ -35,7 +35,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.GET("/games/:id", logging(newClientHandle(c, getStatus)))
 	router.GET("/games/:id/frames", logging(newClientHandle(c, getFrames)))
 	router.GET("/socket/:id", logging(newClientHandle(c, framesSocket)))
-	router.GET("/validateMySnake", logging(newClientHandle(c, validateMySnake)))
+	router.GET("/validateSnake", logging(newClientHandle(c, validateSnake)))
 
 	handler := cors.Default().Handler(router)
 
@@ -273,7 +273,7 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	}
 }
 
-func validateMySnake(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+func validateSnake(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
 	queryValues := r.URL.Query()
 	url := queryValues.Get("url")
 	if url == "" {
@@ -281,11 +281,11 @@ func validateMySnake(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		writeError(w, err, http.StatusBadRequest, "You must provide a url parameter", nil)
 	}
 	m := jsonpb.Marshaler{EmitDefaults: true}
-	req := &pb.ValidateMySnakeRequest{
+	req := &pb.ValidateSnakeRequest{
 		URL: url,
 	}
 
-	resp, err := c.ValidateMySnake(r.Context(), req)
+	resp, err := c.ValidateSnake(r.Context(), req)
 	if err != nil {
 		writeError(w, err, http.StatusBadRequest, "Error validating snake", nil)
 	}

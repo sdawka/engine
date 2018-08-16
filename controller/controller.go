@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -16,7 +17,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strconv"
 )
 
 // MaxTicks is the maximum amount of ticks that can be returned.
@@ -38,20 +38,20 @@ type Server struct {
 	port    int
 }
 
-// ValidateMySnake takes a snake URL and sends requests to validate a snakes validity.
-func (s *Server) ValidateMySnake(ctx context.Context, req *pb.ValidateMySnakeRequest) (*pb.ValidateMySnakeResponse, error) {
+// ValidateSnake takes a snake URL and sends requests to validate a snakes validity.
+func (s *Server) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest) (*pb.ValidateSnakeResponse, error) {
 	url := req.URL
 
 	if url == "" {
 		return nil, errors.New("url not found in request")
 	}
 	gameID := strconv.FormatInt(time.Now().UnixNano(), 10)
-	validateMySnakeResponse := &pb.ValidateMySnakeResponse{
+	validateSnakeResponse := &pb.ValidateSnakeResponse{
 		StartStatus: rules.ValidateStart(gameID, url),
 		MoveStatus:  rules.ValidateMove(gameID, url),
 		EndStatus:   rules.ValidateEnd(gameID, url),
 	}
-	return validateMySnakeResponse, nil
+	return validateSnakeResponse, nil
 }
 
 // Pop should pop a game that is unlocked and unfinished from the queue, lock

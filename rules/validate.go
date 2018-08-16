@@ -95,7 +95,7 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	if err != nil {
 		return "", statusCode, 0, err
 	}
-	raw := string(contents[:])
+	raw := string(contents)
 
 	if endpoint != "/end" {
 		var raw map[string]interface{}
