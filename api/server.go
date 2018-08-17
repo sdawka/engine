@@ -245,8 +245,8 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
 	id := ps.ByName("id")
-	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 0) // nolint: gas
-	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)   // nolint: gas
+	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 0) // nolint: gas, gosec
+	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)   // nolint: gas, gosec
 	if limit == 0 {
 		limit = 100
 	}
