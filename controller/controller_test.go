@@ -10,6 +10,7 @@ import (
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
 	"github.com/stretchr/testify/require"
+	"strings"
 )
 
 var client pb.ControllerClient
@@ -280,5 +281,5 @@ func TestController_ValidateSnakeValidUrlNoServer(t *testing.T) {
 		URL: "http://shouldneverresolveinamillionyearsaoeu.com",
 	})
 	require.Nil(t, err)
-	require.Equal(t, []string{"Post http://shouldneverresolveinamillionyearsaoeu.com/start: dial tcp: lookup shouldneverresolveinamillionyearsaoeu.com: no such host"}, res.StartStatus.Errors)
+	require.True(t, strings.Index(res.StartStatus.Errors[0], "Post http://shouldneverresolveinamillionyearsaoeu.com/start: dial tcp: lookup shouldneverresolveinamillionyearsaoeu.com") == 0, "Found unexpected string: "+res.StartStatus.Errors[0])
 }
