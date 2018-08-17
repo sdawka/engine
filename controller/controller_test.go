@@ -261,3 +261,24 @@ func TestController_Ping(t *testing.T) {
 
 	require.Equal(t, version.Version, res.Version)
 }
+
+func TestController_ValidateSnakeNoURL(t *testing.T) {
+	_, err := client.ValidateSnake(context.Background(), &pb.ValidateSnakeRequest{})
+	require.Error(t, err, "Expected error with no URL")
+}
+
+func TestController_ValidateSnakeInvalidURL(t *testing.T) {
+	res, err := client.ValidateSnake(context.Background(), &pb.ValidateSnakeRequest{
+		URL: "aoeu",
+	})
+	require.Nil(t, err)
+	require.Equal(t, "Snake URL not valid", res.StartStatus.Message)
+}
+
+func TestController_ValidateSnakeValidUrlNoServer(t *testing.T) {
+	res, err := client.ValidateSnake(context.Background(), &pb.ValidateSnakeRequest{
+		URL: "http://shouldneverresolveinamillionyearsaoeu.com",
+	})
+	require.Nil(t, err)
+	require.Equal(t, []string{"Post http://shouldneverresolveinamillionyearsaoeu.com/start: dial tcp: lookup shouldneverresolveinamillionyearsaoeu.com: no such host"}, res.StartStatus.Errors)
+}
