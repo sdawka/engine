@@ -6,11 +6,13 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -34,6 +36,22 @@ type Server struct {
 
 	started chan struct{}
 	port    int
+}
+
+// ValidateSnake takes a snake URL and sends requests to validate a snakes validity.
+func (s *Server) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest) (*pb.ValidateSnakeResponse, error) {
+	url := req.URL
+
+	if url == "" {
+		return nil, errors.New("url not found in request")
+	}
+	gameID := strconv.FormatInt(time.Now().UnixNano(), 10)
+	validateSnakeResponse := &pb.ValidateSnakeResponse{
+		StartStatus: rules.ValidateStart(gameID, url),
+		MoveStatus:  rules.ValidateMove(gameID, url),
+		EndStatus:   rules.ValidateEnd(gameID, url),
+	}
+	return validateSnakeResponse, nil
 }
 
 // Pop should pop a game that is unlocked and unfinished from the queue, lock
@@ -169,7 +187,7 @@ func (s *Server) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingRespons
 	return &pb.PingResponse{Version: version.Version}, nil
 }
 
-// Serve will intantiate a grpc server.
+// Serve will instantiate a grpc server.
 func (s *Server) Serve(listen string) error {
 	lis, err := net.Listen("tcp", listen)
 	if err != nil {

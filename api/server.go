@@ -13,6 +13,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pkg/errors"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
@@ -34,6 +35,7 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.GET("/games/:id", logging(newClientHandle(c, getStatus)))
 	router.GET("/games/:id/frames", logging(newClientHandle(c, getFrames)))
 	router.GET("/socket/:id", logging(newClientHandle(c, framesSocket)))
+	router.GET("/validateSnake", logging(newClientHandle(c, validateSnake)))
 
 	handler := cors.Default().Handler(router)
 
@@ -243,8 +245,8 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
 	id := ps.ByName("id")
-	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 0) // nolint: gas
-	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)   // nolint: gas
+	offset, _ := strconv.ParseInt(r.URL.Query().Get("offset"), 10, 0) // nolint: gas, gosec
+	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 0)   // nolint: gas, gosec
 	if limit == 0 {
 		limit = 100
 	}
@@ -266,6 +268,29 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 	err = m.Marshal(w, resp)
 
+	if err != nil {
+		log.WithError(err).Error("Unable to write response to stream")
+	}
+}
+
+func validateSnake(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+	queryValues := r.URL.Query()
+	url := queryValues.Get("url")
+	if url == "" {
+		err := errors.New("url parameter not provided")
+		writeError(w, err, http.StatusBadRequest, "You must provide a url parameter", nil)
+	}
+	m := jsonpb.Marshaler{EmitDefaults: true}
+	req := &pb.ValidateSnakeRequest{
+		URL: url,
+	}
+
+	resp, err := c.ValidateSnake(r.Context(), req)
+	if err != nil {
+		writeError(w, err, http.StatusBadRequest, "Error validating snake", nil)
+	}
+
+	err = m.Marshal(w, resp)
 	if err != nil {
 		log.WithError(err).Error("Unable to write response to stream")
 	}
