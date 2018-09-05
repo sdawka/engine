@@ -6,11 +6,12 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"strings"
+
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
 	"github.com/stretchr/testify/require"
-	"strings"
 )
 
 var client pb.ControllerClient
