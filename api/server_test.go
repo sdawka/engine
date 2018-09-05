@@ -23,6 +23,7 @@ type MockController struct {
 	CreateResponse         *pb.CreateResponse
 	StartResponse          *pb.StartResponse
 	StatusResponse         *pb.StatusResponse
+	ValidateSnakeResponse  *pb.ValidateSnakeResponse
 	ListGameFramesResponse func() *pb.ListGameFramesResponse
 }
 
@@ -41,12 +42,16 @@ func (mc *MockController) Status(ctx context.Context, req *pb.StatusRequest, opt
 func (mc *MockController) ListGameFrames(ctx context.Context, req *pb.ListGameFramesRequest, opts ...grpc.CallOption) (*pb.ListGameFramesResponse, error) {
 	return mc.ListGameFramesResponse(), mc.Error
 }
+func (mc *MockController) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest, opts ...grpc.CallOption) (*pb.ValidateSnakeResponse, error) {
+	return mc.ValidateSnakeResponse, mc.Error
+}
 
 func createAPIServer() (*Server, *MockController) {
 	var client = &MockController{
-		CreateResponse: &pb.CreateResponse{},
-		StartResponse:  &pb.StartResponse{},
-		StatusResponse: &pb.StatusResponse{},
+		CreateResponse:        &pb.CreateResponse{},
+		StartResponse:         &pb.StartResponse{},
+		StatusResponse:        &pb.StatusResponse{},
+		ValidateSnakeResponse: &pb.ValidateSnakeResponse{},
 		ListGameFramesResponse: func() *pb.ListGameFramesResponse {
 			return &pb.ListGameFramesResponse{}
 		},
@@ -156,6 +161,36 @@ func TestGetFrames(t *testing.T) {
 
 	s.hs.Handler.ServeHTTP(rr, req)
 	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestValidateSnake(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/validateSnake?url=dsnek.heroku.com", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestValidateSnakeBlankUrl(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/validateSnake?url=", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
+func TestValidateSnakeMissingUrl(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/validateSnake", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
 func TestGetFramesWithControllerError(t *testing.T) {

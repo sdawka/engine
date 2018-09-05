@@ -16,7 +16,7 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "creates a new game on the battlesnake engine",
 	Args: func(c *cobra.Command, args []string) error {
-		data, err := ioutil.ReadFile(configFile)
+		data, err := ioutil.ReadFile(configFile) // nolint: gosec
 		if err != nil {
 			return err
 		}
