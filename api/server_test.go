@@ -266,7 +266,8 @@ func TestGetFramesContainsZeroValues(t *testing.T) {
 	require.NoError(t, err)
 
 	var resp map[string]interface{}
-	json.Unmarshal(body, &resp)
+	err = json.Unmarshal(body, &resp)
+	require.NoError(t, err)
 
 	frames := castJSONInterface(resp["Frames"], 0)
 	snake := castJSONInterface(frames["Snakes"], 0)
