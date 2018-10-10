@@ -47,9 +47,9 @@ func (s *Server) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest
 	}
 	gameID := strconv.FormatInt(time.Now().UnixNano(), 10)
 	validateSnakeResponse := &pb.ValidateSnakeResponse{
-		StartStatus: rules.ValidateStart(gameID, url),
-		MoveStatus:  rules.ValidateMove(gameID, url),
-		EndStatus:   rules.ValidateEnd(gameID, url),
+		StartStatus: rules.ValidateStart(gameID, url, rules.SlowSnakeMS),
+		MoveStatus:  rules.ValidateMove(gameID, url, rules.SlowSnakeMS),
+		EndStatus:   rules.ValidateEnd(gameID, url, rules.SlowSnakeMS),
 	}
 	return validateSnakeResponse, nil
 }
