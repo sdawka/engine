@@ -20,7 +20,7 @@ test-e2e: install
 .PHONY: test-e2e
 
 lint:
-	gometalinter --config ./.gometalinter.json ./...
+	golangci-lint run
 .PHONY: lint
 
 proto:

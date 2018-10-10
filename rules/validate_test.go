@@ -1,10 +1,11 @@
 package rules
 
 import (
-	"github.com/battlesnakeio/engine/controller/pb"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/battlesnakeio/engine/controller/pb"
+	"github.com/stretchr/testify/require"
 )
 
 var snakeURL = "http://good-server"

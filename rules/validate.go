@@ -3,11 +3,12 @@ package rules
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/battlesnakeio/engine/controller/pb"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/battlesnakeio/engine/controller/pb"
+	log "github.com/sirupsen/logrus"
 )
 
 // ValidateStart validates the start end point on a snake server

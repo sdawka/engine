@@ -139,7 +139,7 @@ Storage options:
 Save games as files in `~/battlesnake/`
 
 ```shell
-engine all --backend file --backend-args ~/battlesnake
+engine server --backend file --backend-args ~/battlesnake
 ```
 
 #### Redis
@@ -147,7 +147,7 @@ engine all --backend file --backend-args ~/battlesnake
 Save games as keys in redis
 
 ```shell
-engine all --backend redis --backend-args 'redis://localhost:6379'
+engine server --backend redis --backend-args 'redis://localhost:6379'
 ```
 
 ---

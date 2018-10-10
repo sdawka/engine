@@ -138,8 +138,8 @@ message Game {
   string Status = 2;
   int32 Width = 3;
   int32 Height = 4;
-  int64 SnakeTimeout = 6; // number of milliseconds for snake api calls
-  int64 TurnTimeout = 7; // number of milliseconds for turn delay
+  int32 SnakeTimeout = 6; // number of milliseconds for snake api calls
+  int32 TurnTimeout = 7; // number of milliseconds for turn delay
   string Mode = 8;
 };
 
