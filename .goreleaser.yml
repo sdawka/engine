@@ -9,7 +9,7 @@ builds:
       - windows
 before:
   hooks:
-    - build_board.sh
+    - ./build_board.sh
 archive:
   replacements:
     darwin: Darwin
