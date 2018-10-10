@@ -3,8 +3,8 @@ package rules
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"strconv"
 	"strings"
 	"time"
 
@@ -67,7 +67,7 @@ func scoreResponse(gameID string, url string, endpoint string, slowSnakeMS int32
 			response.Score.ChecksPassed++
 		} else {
 			response.Message = "Slow snake"
-			response.Errors = append(response.Errors, "snake took "+strconv.Itoa(int(responseTime))+" ms to respond, try and get it < 1000 ms.")
+			response.Errors = append(response.Errors, fmt.Sprintf("snake took %d ms to respond, try and get it < %d ms.", responseTime, slowSnakeMS))
 			response.Score.ChecksFailed++
 		}
 
