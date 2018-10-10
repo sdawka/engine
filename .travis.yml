@@ -7,6 +7,8 @@ go:
 go_import_path: github.com/battlesnakeio/engine
 services:
 - docker
+before_install:
+- nvm install 9
 stages:
 - lint
 - test
@@ -20,8 +22,7 @@ jobs:
     - make lint
   - stage: test
     script:
-    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
-      > ./cc-test-reporter
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
     - chmod +x ./cc-test-reporter
     - "./cc-test-reporter before-build"
     - docker run -d --name=battlesnake-redis --rm -t -p 6379:6379 redis
