@@ -30,25 +30,11 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	// we have all the snake moves now
 	// 1. update snake coords
 	updateSnakes(game, nextFrame, moves)
-	// 2. check for death
-	// 	  a - starvation
-	//    b - wall collision
-	//    c - snake collision
-	log.WithFields(log.Fields{
-		"GameID": game.ID,
-		"Turn":   nextFrame.Turn,
-	}).Info("check for death")
-	deathUpdates := checkForDeath(game.Width, game.Height, nextFrame)
-	for _, du := range deathUpdates {
-		if du.Snake.Death == nil {
-			du.Snake.Death = du.Death
-		}
-	}
-	// 3. game update
+	// 2. game update
 	//    a - turn incr -- done above when the next tick is created
 	//    b - reduce health points
 	//    c - grow snakes, and update snake health if they ate
-	//    d - shrink snakes that didn't et
+	//    d - shrink snakes that didn't eat
 	//    e - remove eaten food
 	//    f - replace eaten food
 	log.WithFields(log.Fields{
@@ -70,6 +56,21 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 		return nil, err
 	}
 	nextFrame.Food = nextFood
+
+	// 3. check for death
+	// 	  a - starvation
+	//    b - wall collision
+	//    c - snake collision
+	log.WithFields(log.Fields{
+		"GameID": game.ID,
+		"Turn":   nextFrame.Turn,
+	}).Info("check for death")
+	deathUpdates := checkForDeath(game.Width, game.Height, nextFrame)
+	for _, du := range deathUpdates {
+		if du.Snake.Death == nil {
+			du.Snake.Death = du.Death
+		}
+	}
 	return nextFrame, nil
 }
 
@@ -204,6 +205,12 @@ func checkForSnakesEating(frame *pb.GameFrame) []*pb.Point {
 				snake.Health = 100
 				ate = true
 				foodToRemove = append(foodToRemove, foodPos)
+				log.WithFields(log.Fields{
+					"SnakeID": snake.ID,
+					"Name":    snake.Name,
+					"Turn":    frame.Turn,
+					"Food":    foodPos,
+				}).Info("snake ate")
 			}
 		}
 		if !ate {
