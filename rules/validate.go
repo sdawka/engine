@@ -3,6 +3,7 @@ package rules
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -11,25 +12,30 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// SlowSnakeMS represents what is considered a slow response time to the Validate* calls.
+	SlowSnakeMS = 1000
+)
+
 // ValidateStart validates the start end point on a snake server
-func ValidateStart(gameID string, url string) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/start")
+func ValidateStart(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
+	response := scoreResponse(gameID, url, "/start", slowSnakeMS)
 	return response
 }
 
 // ValidateMove validates the move end point on a snake server
-func ValidateMove(gameID string, url string) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/move")
+func ValidateMove(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
+	response := scoreResponse(gameID, url, "/move", slowSnakeMS)
 	return response
 }
 
 // ValidateEnd validates the end end point on a snake server
-func ValidateEnd(gameID string, url string) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/end")
+func ValidateEnd(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
+	response := scoreResponse(gameID, url, "/end", slowSnakeMS)
 	return response
 }
 
-func scoreResponse(gameID string, url string, endpoint string) *pb.SnakeResponseStatus {
+func scoreResponse(gameID string, url string, endpoint string, slowSnakeMS int32) *pb.SnakeResponseStatus {
 	game, frame := createGameFrame(gameID, url)
 	response := &pb.SnakeResponseStatus{
 		Score: &pb.Score{},
@@ -57,11 +63,11 @@ func scoreResponse(gameID string, url string, endpoint string) *pb.SnakeResponse
 		} else {
 			response.Score.ChecksPassed++
 		}
-		if responseTime < 1000 {
+		if responseTime < slowSnakeMS {
 			response.Score.ChecksPassed++
 		} else {
 			response.Message = "Slow snake"
-			response.Errors = append(response.Errors, "snake took "+string(responseTime)+" ms to respond, try and get it < 1000 ms.")
+			response.Errors = append(response.Errors, fmt.Sprintf("snake took %d ms to respond, try and get it < %d ms.", responseTime, slowSnakeMS))
 			response.Score.ChecksFailed++
 		}
 
