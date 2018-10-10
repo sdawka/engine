@@ -205,9 +205,9 @@ func TestGameTickUpdatesDeath(t *testing.T) {
 	snake := &pb.Snake{
 		Health: 0,
 		Body: []*pb.Point{
-			{X: 1, Y: 1},
-			{X: 1, Y: 2},
-			{X: 1, Y: 3},
+			{X: 3, Y: 1},
+			{X: 3, Y: 2},
+			{X: 3, Y: 3},
 		},
 	}
 
@@ -225,7 +225,7 @@ func TestUpdateSnakes(t *testing.T) {
 		},
 	}
 	moves := []*SnakeUpdate{
-		&SnakeUpdate{
+		{
 			Snake: snake,
 			Err:   errors.New("some error"),
 		},
@@ -236,7 +236,7 @@ func TestUpdateSnakes(t *testing.T) {
 	require.Equal(t, &pb.Point{X: 1, Y: 0}, snake.Head(), "snake did not move up")
 
 	moves = []*SnakeUpdate{
-		&SnakeUpdate{
+		{
 			Snake: snake,
 			Move:  "left",
 		},
@@ -245,4 +245,29 @@ func TestUpdateSnakes(t *testing.T) {
 		Snakes: []*pb.Snake{snake},
 	}, moves)
 	require.Equal(t, &pb.Point{X: 0, Y: 0}, snake.Head(), "snake did not move left")
+}
+
+func TestCanFollowTail(t *testing.T) {
+	url := setupSnakeServer(t, MoveResponse{
+		Move: "down",
+	})
+	snake := &pb.Snake{
+		Body: []*pb.Point{
+			{X: 2, Y: 1},
+			{X: 1, Y: 1},
+			{X: 1, Y: 2},
+			{X: 2, Y: 2},
+		},
+		URL:    url,
+		Health: 100,
+	}
+	next, err := GameTick(&pb.Game{
+		Width:  20,
+		Height: 20,
+	}, &pb.GameFrame{
+		Snakes: []*pb.Snake{snake},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, next)
+	require.Nil(t, next.Snakes[0].Death)
 }
