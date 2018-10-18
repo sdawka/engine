@@ -35,6 +35,12 @@ func ValidateEnd(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponse
 	return response
 }
 
+// ValidatePing validates the ping endpoint on a snake server
+func ValidatePing(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
+	response := scoreResponse(gameID, url, "/ping", slowSnakeMS)
+	return response
+}
+
 func scoreResponse(gameID string, url string, endpoint string, slowSnakeMS int32) *pb.SnakeResponseStatus {
 	game, frame := createGameFrame(gameID, url)
 	response := &pb.SnakeResponseStatus{
@@ -83,6 +89,9 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	if err != nil {
 		return "", 0, 0, err
 	}
+	if endpoint == "/ping" {
+		data = []byte("{}")
+	}
 	buf := bytes.NewBuffer(data)
 	start := time.Now().UnixNano()
 	response, err := netClient.Post(url+endpoint, "application/json", buf)
@@ -104,7 +113,7 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	}
 	raw := string(contents)
 
-	if endpoint != "/end" {
+	if endpoint != "/end" && endpoint != "/ping" {
 		var raw map[string]interface{}
 		err = json.Unmarshal(contents, &raw)
 	}

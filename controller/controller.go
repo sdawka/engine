@@ -50,6 +50,7 @@ func (s *Server) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest
 		StartStatus: rules.ValidateStart(gameID, url, rules.SlowSnakeMS),
 		MoveStatus:  rules.ValidateMove(gameID, url, rules.SlowSnakeMS),
 		EndStatus:   rules.ValidateEnd(gameID, url, rules.SlowSnakeMS),
+		PingStatus:  rules.ValidatePing("nogame", url, rules.SlowSnakeMS),
 	}
 	return validateSnakeResponse, nil
 }

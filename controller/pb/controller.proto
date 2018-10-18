@@ -67,6 +67,7 @@ message ValidateSnakeResponse {
    SnakeResponseStatus StartStatus = 1;
    SnakeResponseStatus MoveStatus = 2;
    SnakeResponseStatus EndStatus = 3;
+   SnakeResponseStatus PingStatus = 4;
 }
 message SnakeResponseStatus {
   string Message = 1;

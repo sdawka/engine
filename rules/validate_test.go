@@ -41,6 +41,18 @@ func TestValidateMove(t *testing.T) {
 	}
 	validateWithJSON(t, ValidateMove, snakeURL+"/move", expected)
 }
+func TestValidatePing(t *testing.T) {
+	expected := &pb.SnakeResponseStatus{
+		Message:    "Perfect",
+		Raw:        "{  }",
+		StatusCode: 200,
+		Score: &pb.Score{
+			ChecksPassed: 3,
+			ChecksFailed: 0,
+		},
+	}
+	validateWithJSON(t, ValidatePing, snakeURL+"/ping", expected)
+}
 
 func TestValidateStart(t *testing.T) {
 	expected := &pb.SnakeResponseStatus{
@@ -69,15 +81,38 @@ func TestValidateStartBadJson(t *testing.T) {
 	validateWithJSON(t, ValidateStart, snakeURL+"/start", expected)
 }
 
+func TestValidateEndBadJsonIsOK(t *testing.T) {
+	expected := &pb.SnakeResponseStatus{
+		Message:    "Perfect",
+		Raw:        "WE DON'T CARE ABOUT THE RESPONSE FORMAT",
+		StatusCode: 200,
+		Score: &pb.Score{
+			ChecksPassed: 3,
+			ChecksFailed: 0,
+		},
+	}
+	validateWithJSON(t, ValidateEnd, snakeURL+"/end", expected)
+}
+func TestValidatePingBadJsonIsOK(t *testing.T) {
+	expected := &pb.SnakeResponseStatus{
+		Message:    "Perfect",
+		Raw:        "WE DON'T CARE ABOUT THE RESPONSE FORMAT",
+		StatusCode: 200,
+		Score: &pb.Score{
+			ChecksPassed: 3,
+			ChecksFailed: 0,
+		},
+	}
+	validateWithJSON(t, ValidatePing, snakeURL+"/ping", expected)
+}
 func TestValidateStartBadUrl(t *testing.T) {
 	response := ValidateStart("1234", "start", 100)
 	require.True(t, strings.Contains(response.Message, "Snake URL not valid"), response.Message)
 	require.Equal(t, []string{"invalid url 'start'"}, response.Errors)
 }
 func TestValidateSlowUrl(t *testing.T) {
-	url := snakeURL + "/move"
 	slowSnake := int32(1)
-	createClient = singleSlowEndpointMockClient(t, url, "{}", 200, 5*time.Millisecond)
+	createClient = validateMockClient(t, snakeURL+"/move", "{}", 200, time.Duration(slowSnake+1)*time.Millisecond)
 	response := ValidateMove("1234", snakeURL, slowSnake)
 	errorZero := response.Errors[0]
 	var digitsRegexp = regexp.MustCompile(`snake took (\d+) ms`)
@@ -87,7 +122,7 @@ func TestValidateSlowUrl(t *testing.T) {
 }
 
 func validateWithJSON(t *testing.T, status func(id string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus, url string, expected *pb.SnakeResponseStatus) {
-	createClient = singleEndpointMockClient(t, url, expected.Raw, 200)
+	createClient = validateMockClient(t, url, expected.Raw, 200, 0)
 	response := status("1234", snakeURL, 100)
 	require.True(t, strings.Contains(response.Message, expected.Message), "got: "+response.Message+", expected: "+expected.Message)
 	require.Equal(t, expected.Errors, response.Errors)
@@ -96,7 +131,7 @@ func validateWithJSON(t *testing.T, status func(id string, url string, slowSnake
 	require.Equal(t, expected.Score.ChecksFailed, response.Score.ChecksFailed, "Failed count mismatch")
 }
 
-func singleSlowEndpointMockClient(t *testing.T, url, bodyJSON string, statusCode int, sleep time.Duration) func(time.Duration) httpClient {
+func validateMockClient(t *testing.T, url, bodyJSON string, statusCode int, sleep time.Duration) func(time.Duration) httpClient {
 	body := readCloser{Buffer: &bytes.Buffer{}}
 	body.WriteString(bodyJSON)
 
