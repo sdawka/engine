@@ -64,7 +64,7 @@ func buildSnakeRequest(game *pb.Game, frame *pb.GameFrame, snakeID string) Snake
 			Height: game.Height,
 			Width:  game.Width,
 			Food:   convertPoints(frame.Food),
-			Snakes: convertSnakes(frame.Snakes),
+			Snakes: convertSnakes(frame.AliveSnakes()),
 		},
 		You: convertSnake(you),
 	}
