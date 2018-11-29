@@ -3,6 +3,8 @@ package sqlstore
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,7 +13,6 @@ import (
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
-	"github.com/gogo/protobuf/proto"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -23,12 +24,12 @@ CREATE TABLE IF NOT EXISTS locks (
 );
 CREATE TABLE IF NOT EXISTS games (
 	id VARCHAR(255) PRIMARY KEY,
-	value BYTEA
+	value jsonb
 );
 CREATE TABLE IF NOT EXISTS game_frames (
 	id VARCHAR(255),
 	turn INTEGER,
-	value BYTEA,
+	value jsonb,
 	PRIMARY KEY (id, turn)
 );
 `
@@ -160,6 +161,7 @@ func (s *Store) PopGameID(ctx context.Context) (string, error) {
 		SELECT id FROM games
 		LEFT JOIN locks ON locks.key = games.id AND locks.expiry > $1
 		WHERE locks.key IS NULL
+		AND games.value->>'Status' = 'running'
 		LIMIT 1
 	`, now)
 
@@ -178,29 +180,8 @@ func (s *Store) PopGameID(ctx context.Context) (string, error) {
 func (s *Store) SetGameStatus(
 	ctx context.Context, id string, status rules.GameStatus) error {
 	return s.transact(ctx, func(tx *sql.Tx) error {
-		r := tx.QueryRowContext(
-			ctx, "SELECT value FROM games WHERE id=$1 FOR UPDATE", id)
-		var data []byte
-		if err := r.Scan(&data); err != nil {
-			return err
-		}
-
-		g := &pb.Game{}
-		if err := proto.Unmarshal(data, g); err != nil {
-			return err
-		}
-		g.Status = string(status)
-
-		{
-			var err error
-			data, err = proto.Marshal(g)
-			if err != nil {
-				return err
-			}
-		}
-
-		_, err := tx.ExecContext(
-			ctx, "UPDATE games SET value=$1 WHERE id=$2", data, id)
+		query := fmt.Sprintf(`update games set value = jsonb_set(value, '{"Status"}', '"%s"') where id = $1;`, string(status))
+		_, err := tx.ExecContext(ctx, query, id)
 		return err
 	})
 }
@@ -212,7 +193,7 @@ func (s *Store) CreateGame(
 		var data []byte
 		{
 			var err error
-			data, err = proto.Marshal(g)
+			data, err = json.Marshal(g)
 			if err != nil {
 				return err
 			}
@@ -254,7 +235,7 @@ func (s *Store) pushFrames(
 	}
 
 	for _, frame := range frames {
-		frameData, err := proto.Marshal(frame)
+		frameData, err := json.Marshal(frame)
 		if err != nil {
 			return err
 		}
@@ -278,9 +259,8 @@ func (s *Store) PushGameFrame(
 
 // ListGameFrames will list frames by an offset and limit, it supports
 // negative offset.
-func (s *Store) ListGameFrames(
-	c context.Context, id string, limit, offset int) ([]*pb.GameFrame, error) {
-	if _, err := s.GetGame(c, id); err != nil {
+func (s *Store) ListGameFrames(ctx context.Context, id string, limit, offset int) ([]*pb.GameFrame, error) {
+	if _, err := s.GetGame(ctx, id); err != nil {
 		return nil, err
 	}
 
@@ -288,9 +268,10 @@ func (s *Store) ListGameFrames(
 	if offset < 0 {
 		order = "DESC"
 		offset = -offset
+		offset = offset - 1 // adjust the offset for common semantics
 	}
 
-	rows, err := s.db.QueryContext(c,
+	rows, err := s.db.QueryContext(ctx,
 		`SELECT value FROM game_frames WHERE id=$1 ORDER BY turn `+
 			order+` LIMIT $2 OFFSET $3`,
 		id, limit, offset,
@@ -308,7 +289,7 @@ func (s *Store) ListGameFrames(
 		}
 
 		frame := &pb.GameFrame{}
-		if err := proto.Unmarshal(data, frame); err != nil {
+		if err := json.Unmarshal(data, frame); err != nil {
 			return nil, err
 		}
 
@@ -331,7 +312,7 @@ func (s *Store) GetGame(c context.Context, id string) (*pb.Game, error) {
 	}
 
 	g := &pb.Game{}
-	if err := proto.Unmarshal(data, g); err != nil {
+	if err := json.Unmarshal(data, g); err != nil {
 		return nil, err
 	}
 	return g, nil
