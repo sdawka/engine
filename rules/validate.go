@@ -57,6 +57,13 @@ func scoreResponse(gameID string, url string, endpoint string, slowSnakeMS int32
 		response.Raw = rawResponse
 		response.Time = responseTime
 		response.StatusCode = int32(responseCode)
+		if response.StatusCode > 0 && (response.StatusCode < 200 || response.StatusCode >= 300) {
+			response.Score.ChecksFailed++
+			response.Message = "Bad return code, expected 200"
+			response.Errors = append(response.Errors, fmt.Sprintf("incorrect http response code, got %d, expected 200", response.StatusCode))
+		} else {
+			response.Score.ChecksPassed++
+		}
 		if responseError != nil {
 			response.Score.ChecksFailed++
 			if strings.HasPrefix(responseError.Error(), "invalid") {

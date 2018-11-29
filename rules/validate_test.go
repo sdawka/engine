@@ -17,13 +17,30 @@ import (
 
 var snakeURL = "http://good-server"
 
+const validationCount = 4
+
+func TestValidatePing404(t *testing.T) {
+	createClient = validateMockClient(t, snakeURL+"/ping", "{}", 404, 200)
+	response := ValidatePing("1234", snakeURL, 200)
+
+	errorZero := response.Errors[0]
+	require.Equal(t, errorZero, "incorrect http response code, got 404, expected 200")
+}
+func TestValidatePing500(t *testing.T) {
+	createClient = validateMockClient(t, snakeURL+"/ping", "{}", 500, 200)
+	response := ValidatePing("1234", snakeURL, 200)
+
+	errorZero := response.Errors[0]
+	require.Equal(t, errorZero, "incorrect http response code, got 500, expected 200")
+}
+
 func TestValidateEnd(t *testing.T) {
 	expected := &pb.SnakeResponseStatus{
 		Message:    "Perfect",
 		StatusCode: 200,
 		Raw:        "",
 		Score: &pb.Score{
-			ChecksPassed: 3,
+			ChecksPassed: validationCount,
 			ChecksFailed: 0,
 		},
 	}
@@ -35,7 +52,7 @@ func TestValidateMove(t *testing.T) {
 		Raw:        "{  }",
 		StatusCode: 200,
 		Score: &pb.Score{
-			ChecksPassed: 3,
+			ChecksPassed: validationCount,
 			ChecksFailed: 0,
 		},
 	}
@@ -47,7 +64,7 @@ func TestValidatePing(t *testing.T) {
 		Raw:        "{  }",
 		StatusCode: 200,
 		Score: &pb.Score{
-			ChecksPassed: 3,
+			ChecksPassed: validationCount,
 			ChecksFailed: 0,
 		},
 	}
@@ -60,7 +77,7 @@ func TestValidateStart(t *testing.T) {
 		Raw:        "{ \"color\": \"blue\" }",
 		StatusCode: 200,
 		Score: &pb.Score{
-			ChecksPassed: 3,
+			ChecksPassed: validationCount,
 			ChecksFailed: 0,
 		},
 	}
@@ -74,7 +91,7 @@ func TestValidateStartBadJson(t *testing.T) {
 		StatusCode: 200,
 		Errors:     []string{"invalid character 'c' looking for beginning of object key string"},
 		Score: &pb.Score{
-			ChecksPassed: 2,
+			ChecksPassed: validationCount - 1,
 			ChecksFailed: 1,
 		},
 	}
@@ -87,7 +104,7 @@ func TestValidateEndBadJsonIsOK(t *testing.T) {
 		Raw:        "WE DON'T CARE ABOUT THE RESPONSE FORMAT",
 		StatusCode: 200,
 		Score: &pb.Score{
-			ChecksPassed: 3,
+			ChecksPassed: validationCount,
 			ChecksFailed: 0,
 		},
 	}
@@ -99,7 +116,7 @@ func TestValidatePingBadJsonIsOK(t *testing.T) {
 		Raw:        "WE DON'T CARE ABOUT THE RESPONSE FORMAT",
 		StatusCode: 200,
 		Score: &pb.Score{
-			ChecksPassed: 3,
+			ChecksPassed: validationCount,
 			ChecksFailed: 0,
 		},
 	}
