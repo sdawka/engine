@@ -26,6 +26,13 @@ func TestValidatePing404(t *testing.T) {
 	errorZero := response.Errors[0]
 	require.Equal(t, errorZero, "incorrect http response code, got 404, expected 200")
 }
+
+func TestValidateTrailingSlash(t *testing.T) {
+	createClient = validateMockClient(t, snakeURL+"/ping", "{}", 200, 200)
+	response := ValidatePing("1234", snakeURL+"/", 200)
+	require.Equal(t, int32(validationCount), response.GetScore().GetChecksPassed())
+}
+
 func TestValidatePing500(t *testing.T) {
 	createClient = validateMockClient(t, snakeURL+"/ping", "{}", 500, 200)
 	response := ValidatePing("1234", snakeURL, 200)
