@@ -44,6 +44,9 @@ func NewSQLStore(url string) (*Store, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	db.SetMaxOpenConns(75)
+	db.SetMaxIdleConns(20)
+
 	if err = db.PingContext(ctx); err != nil {
 		return nil, err
 	}
