@@ -54,7 +54,7 @@
   version = "v6.10.2"
 
 [[projects]]
-  digest = "1:c91e35f0fe38a0b4e477c3bcb0b86aa79fbc4c8331617e4d7c3a94ede36a74ae"
+  digest = "1:a35d141bba894725d1aa63523e146ab83c30475d23970ef402165eb96bd5907a"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
@@ -65,11 +65,11 @@
     "types",
   ]
   pruneopts = "NUT"
-  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
-  version = "v1.0.0"
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
 
 [[projects]]
-  digest = "1:2c260fd3b5a321ea3d164b1cda14c25d7150b2370d39a02c30d76feb003cd70f"
+  digest = "1:224dbf3a601f51cbf47824d46be29562fb1e897ca0ed0908a56b0b79ec71d914"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
@@ -81,8 +81,8 @@
     "ptypes/timestamp",
   ]
   pruneopts = "NUT"
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:3b708ebf63bfa9ba3313bedb8526bc0bb284e51474e65e958481476a9d4a12aa"
@@ -401,6 +401,7 @@
     "github.com/mattn/go-runewidth",
     "github.com/nsf/termbox-go",
     "github.com/pkg/errors",
+    "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/rs/cors",
     "github.com/satori/go.uuid",
