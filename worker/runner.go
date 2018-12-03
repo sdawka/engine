@@ -12,15 +12,19 @@ import (
 var (
 	framePushErrors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "frames_push_errors",
-			Help: "Number of frames processed by the worker.",
+			Namespace: "engine",
+			Subsystem: "worker",
+			Name:      "frames_push_errors",
+			Help:      "Number of frames processed by the worker.",
 		},
 		[]string{},
 	)
 	framesProcessed = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "frames_processed",
-			Help: "Number of frames processed by the worker.",
+			Namespace: "engine",
+			Subsystem: "worker",
+			Name:      "frames_processed",
+			Help:      "Number of frames processed by the worker.",
 		},
 		[]string{},
 	)
@@ -67,7 +71,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			GameFrame: nextFrame,
 		})
 		if err != nil {
-			framePushErrors.Inc()
+			framePushErrors.With(prometheus.Labels{}).Inc()
 			// This is likely a lock error, not to worry here, we can exit.
 			return err
 		}
@@ -84,7 +88,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			return err
 		}
 
-		framesProcessed.Inc()
+		framesProcessed.With(prometheus.Labels{}).Inc()
 
 		lastFrame = nextFrame
 	}

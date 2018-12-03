@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,12 +30,12 @@ type clientHandle func(http.ResponseWriter, *http.Request, httprouter.Params, pb
 // New creates a new api server
 func New(addr string, c pb.ControllerClient) *Server {
 	router := httprouter.New()
-	router.POST("/games", wrap("game-create", newClientHandle(c, createGame)))
-	router.POST("/games/:id/start", wrap("game-start", newClientHandle(c, startGame)))
-	router.GET("/games/:id", wrap("game-status", newClientHandle(c, getStatus)))
-	router.GET("/games/:id/frames", wrap("game-frames", newClientHandle(c, getFrames)))
-	router.GET("/socket/:id", wrap("game-socket", newClientHandle(c, framesSocket)))
-	router.GET("/validateSnake", wrap("snake-validate", newClientHandle(c, validateSnake)))
+	router.POST("/games", logging(newClientHandle(c, createGame)))
+	router.POST("/games/:id/start", logging(newClientHandle(c, startGame)))
+	router.GET("/games/:id", logging(newClientHandle(c, getStatus)))
+	router.GET("/games/:id/frames", logging(newClientHandle(c, getFrames)))
+	router.GET("/socket/:id", logging(newClientHandle(c, framesSocket)))
+	router.GET("/validateSnake", logging(newClientHandle(c, validateSnake)))
 
 	handler := cors.Default().Handler(router)
 
@@ -48,15 +47,15 @@ func New(addr string, c pb.ControllerClient) *Server {
 	}
 }
 
-func wrap(name string, h httprouter.Handle) httprouter.Handle {
-	return prometheus.InstrumentHandler(name, func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func logging(h httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		start := time.Now()
 		h(w, r, p)
 		log.WithFields(log.Fields{
 			"duration": time.Since(start),
 			"url":      r.URL.String(),
 		}).Info("API Call")
-	})
+	}
 }
 
 func newClientHandle(c pb.ControllerClient, innerHandle clientHandle) httprouter.Handle {
