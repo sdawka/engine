@@ -5,8 +5,31 @@ import (
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
+
+var (
+	framePushErrors = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "frames_push_errors",
+			Help: "Number of frames processed by the worker.",
+		},
+		[]string{},
+	)
+	framesProcessed = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "frames_processed",
+			Help: "Number of frames processed by the worker.",
+		},
+		[]string{},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(framePushErrors)
+	prometheus.MustRegister(framesProcessed)
+}
 
 // Runner will run an invidual game to completion. It takes a game id and a
 // connection to the controller as arguments.
@@ -44,6 +67,7 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			GameFrame: nextFrame,
 		})
 		if err != nil {
+			framePushErrors.Inc()
 			// This is likely a lock error, not to worry here, we can exit.
 			return err
 		}
@@ -59,6 +83,8 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 			}
 			return err
 		}
+
+		framesProcessed.Inc()
 
 		lastFrame = nextFrame
 	}
