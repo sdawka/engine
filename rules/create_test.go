@@ -53,3 +53,21 @@ func TestCreateInitialGame_MoreSnakesThanSpace(t *testing.T) {
 
 	require.Error(t, err)
 }
+
+func TestCreateInitialGameWithColour(t *testing.T) {
+	url := setupSnakeServer(t, MoveResponse{}, StartResponse{
+		Color: "#CDCDCD",
+	})
+	_, frame, err := CreateInitialGame(&pb.CreateRequest{
+		Width:  10,
+		Height: 10,
+		Food:   10,
+		Snakes: []*pb.SnakeOptions{
+			{URL: url},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, frame, 1)
+	require.Len(t, frame[0].Snakes, 1)
+	require.Equal(t, "#CDCDCD", frame[0].Snakes[0].Color)
+}

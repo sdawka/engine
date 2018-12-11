@@ -18,9 +18,6 @@ func Runner(ctx context.Context, client pb.ControllerClient, id string) error {
 	lastFrame := resp.LastFrame
 
 	for {
-		if lastFrame != nil && lastFrame.Turn == 0 {
-			rules.NotifyGameStart(resp.Game, lastFrame)
-		}
 		nextFrame, err := rules.GameTick(resp.Game, lastFrame)
 		if err != nil {
 			// This is a GameFrame error, we can assume that this is a fatal

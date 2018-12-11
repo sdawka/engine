@@ -53,6 +53,8 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 		},
 	}
 
+	notifyGameStart(game, frames[0])
+
 	return game, frames, nil
 }
 
