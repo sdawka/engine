@@ -12,6 +12,8 @@ import (
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	promgrpc "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -195,7 +197,12 @@ func (s *Server) Serve(listen string) error {
 		return err
 	}
 	s.port = lis.Addr().(*net.TCPAddr).Port
-	srv := grpc.NewServer(grpc.UnaryInterceptor(loggingInterceptor))
+	srv := grpc.NewServer(grpc.UnaryInterceptor(
+		grpcmiddleware.ChainUnaryServer(
+			loggingInterceptor,
+			promgrpc.UnaryServerInterceptor,
+		),
+	))
 	pb.RegisterControllerServer(srv, s)
 	close(s.started)
 	return srv.Serve(lis)
