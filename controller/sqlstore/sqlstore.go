@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS locks (
 );
 CREATE TABLE IF NOT EXISTS games (
 	id VARCHAR(255) PRIMARY KEY,
-	value jsonb
+	value jsonb,
+	created timestamp default now()
 );
 CREATE TABLE IF NOT EXISTS game_frames (
 	id VARCHAR(255),
