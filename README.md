@@ -154,4 +154,4 @@ engine server --backend redis --backend-args 'redis://localhost:6379'
 
 ## Battlesnake API
 
-Refer to the [docs](https://github.com/battlesnakeio/docs) repository, specifically the [snake API](https://github.com/battlesnakeio/docs/blob/master/apis/snake/spec.yaml) which can viewed with [Swagger's editor](https://swagger.io/swagger-editor/)
+Refer to the docs [repository](https://github.com/battlesnakeio/docs) or [website](http://docs.battlesnake.io), specifically the [snake API](http://docs.battlesnake.io/snake-api.html).
