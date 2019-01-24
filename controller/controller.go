@@ -196,6 +196,8 @@ func (s *Server) Serve(listen string) error {
 	if err != nil {
 		return err
 	}
+	// Enable histogram metrics, they are good.
+	promgrpc.EnableHandlingTimeHistogram()
 	s.port = lis.Addr().(*net.TCPAddr).Port
 	srv := grpc.NewServer(grpc.UnaryInterceptor(
 		grpcmiddleware.ChainUnaryServer(

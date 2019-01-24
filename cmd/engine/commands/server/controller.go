@@ -60,7 +60,7 @@ var controllerCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		ctrl := controller.New(store)
+		ctrl := controller.New(controller.InstrumentStore(store))
 		log.WithField("listen", controllerListen).
 			Info("Battlesnake controller serving")
 		if err := ctrl.Serve(controllerListen); err != nil {
