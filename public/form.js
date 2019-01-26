@@ -40,6 +40,12 @@ $(() => {
     const height = parseInt($("#height").val())
     const width = parseInt($("#width").val())
     const food = parseInt($("#food").val())
+    let useFoodSpawnPercentage = false
+    let foodSpawnChance = null
+    if ($("#food-spawn-chance").val()) {
+      useFoodSpawnPercentage = true
+      foodSpawnChance = parseInt($("#food-spawn-chance").val())
+    }
     const snakes = []
 
     $(".snake-group").each(function() {
@@ -61,6 +67,8 @@ $(() => {
         width,
         height,
         food,
+        useFoodSpawnPercentage,
+        foodSpawnChance,
         "snakes": snakes,
       })
     }).then(resp => resp.json())

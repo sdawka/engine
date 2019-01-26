@@ -101,6 +101,8 @@ message CreateRequest  {
   int32 Height = 2;
   int32 Food = 3;
   repeated SnakeOptions Snakes = 4;
+  bool UseFoodSpawnPercentage = 5; // Turn on percentage food spawning
+  int32 FoodSpawnChance = 6; // This is the chance between 0 and 100 that food will spawn each turn (100 means always spawns, 0 means never)
 }
 message CreateResponse {
   string ID = 1;
@@ -140,8 +142,9 @@ message Game {
   int32 Width = 3;
   int32 Height = 4;
   int32 SnakeTimeout = 6; // number of milliseconds for snake api calls
-  int32 TurnTimeout = 7; // number of milliseconds for turn delay
   string Mode = 8;
+  bool UseFoodSpawnPercentage = 9;
+  int32 FoodSpawnChance = 10;
 };
 
 message GameFrame {
