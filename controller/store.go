@@ -14,7 +14,7 @@ import (
 )
 
 // LockExpiry is the time after which a lock will expire.
-var LockExpiry = 1 * time.Second
+var LockExpiry = 5 * time.Second
 
 var (
 	// ErrNotFound is thrown when a game is not found.

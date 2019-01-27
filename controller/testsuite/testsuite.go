@@ -207,6 +207,7 @@ func testStoreConcurrentWriters(t *testing.T, s controller.Store) {
 
 // Suite will execute the store testsuite.
 func Suite(t *testing.T, s controller.Store, pretest func()) {
+	s = controller.InstrumentStore(s)
 	t.Run("Lock", func(t *testing.T) { pretest(); testStoreLock(t, s) })
 	t.Run("LockExpiry", func(t *testing.T) { pretest(); testStoreLockExpiry(t, s) })
 	t.Run("Games", func(t *testing.T) { pretest(); testStoreGames(t, s) })

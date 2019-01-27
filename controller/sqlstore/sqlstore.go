@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS locks (
 );
 CREATE TABLE IF NOT EXISTS games (
 	id VARCHAR(255) PRIMARY KEY,
-	value jsonb
+	value jsonb,
+	created timestamp default now()
 );
 CREATE TABLE IF NOT EXISTS game_frames (
 	id VARCHAR(255),
@@ -43,6 +44,9 @@ func NewSQLStore(url string) (*Store, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
+
+	db.SetMaxOpenConns(75)
+	db.SetMaxIdleConns(20)
 
 	if err = db.PingContext(ctx); err != nil {
 		return nil, err

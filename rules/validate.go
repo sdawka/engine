@@ -19,25 +19,25 @@ const (
 
 // ValidateStart validates the start end point on a snake server
 func ValidateStart(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/start", slowSnakeMS)
+	response := scoreResponse(gameID, url, "start", slowSnakeMS)
 	return response
 }
 
 // ValidateMove validates the move end point on a snake server
 func ValidateMove(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/move", slowSnakeMS)
+	response := scoreResponse(gameID, url, "move", slowSnakeMS)
 	return response
 }
 
 // ValidateEnd validates the end end point on a snake server
 func ValidateEnd(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/end", slowSnakeMS)
+	response := scoreResponse(gameID, url, "end", slowSnakeMS)
 	return response
 }
 
 // ValidatePing validates the ping endpoint on a snake server
 func ValidatePing(gameID string, url string, slowSnakeMS int32) *pb.SnakeResponseStatus {
-	response := scoreResponse(gameID, url, "/ping", slowSnakeMS)
+	response := scoreResponse(gameID, url, "ping", slowSnakeMS)
 	return response
 }
 
@@ -96,12 +96,12 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	if err != nil {
 		return "", 0, 0, err
 	}
-	if endpoint == "/ping" {
+	if endpoint == "ping" {
 		data = []byte("{}")
 	}
 	buf := bytes.NewBuffer(data)
 	start := time.Now().UnixNano()
-	response, err := netClient.Post(url+endpoint, "application/json", buf)
+	response, err := netClient.Post(getURL(url, endpoint), "application/json", buf)
 	if err != nil {
 		return "", 0, 0, err
 	}
@@ -120,7 +120,7 @@ func makeSnakeCall(game *pb.Game, frame *pb.GameFrame, url string, endpoint stri
 	}
 	raw := string(contents)
 
-	if endpoint != "/end" && endpoint != "/ping" {
+	if endpoint != "end" && endpoint != "ping" {
 		var raw map[string]interface{}
 		err = json.Unmarshal(contents, &raw)
 	}

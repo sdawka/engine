@@ -10,8 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupSnakeServer(t *testing.T, move MoveResponse) string {
-	http.HandleFunc("/move", func(writer http.ResponseWriter, request *http.Request) {
+func setupSnakeServer(t *testing.T, move MoveResponse, start StartResponse) string {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/start", func(writer http.ResponseWriter, request *http.Request) {
+		data, err := json.Marshal(&start)
+		require.NoError(t, err)
+		_, err = writer.Write(data)
+		require.NoError(t, err)
+	})
+	mux.HandleFunc("/move", func(writer http.ResponseWriter, request *http.Request) {
 		data, err := json.Marshal(&move)
 		require.NoError(t, err)
 		_, err = writer.Write(data)
@@ -24,7 +31,7 @@ func setupSnakeServer(t *testing.T, move MoveResponse) string {
 
 	port := listener.Addr().(*net.TCPAddr).Port
 	go func() {
-		err = http.Serve(listener, nil)
+		err = http.Serve(listener, mux)
 		require.NoError(t, err)
 	}()
 	return fmt.Sprintf("http://127.0.0.1:%d", port)

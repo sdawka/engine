@@ -27,8 +27,9 @@ func init() {
 }
 
 var controllerCmd = &cobra.Command{
-	Use:   "controller",
-	Short: "runs the engine controller",
+	Use:    "controller",
+	Short:  "runs the engine controller",
+	PreRun: func(c *cobra.Command, args []string) { prometheus() },
 	Run: func(c *cobra.Command, args []string) {
 		var store controller.Store
 		var err error
@@ -59,7 +60,7 @@ var controllerCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		ctrl := controller.New(store)
+		ctrl := controller.New(controller.InstrumentStore(store))
 		log.WithField("listen", controllerListen).
 			Info("Battlesnake controller serving")
 		if err := ctrl.Serve(controllerListen); err != nil {

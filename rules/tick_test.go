@@ -250,7 +250,7 @@ func TestUpdateSnakes(t *testing.T) {
 func TestCanFollowTail(t *testing.T) {
 	url := setupSnakeServer(t, MoveResponse{
 		Move: "down",
-	})
+	}, StartResponse{})
 	snake := &pb.Snake{
 		Body: []*pb.Point{
 			{X: 2, Y: 1},
