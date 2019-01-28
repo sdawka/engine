@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+	"math/rand"
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -270,4 +271,39 @@ func TestCanFollowTail(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, next)
 	require.Nil(t, next.Snakes[0].Death)
+}
+
+func TestRandomFoodSpawn(t *testing.T) {
+	rand.Seed(1) // random order is 65, 85, 29
+	snakes := []*pb.Snake{{URL: setupSnakeServer(t, MoveResponse{}, StartResponse{})}}
+	next, err := GameTick(&pb.Game{
+		Width:                  20,
+		Height:                 20,
+		UseFoodSpawnPercentage: true,
+		FoodSpawnChance:        60,
+	}, &pb.GameFrame{
+		Snakes: snakes,
+	})
+	require.NoError(t, err)
+	require.Len(t, next.Food, 0)
+	next, err = GameTick(&pb.Game{
+		Width:                  20,
+		Height:                 20,
+		UseFoodSpawnPercentage: true,
+		FoodSpawnChance:        60,
+	}, &pb.GameFrame{
+		Snakes: snakes,
+	})
+	require.NoError(t, err)
+	require.Len(t, next.Food, 0)
+	next, err = GameTick(&pb.Game{
+		Width:                  20,
+		Height:                 20,
+		UseFoodSpawnPercentage: true,
+		FoodSpawnChance:        60,
+	}, &pb.GameFrame{
+		Snakes: snakes,
+	})
+	require.NoError(t, err)
+	require.Len(t, next.Food, 1)
 }
