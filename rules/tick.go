@@ -105,7 +105,10 @@ func updateFood(game *pb.Game, gameFrame *pb.GameFrame, foodToRemove []*pb.Point
 		}
 	} else if game.FoodSpawnChance > 0 {
 		chance := rand.Int31n(101) // use 101 here so we get 0-100 inclusive
-		log.Println("Food Spawn Chance: %d", chance)
+		log.WithFields(log.Fields{
+			"GameID":            game.ID,
+			"Food Spawn Chance": chance,
+		}).Info("food spawn chance")
 		if chance <= game.FoodSpawnChance {
 			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
 			if p != nil {
