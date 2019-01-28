@@ -9,7 +9,7 @@ import (
 )
 
 func TestUpdateFood(t *testing.T) {
-	updated, err := updateFood(20, 20, &pb.GameFrame{
+	updated, err := updateFood(&pb.Game{Width: 20, Height: 20}, &pb.GameFrame{
 		Food: []*pb.Point{
 			{X: 1, Y: 1},
 			{X: 1, Y: 2},
@@ -36,7 +36,7 @@ func TestUpdateFood(t *testing.T) {
 }
 
 func TestUpdateFoodWithFullBoard(t *testing.T) {
-	updated, err := updateFood(2, 2, &pb.GameFrame{
+	updated, err := updateFood(&pb.Game{Width: 2, Height: 2}, &pb.GameFrame{
 		Food: []*pb.Point{
 			{X: 0, Y: 0},
 		},
