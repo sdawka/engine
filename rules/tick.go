@@ -9,6 +9,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
 // GameTick runs the game one tick and updates the state
 func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	if lastFrame == nil {
@@ -51,7 +55,7 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	}).Info("handle food")
 
 	foodToRemove := checkForSnakesEating(nextFrame)
-	nextFood, err := updateFood(game.Width, game.Height, lastFrame, foodToRemove)
+	nextFood, err := updateFood(game, lastFrame, foodToRemove)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +78,9 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	return nextFrame, nil
 }
 
-func updateFood(width, height int32, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
-	food := []*pb.Point{}
+func updateFood(game *pb.Game, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
+	var food []*pb.Point
+	// discover what food was not eaten
 	for _, foodPos := range gameFrame.Food {
 		found := false
 		for _, r := range foodToRemove {
@@ -90,10 +95,24 @@ func updateFood(width, height int32, gameFrame *pb.GameFrame, foodToRemove []*pb
 		}
 	}
 
-	for range foodToRemove {
-		p := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
-		if p != nil {
-			food = append(food, p)
+	if !game.UseFoodSpawnPercentage {
+		for range foodToRemove {
+			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+			if p != nil {
+				food = append(food, p)
+			}
+		}
+	} else if game.FoodSpawnChance > 0 {
+		chance := rand.Int31n(101) // use 101 here so we get 0-100 inclusive
+		log.WithFields(log.Fields{
+			"GameID":            game.ID,
+			"Food Spawn Chance": chance,
+		}).Info("food spawn chance")
+		if chance <= game.FoodSpawnChance {
+			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+			if p != nil {
+				food = append(food, p)
+			}
 		}
 	}
 
