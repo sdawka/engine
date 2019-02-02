@@ -32,14 +32,13 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 
 	id := uuid.NewV4().String()
 	game := &pb.Game{
-		ID:                     id,
-		Width:                  req.Width,
-		Height:                 req.Height,
-		Status:                 string(GameStatusStopped),
-		SnakeTimeout:           1000, // TODO: make this configurable
-		Mode:                   string(GameModeMultiPlayer),
-		UseFoodSpawnPercentage: req.UseFoodSpawnPercentage,
-		FoodSpawnChance:        req.FoodSpawnChance,
+		ID:                      id,
+		Width:                   req.Width,
+		Height:                  req.Height,
+		Status:                  string(GameStatusStopped),
+		SnakeTimeout:            1000, // TODO: make this configurable
+		Mode:                    string(GameModeMultiPlayer),
+		MaxTurnsToNextFoodSpawn: req.MaxTurnsToNextFoodSpawn,
 	}
 
 	if len(snakes) == 1 {

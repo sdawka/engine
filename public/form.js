@@ -40,11 +40,9 @@ $(() => {
     const height = parseInt($("#height").val())
     const width = parseInt($("#width").val())
     const food = parseInt($("#food").val())
-    let useFoodSpawnPercentage = false
-    let foodSpawnChance = null
+    let MaxTurnsToNextFoodSpawn = 0
     if ($("#food-spawn-chance").val()) {
-      useFoodSpawnPercentage = true
-      foodSpawnChance = parseInt($("#food-spawn-chance").val())
+      MaxTurnsToNextFoodSpawn = parseInt($("#food-spawn-chance").val())
     }
     const snakes = []
 
@@ -67,8 +65,7 @@ $(() => {
         width,
         height,
         food,
-        useFoodSpawnPercentage,
-        foodSpawnChance,
+        MaxTurnsToNextFoodSpawn,
         "snakes": snakes,
       })
     }).then(resp => resp.json())

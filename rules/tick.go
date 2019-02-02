@@ -2,6 +2,7 @@ package rules
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
@@ -95,28 +96,58 @@ func updateFood(game *pb.Game, gameFrame *pb.GameFrame, foodToRemove []*pb.Point
 		}
 	}
 
-	if !game.UseFoodSpawnPercentage {
+	addedFood := false
+	if game.MaxTurnsToNextFoodSpawn <= 0 {
 		for range foodToRemove {
 			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
 			if p != nil {
 				food = append(food, p)
+				addedFood = true
 			}
 		}
-	} else if game.FoodSpawnChance > 0 {
-		chance := rand.Int31n(101) // use 101 here so we get 0-100 inclusive
-		log.WithFields(log.Fields{
-			"GameID":            game.ID,
-			"Food Spawn Chance": chance,
-		}).Info("food spawn chance")
-		if chance <= game.FoodSpawnChance {
+	} else {
+		if game.TurnsSinceLastFoodSpawn == game.MaxTurnsToNextFoodSpawn {
 			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
 			if p != nil {
 				food = append(food, p)
+				addedFood = true
+			}
+		} else {
+			chance := rand.Int31n(1001) // use 101 here so we get 0-100 inclusive
+			calculatedChance := calculateFoodSpawnChance(game)
+			log.WithFields(log.Fields{
+				"GameID":            game.ID,
+				"Food Spawn Chance": chance,
+				"Turns Since Last":  game.TurnsSinceLastFoodSpawn,
+				"Calculate Chance":  calculatedChance,
+			}).Info("food spawn chance")
+			if float64(chance) <= calculatedChance {
+				p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+				if p != nil {
+					food = append(food, p)
+					addedFood = true
+				}
 			}
 		}
 	}
 
+	if addedFood {
+		game.TurnsSinceLastFoodSpawn = 0
+	} else {
+		game.TurnsSinceLastFoodSpawn++
+	}
+
 	return food, nil
+}
+
+func calculateFoodSpawnChance(game *pb.Game) float64 {
+	minSpawnChance := float64(0.5)
+
+	ratio := math.Pow(1000/minSpawnChance, 1.0/float64(game.MaxTurnsToNextFoodSpawn-1))
+	seqNum := float64(game.TurnsSinceLastFoodSpawn)
+
+	spawnChance := minSpawnChance * ((1 - math.Pow(ratio, seqNum)) / (1 - ratio))
+	return spawnChance
 }
 
 func getUnoccupiedPoint(width, height int32, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
