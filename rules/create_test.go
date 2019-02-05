@@ -59,17 +59,27 @@ func TestCreateInitialGameWithColour(t *testing.T) {
 		Color: "#CDCDCD",
 	})
 	_, frame, err := CreateInitialGame(&pb.CreateRequest{
-		Width:  10,
-		Height: 10,
+		Width:  2,
+		Height: 2,
 		Food:   10,
 		Snakes: []*pb.SnakeOptions{
+			{URL: url},
 			{URL: url},
 		},
 	})
 	require.NoError(t, err)
 	require.Len(t, frame, 1)
-	require.Len(t, frame[0].Snakes, 1)
+	require.Len(t, frame[0].Snakes, 2)
+	if isEven(frame[0].Snakes[0].Body[0]) {
+		require.True(t, isEven((frame[0].Snakes[1].Body[0])))
+	} else {
+		require.False(t, isEven((frame[0].Snakes[1].Body[0])))
+	}
 	require.Equal(t, "#CDCDCD", frame[0].Snakes[0].Color)
+}
+
+func isEven(point *pb.Point) bool {
+	return (point.X+point.Y)%2 == 0
 }
 
 func TestTournamentCreateGame(t *testing.T) {

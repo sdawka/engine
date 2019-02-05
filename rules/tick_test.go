@@ -58,6 +58,21 @@ func TestUpdateFoodWithFullBoard(t *testing.T) {
 	require.Len(t, updated, 0)
 }
 
+func TestGetUnoccupiedPointEven(t *testing.T) {
+
+	unoccupiedPoint := getUnoccupiedPointEven(2, 2,
+		[]*pb.Point{},
+		[]*pb.Snake{})
+	require.True(t, (unoccupiedPoint.X+unoccupiedPoint.Y)%2 == 0, "Point coordinates should sum to an even number %o ", unoccupiedPoint)
+}
+
+func TestGetUnoccupiedPointOdd(t *testing.T) {
+	unoccupiedPoint := getUnoccupiedPointOdd(2, 2,
+		[]*pb.Point{{X: 0, Y: 1}},
+		[]*pb.Snake{})
+	require.True(t, (unoccupiedPoint.X+unoccupiedPoint.Y)%2 == 1, "Point coordinates should sum to an odd number %o ", unoccupiedPoint)
+}
+
 func TestGetUnoccupiedPointWithFullBoard(t *testing.T) {
 	unoccupiedPoint := getUnoccupiedPoint(2, 2,
 		[]*pb.Point{{X: 0, Y: 0}},

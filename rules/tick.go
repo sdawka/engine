@@ -152,7 +152,36 @@ func calculateFoodSpawnChance(game *pb.Game) float64 {
 
 func getUnoccupiedPoint(width, height int32, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
 	openPoints := getUnoccupiedPoints(width, height, food, snakes)
+	return pickRandomPoint(openPoints)
+}
 
+func getUnoccupiedPointOdd(width, height int32, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
+	openPoints := getUnoccupiedPoints(width, height, food, snakes)
+	openPoints = filterPoints(openPoints, true)
+	return pickRandomPoint(openPoints)
+}
+
+func getUnoccupiedPointEven(width, height int32, food []*pb.Point, snakes []*pb.Snake) *pb.Point {
+	openPoints := getUnoccupiedPoints(width, height, food, snakes)
+	openPoints = filterPoints(openPoints, false)
+	return pickRandomPoint(openPoints)
+}
+
+func filterPoints(openPoints []*pb.Point, even bool) []*pb.Point {
+	filteredPoints := []*pb.Point{}
+	mod := int32(0)
+	if !even {
+		mod = int32(1)
+	}
+	for i := int32(0); i < int32(len(openPoints)); i++ {
+		if (openPoints[i].X+openPoints[i].Y)%2 != mod {
+			filteredPoints = append(filteredPoints, openPoints[i])
+		}
+	}
+	return filteredPoints
+}
+
+func pickRandomPoint(openPoints []*pb.Point) *pb.Point {
 	if len(openPoints) == 0 {
 		return nil
 	}

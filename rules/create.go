@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+	"math/rand"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	uuid "github.com/satori/go.uuid"
@@ -88,13 +89,20 @@ func getTournamentStartPoint(size, index int32, snakes []*pb.Snake) *pb.Point {
 
 func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
 	var snakes []*pb.Snake
-
+	even := true
+	if rand.Intn(2) == 0 {
+		even = false
+	}
 	for index, opts := range req.Snakes {
 		var startPoint *pb.Point
 		if isTournamentBoardSize(req) {
 			startPoint = getTournamentStartPoint(req.Width, int32(index), snakes)
 		} else {
-			startPoint = getUnoccupiedPoint(req.Width, req.Height, []*pb.Point{}, snakes)
+			if even {
+				startPoint = getUnoccupiedPointEven(req.Width, req.Height, []*pb.Point{}, snakes)
+			} else {
+				startPoint = getUnoccupiedPointOdd(req.Width, req.Height, []*pb.Point{}, snakes)
+			}
 		}
 		if startPoint == nil {
 			return nil, errors.New("no unoccupied spots left for new snake")
