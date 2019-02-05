@@ -89,10 +89,7 @@ func getTournamentStartPoint(size, index int32, snakes []*pb.Snake) *pb.Point {
 
 func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
 	var snakes []*pb.Snake
-	even := true
-	if rand.Intn(2) == 0 {
-		even = false
-	}
+	even := rand.Float32() < 0.5
 	for index, opts := range req.Snakes {
 		var startPoint *pb.Point
 		if isTournamentBoardSize(req) {
