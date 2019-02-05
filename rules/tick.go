@@ -135,6 +135,9 @@ func getUnoccupiedPoints(width, height int32, food []*pb.Point, snakes []*pb.Sna
 	occupiedPoints := getUniqOccupiedPoints(food, snakes)
 
 	numCandidatePoints := (width * height) - int32(len(occupiedPoints))
+	if numCandidatePoints <= 0 {
+		return []*pb.Point{}
+	}
 
 	candidatePoints := make([]*pb.Point, 0, numCandidatePoints)
 
