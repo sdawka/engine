@@ -32,13 +32,13 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 
 	id := uuid.NewV4().String()
 	game := &pb.Game{
-		ID:           id,
-		Width:        req.Width,
-		Height:       req.Height,
-		Status:       string(GameStatusStopped),
-		SnakeTimeout: 1000, // TODO: make this configurable
-		TurnTimeout:  200,  // TODO: make this configurable
-		Mode:         string(GameModeMultiPlayer),
+		ID:                      id,
+		Width:                   req.Width,
+		Height:                  req.Height,
+		Status:                  string(GameStatusStopped),
+		SnakeTimeout:            1000, // TODO: make this configurable
+		Mode:                    string(GameModeMultiPlayer),
+		MaxTurnsToNextFoodSpawn: req.MaxTurnsToNextFoodSpawn,
 	}
 
 	if len(snakes) == 1 {
@@ -58,11 +58,44 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 	return game, frames, nil
 }
 
-func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
-	snakes := []*pb.Snake{}
+func isTournamentBoardSize(req *pb.CreateRequest) bool {
+	return isSmallBoard(req) || isMediumBoard(req) || isLargeBoard(req)
+}
 
-	for _, opts := range req.Snakes {
-		startPoint := getUnoccupiedPoint(req.Width, req.Height, []*pb.Point{}, snakes)
+func isSmallBoard(req *pb.CreateRequest) bool {
+	return req.Width == 7 && req.Height == 7
+}
+
+func isMediumBoard(req *pb.CreateRequest) bool {
+	return req.Width == 11 && req.Height == 11
+}
+
+func isLargeBoard(req *pb.CreateRequest) bool {
+	return req.Width == 19 && req.Height == 19
+}
+
+func getTournamentStartPoint(size, index int32, snakes []*pb.Snake) *pb.Point {
+	if size == 7 {
+		return smallStarts[index]
+	} else if size == 11 {
+		return mediumStarts[index]
+	} else if size == 19 {
+		return largeStarts[index]
+	}
+
+	return getUnoccupiedPoint(size, size, []*pb.Point{}, snakes)
+}
+
+func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
+	var snakes []*pb.Snake
+
+	for index, opts := range req.Snakes {
+		var startPoint *pb.Point
+		if isTournamentBoardSize(req) {
+			startPoint = getTournamentStartPoint(req.Width, int32(index), snakes)
+		} else {
+			startPoint = getUnoccupiedPoint(req.Width, req.Height, []*pb.Point{}, snakes)
+		}
 		if startPoint == nil {
 			return nil, errors.New("no unoccupied spots left for new snake")
 		}

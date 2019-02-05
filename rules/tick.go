@@ -2,12 +2,17 @@ package rules
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	log "github.com/sirupsen/logrus"
 )
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 // GameTick runs the game one tick and updates the state
 func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
@@ -51,7 +56,7 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	}).Info("handle food")
 
 	foodToRemove := checkForSnakesEating(nextFrame)
-	nextFood, err := updateFood(game.Width, game.Height, lastFrame, foodToRemove)
+	nextFood, err := updateFood(game, lastFrame, foodToRemove)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +79,9 @@ func GameTick(game *pb.Game, lastFrame *pb.GameFrame) (*pb.GameFrame, error) {
 	return nextFrame, nil
 }
 
-func updateFood(width, height int32, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
-	food := []*pb.Point{}
+func updateFood(game *pb.Game, gameFrame *pb.GameFrame, foodToRemove []*pb.Point) ([]*pb.Point, error) {
+	var food []*pb.Point
+	// discover what food was not eaten
 	for _, foodPos := range gameFrame.Food {
 		found := false
 		for _, r := range foodToRemove {
@@ -90,14 +96,58 @@ func updateFood(width, height int32, gameFrame *pb.GameFrame, foodToRemove []*pb
 		}
 	}
 
-	for range foodToRemove {
-		p := getUnoccupiedPoint(width, height, gameFrame.Food, gameFrame.AliveSnakes())
-		if p != nil {
-			food = append(food, p)
+	addedFood := false
+	if game.MaxTurnsToNextFoodSpawn <= 0 {
+		for range foodToRemove {
+			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+			if p != nil {
+				food = append(food, p)
+				addedFood = true
+			}
+		}
+	} else {
+		if game.TurnsSinceLastFoodSpawn == game.MaxTurnsToNextFoodSpawn {
+			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+			if p != nil {
+				food = append(food, p)
+				addedFood = true
+			}
+		} else {
+			chance := rand.Int31n(1001) // use 101 here so we get 0-100 inclusive
+			calculatedChance := calculateFoodSpawnChance(game)
+			log.WithFields(log.Fields{
+				"GameID":            game.ID,
+				"Food Spawn Chance": chance,
+				"Turns Since Last":  game.TurnsSinceLastFoodSpawn,
+				"Calculate Chance":  calculatedChance,
+			}).Info("food spawn chance")
+			if float64(chance) <= calculatedChance {
+				p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+				if p != nil {
+					food = append(food, p)
+					addedFood = true
+				}
+			}
 		}
 	}
 
+	if addedFood {
+		game.TurnsSinceLastFoodSpawn = 0
+	} else {
+		game.TurnsSinceLastFoodSpawn++
+	}
+
 	return food, nil
+}
+
+func calculateFoodSpawnChance(game *pb.Game) float64 {
+	minSpawnChance := float64(0.5)
+
+	ratio := math.Pow(1000/minSpawnChance, 1.0/float64(game.MaxTurnsToNextFoodSpawn-1))
+	seqNum := float64(game.TurnsSinceLastFoodSpawn)
+
+	spawnChance := minSpawnChance * ((1 - math.Pow(ratio, seqNum)) / (1 - ratio))
+	return spawnChance
 }
 
 func getUnoccupiedPoint(width, height int32, food []*pb.Point, snakes []*pb.Snake) *pb.Point {

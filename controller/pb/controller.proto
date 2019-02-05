@@ -101,6 +101,7 @@ message CreateRequest  {
   int32 Height = 2;
   int32 Food = 3;
   repeated SnakeOptions Snakes = 4;
+  int32 MaxTurnsToNextFoodSpawn = 5;
 }
 message CreateResponse {
   string ID = 1;
@@ -140,8 +141,9 @@ message Game {
   int32 Width = 3;
   int32 Height = 4;
   int32 SnakeTimeout = 6; // number of milliseconds for snake api calls
-  int32 TurnTimeout = 7; // number of milliseconds for turn delay
   string Mode = 8;
+  int32 MaxTurnsToNextFoodSpawn = 9;
+  int32 TurnsSinceLastFoodSpawn = 10;
 };
 
 message GameFrame {
