@@ -59,8 +59,8 @@ func TestCreateInitialGameWithColour(t *testing.T) {
 		Color: "#CDCDCD",
 	})
 	_, frame, err := CreateInitialGame(&pb.CreateRequest{
-		Width:  2,
-		Height: 2,
+		Width:  10,
+		Height: 10,
 		Food:   10,
 		Snakes: []*pb.SnakeOptions{
 			{URL: url},
