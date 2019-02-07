@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -54,7 +55,9 @@ func TestCreateInitialGame_MoreSnakesThanSpace(t *testing.T) {
 	require.Error(t, err)
 }
 
+// Do not run this test in paralell as it sets the random seed.
 func TestCreateInitialGameWithColour(t *testing.T) {
+	rand.Seed(6) // this line, and value 6 for Seed, ensures that random snake placements will make this test fail.
 	url := setupSnakeServer(t, MoveResponse{}, StartResponse{
 		Color: "#CDCDCD",
 	})
