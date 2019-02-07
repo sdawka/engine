@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -54,7 +55,9 @@ func TestCreateInitialGame_MoreSnakesThanSpace(t *testing.T) {
 	require.Error(t, err)
 }
 
+// Do not run this test in parallel as it sets the random seed.
 func TestCreateInitialGameWithColour(t *testing.T) {
+	rand.Seed(6) // this line, and value 6 for Seed, ensures that random snake placements will make this test fail.
 	url := setupSnakeServer(t, MoveResponse{}, StartResponse{
 		Color: "#CDCDCD",
 	})
@@ -64,12 +67,22 @@ func TestCreateInitialGameWithColour(t *testing.T) {
 		Food:   10,
 		Snakes: []*pb.SnakeOptions{
 			{URL: url},
+			{URL: url},
 		},
 	})
 	require.NoError(t, err)
 	require.Len(t, frame, 1)
-	require.Len(t, frame[0].Snakes, 1)
+	require.Len(t, frame[0].Snakes, 2)
+	if isEven(frame[0].Snakes[0].Body[0]) {
+		require.True(t, isEven((frame[0].Snakes[1].Body[0])))
+	} else {
+		require.False(t, isEven((frame[0].Snakes[1].Body[0])))
+	}
 	require.Equal(t, "#CDCDCD", frame[0].Snakes[0].Color)
+}
+
+func isEven(point *pb.Point) bool {
+	return (point.X+point.Y)%2 == 0
 }
 
 func TestTournamentCreateGame(t *testing.T) {
