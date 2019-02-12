@@ -102,6 +102,7 @@ message CreateRequest  {
   int32 Food = 3;
   repeated SnakeOptions Snakes = 4;
   int32 MaxTurnsToNextFoodSpawn = 5;
+  int32 SnakeTimeout = 6;
 }
 message CreateResponse {
   string ID = 1;
