@@ -20,6 +20,14 @@ const (
 	GameModeMultiPlayer GameMode = "multi-player"
 )
 
+func getSnakeTimeout(req *pb.CreateRequest) int32 {
+	snakeTimeout := req.SnakeTimeout
+	if snakeTimeout < 1 || snakeTimeout > 5000 {
+		snakeTimeout = 500
+	}
+	return snakeTimeout
+}
+
 // CreateInitialGame creates a new game based on the create request passed in
 func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error) {
 	snakes, err := getSnakes(req)
@@ -30,6 +38,7 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 	if err != nil {
 		return nil, nil, err
 	}
+	snakeTimeout := getSnakeTimeout(req)
 
 	id := uuid.NewV4().String()
 	game := &pb.Game{
@@ -37,7 +46,7 @@ func CreateInitialGame(req *pb.CreateRequest) (*pb.Game, []*pb.GameFrame, error)
 		Width:                   req.Width,
 		Height:                  req.Height,
 		Status:                  string(GameStatusStopped),
-		SnakeTimeout:            1000, // TODO: make this configurable
+		SnakeTimeout:            snakeTimeout,
 		Mode:                    string(GameModeMultiPlayer),
 		MaxTurnsToNextFoodSpawn: req.MaxTurnsToNextFoodSpawn,
 	}
