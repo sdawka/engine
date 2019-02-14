@@ -260,6 +260,7 @@ func updateSnakes(game *pb.Game, frame *pb.GameFrame, moves []*SnakeUpdate) {
 		if update.Err != nil {
 			log.WithFields(log.Fields{
 				"GameID":  game.ID,
+				"Error":   update.Err,
 				"SnakeID": update.Snake.ID,
 				"Name":    update.Snake.Name,
 				"Turn":    frame.Turn,
