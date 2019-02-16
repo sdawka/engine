@@ -21,6 +21,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func init() {
+	// Enable histogram metrics, they are good.
+	promgrpc.EnableHandlingTimeHistogram()
+}
+
 // MaxTicks is the maximum amount of ticks that can be returned.
 const MaxTicks = 100
 
@@ -196,8 +201,6 @@ func (s *Server) Serve(listen string) error {
 	if err != nil {
 		return err
 	}
-	// Enable histogram metrics, they are good.
-	promgrpc.EnableHandlingTimeHistogram()
 	s.port = lis.Addr().(*net.TCPAddr).Port
 	srv := grpc.NewServer(grpc.UnaryInterceptor(
 		grpcmiddleware.ChainUnaryServer(
