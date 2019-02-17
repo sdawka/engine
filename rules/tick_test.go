@@ -307,3 +307,39 @@ func TestNextFoodSpawn(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, next.Food, 2)
 }
+
+func TestCheckForSnakesEating(t *testing.T) {
+	snake := &pb.Snake{
+		Body: []*pb.Point{
+			{X: 2, Y: 1},
+			{X: 1, Y: 1},
+			{X: 1, Y: 2},
+			{X: 2, Y: 2},
+		},
+	}
+	checkForSnakesEating(&pb.GameFrame{
+		Food: []*pb.Point{
+			{X: 2, Y: 1},
+		},
+		Snakes: []*pb.Snake{snake},
+	})
+	require.Len(t, snake.Body, 4)
+	require.Equal(t, snake.Body[2], snake.Body[3])
+}
+
+func TestCheckForSnakesNotEating(t *testing.T) {
+	snake := &pb.Snake{
+		Body: []*pb.Point{
+			{X: 2, Y: 1},
+			{X: 1, Y: 1},
+			{X: 1, Y: 2},
+			{X: 2, Y: 2},
+		},
+	}
+	checkForSnakesEating(&pb.GameFrame{
+		Food:   []*pb.Point{},
+		Snakes: []*pb.Snake{snake},
+	})
+	require.Len(t, snake.Body, 3)
+	require.NotEqual(t, snake.Body[2], snake.Body[1])
+}

@@ -290,11 +290,16 @@ func checkForSnakesEating(frame *pb.GameFrame) []*pb.Point {
 				}).Info("snake ate")
 			}
 		}
-		if !ate {
-			if len(snake.Body) == 0 {
-				continue
-			}
+
+		// It's possible here to have 2 points at the tail, and so if we remove the second one, it
+		// looks like the snake hasn't moved.
+		// This shouldn't happen, but just in case
+		if len(snake.Body) != 0 {
 			snake.Body = snake.Body[:len(snake.Body)-1]
+		}
+		if ate {
+			tail := snake.Tail()
+			snake.Body = append(snake.Body, &pb.Point{X: tail.X, Y: tail.Y})
 		}
 	}
 	return foodToRemove
