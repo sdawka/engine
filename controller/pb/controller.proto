@@ -134,6 +134,8 @@ message SnakeOptions {
   string Name = 1;
   string URL = 2;
   string ID = 3;
+  string HeadType = 4;
+  string TailType = 5;
 }
 
 message Game {
@@ -166,6 +168,8 @@ message Snake {
   int32 Health = 5;
   Death Death = 6;
   string Color = 7;
+  string HeadType = 8;
+  string TailType = 9;
 }
 
 message Death {

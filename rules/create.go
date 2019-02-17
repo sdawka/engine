@@ -114,10 +114,12 @@ func getSnakes(req *pb.CreateRequest) ([]*pb.Snake, error) {
 			return nil, errors.New("no unoccupied spots left for new snake")
 		}
 		snake := &pb.Snake{
-			ID:     opts.ID,
-			Name:   opts.Name,
-			URL:    opts.URL,
-			Health: 100,
+			ID:       opts.ID,
+			Name:     opts.Name,
+			URL:      opts.URL,
+			Health:   100,
+			HeadType: opts.HeadType,
+			TailType: opts.TailType,
 			Body: []*pb.Point{
 				startPoint,
 				startPoint.Clone(),
