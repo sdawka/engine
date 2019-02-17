@@ -101,6 +101,18 @@ func postToSnakeServer(req snakePostRequest, resp chan<- snakeResponse) {
 	netClient := createClient(req.options.timeout)
 	postURL := getURL(req.options.snake.URL, req.options.url)
 	postResponse, err := netClient.Post(postURL, "application/json", buf)
+
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"url": postURL,
+			"id":  req.options.snake.ID,
+		}).Error("error POSTing to snake, retrying once.")
+
+		// Perform 1 retry
+		postResponse, err = netClient.Post(postURL, "application/json", buf)
+	}
+
+	// Retry failed
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"url": postURL,
