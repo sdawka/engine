@@ -11,7 +11,9 @@ type MoveResponse struct {
 
 // StartResponse is the format for /start responses
 type StartResponse struct {
-	Color string
+	Color    string
+	HeadType string
+	TailType string
 }
 
 // SnakeRequest the message send for all snake api calls

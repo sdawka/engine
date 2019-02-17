@@ -26,6 +26,8 @@ func toSnakeStartResponse(resp snakeResponse) SnakeMetadata {
 				Err:   err,
 			}
 		}
+		resp.snake.HeadType = startResponse.HeadType
+		resp.snake.TailType = startResponse.TailType
 		return SnakeMetadata{
 			Snake: resp.snake,
 			Color: startResponse.Color,
