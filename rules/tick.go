@@ -96,22 +96,12 @@ func updateFood(game *pb.Game, gameFrame *pb.GameFrame, foodToRemove []*pb.Point
 		}
 	}
 
-	addedFood := false
+	foodToAdd := 0
 	if game.MaxTurnsToNextFoodSpawn <= 0 {
-		for range foodToRemove {
-			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
-			if p != nil {
-				food = append(food, p)
-				addedFood = true
-			}
-		}
+		foodToAdd = len(foodToRemove)
 	} else {
 		if game.TurnsSinceLastFoodSpawn == game.MaxTurnsToNextFoodSpawn {
-			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
-			if p != nil {
-				food = append(food, p)
-				addedFood = true
-			}
+			foodToAdd = int(math.Ceil(float64(len(gameFrame.AliveSnakes())) / 2.0))
 		} else {
 			chance := rand.Int31n(1001) // use 101 here so we get 0-100 inclusive
 			calculatedChance := calculateFoodSpawnChance(game)
@@ -121,18 +111,22 @@ func updateFood(game *pb.Game, gameFrame *pb.GameFrame, foodToRemove []*pb.Point
 				"Turns Since Last":  game.TurnsSinceLastFoodSpawn,
 				"Calculate Chance":  calculatedChance,
 			}).Info("food spawn chance")
+			fmt.Println(len(gameFrame.AliveSnakes()))
 			if float64(chance) <= calculatedChance {
-				p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
-				if p != nil {
-					food = append(food, p)
-					addedFood = true
-				}
+				foodToAdd = int(math.Ceil(float64(len(gameFrame.AliveSnakes())) / 2.0))
+
 			}
 		}
 	}
 
-	if addedFood {
+	if foodToAdd > 0 {
 		game.TurnsSinceLastFoodSpawn = 0
+		for i := 0; i < foodToAdd; i++ {
+			p := getUnoccupiedPoint(game.Width, game.Height, gameFrame.Food, gameFrame.AliveSnakes())
+			if p != nil {
+				food = append(food, p)
+			}
+		}
 	} else {
 		game.TurnsSinceLastFoodSpawn++
 	}

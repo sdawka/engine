@@ -290,7 +290,12 @@ func TestCanFollowTail(t *testing.T) {
 
 func TestNextFoodSpawn(t *testing.T) {
 	rand.Seed(1) // random order is 65, 85, 29
-	snakes := []*pb.Snake{{URL: setupSnakeServer(t, MoveResponse{}, StartResponse{})}}
+	snakes := []*pb.Snake{
+		{URL: setupSnakeServer(t, MoveResponse{}, StartResponse{})},
+		{URL: setupSnakeServer(t, MoveResponse{}, StartResponse{})},
+		{URL: setupSnakeServer(t, MoveResponse{}, StartResponse{})},
+		{URL: setupSnakeServer(t, MoveResponse{}, StartResponse{})},
+	}
 	next, err := GameTick(&pb.Game{
 		Width:                   20,
 		Height:                  20,
@@ -300,5 +305,5 @@ func TestNextFoodSpawn(t *testing.T) {
 		Snakes: snakes,
 	})
 	require.NoError(t, err)
-	require.Len(t, next.Food, 1)
+	require.Len(t, next.Food, 2)
 }
