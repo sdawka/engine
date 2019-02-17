@@ -104,3 +104,29 @@ func TestTournamentCreateGame(t *testing.T) {
 	require.Equal(t, int32(5), frame[0].Snakes[1].Body[0].X)
 	require.Equal(t, int32(5), frame[0].Snakes[1].Body[0].Y)
 }
+
+func TestIsValidColour(t *testing.T) {
+	tests := []struct {
+		Colour string
+		Valid  bool
+	}{
+		{Colour: "#CDCDCD", Valid: true},
+		{Colour: "CDCDCD", Valid: true},
+		{Colour: "#aaaaaaa", Valid: false},
+	}
+
+	for _, tt := range tests {
+		require.Equal(t, tt.Valid, isValidColour(tt.Colour), tt.Colour)
+	}
+}
+
+func TestGetEffectiveColour(t *testing.T) {
+	meta := SnakeMetadata{
+		Color: "#CDCDCD",
+		Snake: &pb.Snake{},
+	}
+	colour := getEffectiveColor(meta)
+	require.Equal(t, "#CDCDCD", colour)
+	meta.Color = "#aaaaaaa"
+	require.NotEqual(t, "#aaaaaaa", colour)
+}

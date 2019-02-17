@@ -2,6 +2,7 @@ package rules
 
 import (
 	"encoding/json"
+	"regexp"
 	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
@@ -37,8 +38,13 @@ func toSnakeStartResponse(resp snakeResponse) SnakeMetadata {
 	}
 }
 
+func isValidColour(colour string) bool {
+	var re = regexp.MustCompile(`^#?[a-fA-F0-9]{6}$`)
+	return re.Match([]byte(colour))
+}
+
 func getEffectiveColor(meta SnakeMetadata) string {
-	if meta.Err != nil || meta.Snake == nil || meta.Color == "" {
+	if meta.Err != nil || meta.Snake == nil || !isValidColour(meta.Color) {
 		return nextColor()
 	}
 	return meta.Color
