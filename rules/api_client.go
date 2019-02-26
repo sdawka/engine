@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -22,11 +24,15 @@ var (
 			Name:      "snake_requests_duration",
 			Help:      "Calls to outbound snakes.",
 		},
-		[]string{"method", "code"},
+		[]string{"method", "code", "official"},
 	)
 )
 
 func init() { prometheus.MustRegister(snakeRequestsHistogramMetric) }
+
+// Official snake url is set for tracking purposes. If requests are failing to
+// this snake then things are going wrong!
+var officialSnakeURL = os.Getenv("OFFICIAL_SNAKE_URL")
 
 type snakeResponse struct {
 	snake *pb.Snake
@@ -96,7 +102,7 @@ func gatherSnakeResponses(multiReq multiSnakeRequest, snakes []*pb.Snake) []snak
 }
 
 func postToSnakeServer(req snakePostRequest, resp chan<- snakeResponse) {
-	done := instrumentSnakeCall(req.options.url)
+	done := instrumentSnakeCall(req.options.url, req.options.snake.URL == officialSnakeURL)
 	buf := bytes.NewBuffer(req.data)
 	netClient := createClient(req.options.timeout)
 	postURL := getURL(req.options.snake.URL, req.options.url)
@@ -151,13 +157,11 @@ func getSnakeResponse(options snakePostOptions, game *pb.Game, frame *pb.GameFra
 	}, resp)
 }
 
-func instrumentSnakeCall(method string) func(int) {
+func instrumentSnakeCall(method string, official bool) func(int) {
 	start := time.Now()
 	return func(code int) {
 		var status string
-		if code < 200 {
-			status = "1xx"
-		} else if code >= 200 {
+		if code >= 200 {
 			status = "2xx"
 		} else if code >= 300 {
 			status = "3xx"
@@ -168,7 +172,7 @@ func instrumentSnakeCall(method string) func(int) {
 		} else {
 			status = "err"
 		}
-		snakeRequestsHistogramMetric.WithLabelValues(method, status).Observe(
+		snakeRequestsHistogramMetric.WithLabelValues(method, status, fmt.Sprint(official)).Observe(
 			time.Since(start).Seconds(),
 		)
 	}
