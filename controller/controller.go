@@ -110,7 +110,14 @@ func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 // Start starts the game running, and will make it ready to be picked up by a
 // worker.
 func (s *Server) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResponse, error) {
-	err := s.Store.SetGameStatus(ctx, req.ID, rules.GameStatusRunning)
+	g, err := s.Store.GetGame(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if rules.GameStatus(g.Status) == rules.GameStatusComplete || rules.GameStatus(g.Status) == rules.GameStatusError {
+		return nil, status.Error(codes.InvalidArgument, "cannot start a game that is in complete or error state")
+	}
+	err = s.Store.SetGameStatus(ctx, req.ID, rules.GameStatusRunning)
 	if err != nil {
 		return nil, err
 	}

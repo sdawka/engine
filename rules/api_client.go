@@ -80,15 +80,15 @@ func gatherSnakeResponses(multiReq multiSnakeRequest, snakes []*pb.Snake) []snak
 		}
 
 		wg.Add(1)
-		go func(s *pb.Snake) {
+		go func(s *pb.Snake, mr multiSnakeRequest) {
 			options := snakePostOptions{
-				url:     multiReq.url,
+				url:     mr.url,
 				snake:   s,
-				timeout: multiReq.timeout,
+				timeout: mr.timeout,
 			}
-			getSnakeResponse(options, multiReq.game, multiReq.frame, respChan)
+			getSnakeResponse(options, mr.game, mr.frame, respChan)
 			wg.Done()
-		}(snake)
+		}(snake, multiReq)
 	}
 
 	wg.Wait()
@@ -106,6 +106,7 @@ func postToSnakeServer(req snakePostRequest, resp chan<- snakeResponse) {
 	buf := bytes.NewBuffer(req.data)
 	netClient := createClient(req.options.timeout)
 	postURL := getURL(req.options.snake.URL, req.options.url)
+
 	postResponse, err := netClient.Post(postURL, "application/json", buf)
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{

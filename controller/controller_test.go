@@ -134,6 +134,11 @@ func TestController_GameCRUD(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, rules.GameStatusComplete, rules.GameStatus(g.Status))
 	})
+
+	t.Run("StartGameOnCompletedGame", func(t *testing.T) {
+		_, err := client.Start(ctx, &pb.StartRequest{ID: gameID})
+		require.Error(t, err)
+	})
 }
 
 func TestController_Frames(t *testing.T) {
