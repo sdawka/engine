@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/lib/pq" // Import pq driver.
 
+	"github.com/battlesnakeio/engine/config"
 	"github.com/battlesnakeio/engine/controller"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
@@ -45,8 +46,8 @@ func NewSQLStore(url string) (*Store, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(config.MaxOpenConns)
+	db.SetMaxIdleConns(config.MaxIdleConns)
 
 	if err = db.PingContext(ctx); err != nil {
 		return nil, err

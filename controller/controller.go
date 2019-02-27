@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/battlesnakeio/engine/config"
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
@@ -62,7 +62,7 @@ func New(store Store) *Server {
 		Store: store,
 		// This effectively sets the limit for games that can be run every
 		// second. With the current value we can run 600 games every minute.
-		limiter: rate.NewLimiter(10, 5),
+		limiter: rate.NewLimiter(config.PopRate, config.PopBurstRate),
 		started: make(chan struct{}),
 	}
 }
