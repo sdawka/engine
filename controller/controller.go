@@ -16,10 +16,13 @@ import (
 	promgrpc "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+var ErrLimited = status.Error(codes.ResourceExhausted, "controller: rate limited")
 
 func init() {
 	// Enable histogram metrics, they are good.
@@ -32,7 +35,10 @@ const MaxTicks = 100
 // New will initialize a new Server.
 func New(store Store) *Server {
 	return &Server{
-		Store:   store,
+		Store: store,
+		// This effectively sets the limit for games that can be run every
+		// second. With the current value we can run 600 games every minute.
+		limiter: rate.NewLimiter(10, 5),
 		started: make(chan struct{}),
 	}
 }
@@ -41,6 +47,7 @@ func New(store Store) *Server {
 type Server struct {
 	Store Store
 
+	limiter *rate.Limiter
 	started chan struct{}
 	port    int
 }
@@ -66,6 +73,10 @@ func (s *Server) ValidateSnake(ctx context.Context, req *pb.ValidateSnakeRequest
 // the game and return it to the worker to begin processing. This call will
 // be polled by the workers.
 func (s *Server) Pop(ctx context.Context, _ *pb.PopRequest) (*pb.PopResponse, error) {
+	if err := s.limiter.Wait(ctx); err != nil {
+		return nil, ErrLimited
+	}
+
 	id, err := s.Store.PopGameID(ctx)
 	if err != nil {
 		return nil, err

@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
@@ -258,14 +260,13 @@ func TestController_PopConcurrent(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		go func(i int) {
-			_, errp := ctrl.Pop(ctx, &pb.PopRequest{})
+			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
+
+			res, errp := ctrl.Pop(ctx, &pb.PopRequest{})
 			if errp == nil {
+				fmt.Printf("res: %v -- %+v\n", time.Now(), res)
 				atomic.AddUint32(&ok, 1)
-			} else {
-				require.Equal(t,
-					"rpc error: code = NotFound desc = controller: game not found",
-					errp.Error(),
-				)
 			}
 			wg.Done()
 		}(i)
