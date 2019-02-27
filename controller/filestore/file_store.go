@@ -147,6 +147,21 @@ func (fs *fileStore) PopGameID(ctx context.Context) (string, error) {
 	return "", controller.ErrNotFound
 }
 
+func (fs *fileStore) GameQueueLength(ctx context.Context) (int, error) {
+	fs.lock.Lock()
+	defer fs.lock.Unlock()
+
+	count := 0
+	// For every game we need to make sure it's active and is not locked before
+	// returning it. We get randomness due to go's built in random map.
+	for _, g := range fs.games {
+		if g.Status == string(rules.GameStatusRunning) {
+			count++
+		}
+	}
+	return count, nil
+}
+
 func (fs *fileStore) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.GameFrame) error {
 	fs.lock.Lock()
 	defer fs.lock.Unlock()

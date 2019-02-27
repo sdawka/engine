@@ -51,6 +51,8 @@ type Store interface {
 	ListGameFrames(c context.Context, id string, limit, offset int) ([]*pb.GameFrame, error)
 	// GetGame will fetch the game.
 	GetGame(context.Context, string) (*pb.Game, error)
+	// Game Queue Length returns the number of games currently in the running state
+	GameQueueLength(context.Context) (int, error)
 }
 
 // InMemStore returns an in memory implementation of the Store interface.
@@ -153,6 +155,22 @@ func (in *inmem) PopGameID(ctx context.Context) (string, error) {
 		}
 	}
 	return "", ErrNotFound
+}
+
+// Game Queue Length returns the number of games currently in the running state
+func (in *inmem) GameQueueLength(context.Context) (int, error) {
+	in.lock.Lock()
+	defer in.lock.Unlock()
+
+	count := 0
+	// For every game we need to make sure it's active and is not locked before
+	// returning it. We get randomness due to go's built in random map.
+	for _, g := range in.games {
+		if g.Status == string(rules.GameStatusRunning) {
+			count++
+		}
+	}
+	return count, nil
 }
 
 func (in *inmem) CreateGame(ctx context.Context, g *pb.Game, frames []*pb.GameFrame) error {

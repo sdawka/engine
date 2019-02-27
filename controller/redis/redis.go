@@ -115,6 +115,11 @@ func (rs *Store) PopGameID(c context.Context) (string, error) {
 	return fmt.Sprint(r), nil
 }
 
+func (rs *Store) GameQueueLength(c context.Context) (int, error) {
+	// not supported for redis store
+	return 0, nil
+}
+
 // SetGameStatus is used to set a specific game status. This operation
 // should be atomic.
 func (rs *Store) SetGameStatus(c context.Context, id string, status rules.GameStatus) error {

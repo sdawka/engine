@@ -179,6 +179,25 @@ func (s *Store) PopGameID(ctx context.Context) (string, error) {
 	return id, nil
 }
 
+func (s *Store) GameQueueLength(ctx context.Context) (int, error) {
+	now := time.Now()
+	r := s.db.QueryRowContext(ctx, `
+		SELECT count(1) FROM games
+		LEFT JOIN locks ON locks.key = games.id AND locks.expiry > $1
+		WHERE locks.key IS NULL
+		AND games.value->>'Status' = 'running'
+	`, now)
+
+	var id int
+	if err := r.Scan(&id); err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return id, nil
+}
+
 // SetGameStatus is used to set a specific game status. This operation
 // should be atomic.
 func (s *Store) SetGameStatus(

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
@@ -29,11 +31,33 @@ func init() {
 	promgrpc.EnableHandlingTimeHistogram()
 }
 
+var (
+	runningGames = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: "engine",
+			Subsystem: "store",
+			Name:      "running games",
+			Help:      "number of games in a running state",
+		})
+)
+
 // MaxTicks is the maximum amount of ticks that can be returned.
 const MaxTicks = 100
 
 // New will initialize a new Server.
 func New(store Store) *Server {
+
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		for range ticker.C {
+			games, err := store.GameQueueLength(context.Background())
+			if err != nil {
+				log.WithError(err).Error("unable to get game queue length")
+				continue
+			}
+			runningGames.Set(float64(games))
+		}
+	}()
 	return &Server{
 		Store: store,
 		// This effectively sets the limit for games that can be run every
