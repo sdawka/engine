@@ -201,7 +201,7 @@ func (s *Store) GameQueueLength(ctx context.Context) (running int, waiting int, 
 		SELECT count(1) FROM (
 		  SELECT count(1) FROM game_frames WHERE id IN (
         	SELECT id FROM games
-        	LEFT JOIN locks ON locks.key = games.id AND locks.expiry > now()
+        	LEFT JOIN locks ON locks.key = games.id AND locks.expiry > $1
         	WHERE locks.key IS NULL
         	AND games.value->>'Status' = 'running')
         	GROUP BY id
