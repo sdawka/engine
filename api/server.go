@@ -54,6 +54,10 @@ var (
 	)
 )
 
+func init() {
+	prometheus.MustRegister(inFlightMetric, activeSocketMetric, counterMetric, durationMetric)
+}
+
 // Server this is the api server
 type Server struct {
 	hs *http.Server
@@ -130,8 +134,14 @@ func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, 
 			log.WithError(err).Error("Unable to close websocket stream")
 		}
 	}()
+
+	startFrame, err := strconv.Atoi(r.URL.Query().Get("startFrame"))
+	if err != nil {
+		startFrame = 0
+	}
+
 	frames := make(chan *pb.GameFrame)
-	go gatherFrames(r.Context(), frames, c, id)
+	go gatherFrames(r.Context(), frames, c, id, int32(startFrame))
 	for frame := range frames {
 		m := jsonpb.Marshaler{EmitDefaults: true}
 
@@ -155,8 +165,8 @@ func framesSocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params, 
 	}
 }
 
-func gatherFrames(ctx context.Context, frames chan<- *pb.GameFrame, c pb.ControllerClient, id string) {
-	offset := int32(0)
+func gatherFrames(ctx context.Context, frames chan<- *pb.GameFrame, c pb.ControllerClient, id string, startFrame int32) {
+	offset := startFrame
 	for {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		resp, err := c.ListGameFrames(ctx, &pb.ListGameFramesRequest{

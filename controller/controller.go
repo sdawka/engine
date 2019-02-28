@@ -49,6 +49,10 @@ var (
 		})
 )
 
+func init() {
+	prometheus.MustRegister(runningGames, gamesWaitingToStart)
+}
+
 // MaxTicks is the maximum amount of ticks that can be returned.
 const MaxTicks = 100
 
