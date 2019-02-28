@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/battlesnakeio/engine/config"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/battlesnakeio/engine/version"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	promgrpc "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
@@ -35,9 +35,17 @@ var (
 	runningGames = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: "engine",
-			Subsystem: "store",
-			Name:      "running games",
+			Subsystem: "controller",
+			Name:      "games_running",
 			Help:      "number of games in a running state",
+		})
+
+	gamesWaitingToStart = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: "engine",
+			Subsystem: "controller",
+			Name:      "games_waiting",
+			Help:      "number of games that are running, but have no frames yet",
 		})
 )
 
@@ -50,12 +58,13 @@ func New(store Store) *Server {
 	go func() {
 		ticker := time.NewTicker(time.Second)
 		for range ticker.C {
-			games, err := store.GameQueueLength(context.Background())
+			running, waiting, err := store.GameQueueLength(context.Background())
 			if err != nil {
 				log.WithError(err).Error("unable to get game queue length")
 				continue
 			}
-			runningGames.Set(float64(games))
+			runningGames.Set(float64(running))
+			gamesWaitingToStart.Set(float64(waiting))
 		}
 	}()
 	return &Server{

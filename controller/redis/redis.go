@@ -115,9 +115,9 @@ func (rs *Store) PopGameID(c context.Context) (string, error) {
 	return fmt.Sprint(r), nil
 }
 
-func (rs *Store) GameQueueLength(c context.Context) (int, error) {
+func (rs *Store) GameQueueLength(c context.Context) (int, int, error) {
 	// not supported for redis store
-	return 0, nil
+	return 0, 0, nil
 }
 
 // SetGameStatus is used to set a specific game status. This operation

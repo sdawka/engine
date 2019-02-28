@@ -74,7 +74,7 @@ func (m *metrics) GetGame(c context.Context, id string) (*pb.Game, error) {
 	return m.s.GetGame(c, id)
 }
 
-func (m *metrics) GameQueueLength(ctx context.Context) (int, error) {
+func (m *metrics) GameQueueLength(ctx context.Context) (int, int, error) {
 	// don't need to instrument this method, since it's used for instrumenting
 	return m.s.GameQueueLength(ctx)
 }

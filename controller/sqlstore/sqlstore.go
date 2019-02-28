@@ -180,7 +180,7 @@ func (s *Store) PopGameID(ctx context.Context) (string, error) {
 	return id, nil
 }
 
-func (s *Store) GameQueueLength(ctx context.Context) (int, error) {
+func (s *Store) GameQueueLength(ctx context.Context) (running int, waiting int, err error) {
 	now := time.Now()
 	r := s.db.QueryRowContext(ctx, `
 		SELECT count(1) FROM games
@@ -189,14 +189,35 @@ func (s *Store) GameQueueLength(ctx context.Context) (int, error) {
 		AND games.value->>'Status' = 'running'
 	`, now)
 
-	var id int
-	if err := r.Scan(&id); err != nil {
+	if err := r.Scan(&running); err != nil {
 		if err == sql.ErrNoRows {
-			return 0, nil
+			running = 0
+		} else {
+			return 0, 0, err
 		}
-		return 0, err
 	}
-	return id, nil
+
+	r = s.db.QueryRowContext(ctx, `
+		SELECT count(1) FROM (
+		  SELECT count(1) FROM game_frames WHERE id IN (
+        	SELECT id FROM games
+        	LEFT JOIN locks ON locks.key = games.id AND locks.expiry > now()
+        	WHERE locks.key IS NULL
+        	AND games.value->>'Status' = 'running')
+        	GROUP BY id
+        	HAVING count(1) <= 1
+		  ) a;
+	`, now)
+
+	if err := r.Scan(&waiting); err != nil {
+		if err == sql.ErrNoRows {
+			waiting = 0
+		} else {
+			return 0, 0, err
+		}
+	}
+
+	return running, waiting, nil
 }
 
 // SetGameStatus is used to set a specific game status. This operation
