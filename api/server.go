@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/battlesnakeio/engine/controller/pb"
 	"github.com/battlesnakeio/engine/rules"
 	"github.com/golang/protobuf/jsonpb"
@@ -259,7 +262,11 @@ func startGame(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 	_, err := c.Start(ctx, req)
 	if err != nil {
-		writeError(w, err, http.StatusInternalServerError, "Error while calling controller start", log.Fields{
+		sc := http.StatusInternalServerError
+		if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+			sc = http.StatusNotFound
+		}
+		writeError(w, err, sc, "Error while calling controller start", log.Fields{
 			"req": req,
 		})
 		return
@@ -278,7 +285,11 @@ func getStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 
 	resp, err := c.Status(ctx, req)
 	if err != nil {
-		writeError(w, err, http.StatusInternalServerError, "Error while calling controller status", log.Fields{
+		sc := http.StatusInternalServerError
+		if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+			sc = http.StatusNotFound
+		}
+		writeError(w, err, sc, "Error while calling controller status", log.Fields{
 			"req": req,
 		})
 		return
@@ -312,7 +323,11 @@ func getFrames(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c p
 	// TODO: use a context with timeout
 	resp, err := c.ListGameFrames(r.Context(), req)
 	if err != nil {
-		writeError(w, err, http.StatusInternalServerError, "Error while calling controller status", log.Fields{
+		sc := http.StatusInternalServerError
+		if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+			sc = http.StatusNotFound
+		}
+		writeError(w, err, sc, "Error while calling controller status", log.Fields{
 			"resp": resp,
 		})
 		return
