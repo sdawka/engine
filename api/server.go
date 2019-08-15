@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -79,6 +80,9 @@ func New(addr string, c pb.ControllerClient) *Server {
 	router.GET("/games/:id/frames", logging(newClientHandle(c, getFrames)))
 	router.GET("/socket/:id", logging(newClientHandle(c, framesSocket)))
 	router.GET("/validateSnake", logging(newClientHandle(c, validateSnake)))
+
+	router.GET("/healthz/alive", logging(newClientHandle(c, getAlive)))
+	router.GET("/healthz/ready", logging(newClientHandle(c, getReady)))
 
 	handler := promhttp.InstrumentHandlerInFlight(inFlightMetric,
 		promhttp.InstrumentHandlerDuration(durationMetric,
@@ -369,6 +373,14 @@ func validateSnake(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 	if err != nil {
 		log.WithError(err).Error("Unable to write response to stream")
 	}
+}
+
+func getAlive(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+	fmt.Fprint(w, "alive")
+}
+
+func getReady(w http.ResponseWriter, r *http.Request, ps httprouter.Params, c pb.ControllerClient) {
+	fmt.Fprint(w, "ready")
 }
 
 // WaitForExit starts up the server and blocks until the server shuts down.

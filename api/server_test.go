@@ -290,6 +290,26 @@ func TestGetFramesContainsZeroValues(t *testing.T) {
 	require.Equal(t, 0, castPointInArray(food, 2, "Y"))
 }
 
+func TestHealthAlive(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/healthz/alive", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestHealthReady(t *testing.T) {
+	s, _ := createAPIServer()
+
+	req, _ := http.NewRequest("GET", "/healthz/ready", nil)
+	rr := httptest.NewRecorder()
+
+	s.hs.Handler.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+}
+
 func castPointInArray(resp interface{}, index int, key string) int {
 	return int(resp.([]interface{})[index].(map[string]interface{})[key].(float64))
 }
