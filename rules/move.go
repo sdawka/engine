@@ -9,9 +9,10 @@ import (
 
 // SnakeUpdate bundles together a snake with a move for processing
 type SnakeUpdate struct {
-	Snake *pb.Snake
-	Move  string
-	Err   error
+	Snake   *pb.Snake
+	Latency time.Duration
+	Move    string
+	Err     error
 }
 
 func toSnakeUpdate(resp snakeResponse) *SnakeUpdate {
@@ -20,19 +21,22 @@ func toSnakeUpdate(resp snakeResponse) *SnakeUpdate {
 		err := json.Unmarshal(resp.data, &moveResponse)
 		if err != nil {
 			return &SnakeUpdate{
-				Snake: resp.snake,
-				Err:   err,
+				Snake:   resp.snake,
+				Latency: resp.latency,
+				Err:     err,
 			}
 		}
 		return &SnakeUpdate{
-			Snake: resp.snake,
-			Move:  moveResponse.Move,
+			Snake:   resp.snake,
+			Latency: resp.latency,
+			Move:    moveResponse.Move,
 		}
 	}
 
 	return &SnakeUpdate{
-		Snake: resp.snake,
-		Err:   resp.err,
+		Snake:   resp.snake,
+		Latency: resp.latency,
+		Err:     resp.err,
 	}
 }
 

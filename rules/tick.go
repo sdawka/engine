@@ -251,6 +251,7 @@ func getUniqOccupiedPoints(food []*pb.Point, snakes []*pb.Snake) []*pb.Point {
 
 func updateSnakes(game *pb.Game, frame *pb.GameFrame, moves []*SnakeUpdate) {
 	for _, update := range moves {
+		update.Snake.Latency = fmt.Sprint(int64(update.Latency) / 1e6)
 		if update.Err != nil {
 			log.WithFields(log.Fields{
 				"GameID":  game.ID,

@@ -170,6 +170,7 @@ message Snake {
   string Color = 7;
   string HeadType = 8;
   string TailType = 9;
+  string Latency = 10;
 }
 
 message Death {
