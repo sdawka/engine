@@ -1,0 +1,24 @@
+name: CI
+
+on: [push]
+
+jobs:
+
+  format:
+    name: Format (gofmt)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-go@master
+      with:
+        python-version: 1.13.x
+    - name: gofmt
+      run: test -z $(gofmt -l .) || (gofmt -d . && exit 1)
+
+  build:
+    name: Build (Docker)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Run Docker Build
+      run: docker build -t battlesnake/engine .
