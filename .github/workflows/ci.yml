@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions-contrib/golangci-lint@master
         with:
-          args: run
+          args: run -v
 
   build:
     name: Build (Docker)
