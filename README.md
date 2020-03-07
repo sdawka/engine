@@ -166,4 +166,4 @@ engine server --backend redis --backend-args 'redis://localhost:6379'
 
 ## Battlesnake API
 
-Refer to the docs [repository](https://github.com/battlesnakeio/docs) or [website](http://docs.battlesnake.io), specifically the [snake API](http://docs.battlesnake.io/snake-api.html).
+Refer to the docs [repository](https://github.com/BattlesnakeOfficial/docs) or [website](http://docs.battlesnake.com), specifically the [snake API](http://docs.battlesnake.com/snake-api.html).
